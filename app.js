@@ -890,14 +890,17 @@ const App = {
             default:      filtered = allCheckins;
         }
 
+        const periodLabel = { week: '本周', month: '本月', year: '本年', all: '全部' };
+
         // 按用户汇总
         const userMap = {};
         users.forEach(u => {
-            userMap[u.id] = { nickname: u.nickname, swim: 0, swimDur: 0, bike: 0, bikeDur: 0, run: 0, runDur: 0, other: 0, otherDur: 0 };
+            userMap[u.id] = { nickname: u.nickname, swim: 0, swimDur: 0, bike: 0, bikeDur: 0, run: 0, runDur: 0, other: 0, otherDur: 0, count: 0 };
         });
         filtered.forEach(c => {
             const u = userMap[c.userId];
             if (!u) return;
+            u.count++;
             if (c.sport === 'swim')       { u.swim += c.distance; u.swimDur += c.duration; }
             else if (c.sport === 'bike')  { u.bike += c.distance; u.bikeDur += c.duration; }
             else if (c.sport === 'run')   { u.run  += c.distance; u.runDur  += c.duration; }
@@ -916,6 +919,7 @@ const App = {
         }
 
         container.innerHTML = `
+            <div style="text-align:right;font-size:12px;color:var(--text-light);margin-bottom:8px;">📅 ${periodLabel[period] || ''}统计</div>
             <div class="team-table-wrap">
                 <table class="team-table">
                     <thead>
@@ -925,12 +929,14 @@ const App = {
                             <th>🚴 骑行</th>
                             <th>🏃 跑步</th>
                             <th>💪 其他</th>
+                            <th>打卡次数</th>
                             <th>总时长</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${rows.map(u => {
                             const totalDur = u.swimDur + u.bikeDur + u.runDur + u.otherDur;
+                            const totalKm = (u.swim / 1000 + u.bike + u.run).toFixed(1);
                             return `
                             <tr>
                                 <td class="team-name">${u.nickname}</td>
@@ -938,7 +944,8 @@ const App = {
                                 <td>${u.bike > 0 ? u.bike.toFixed(1) + 'km' : '-'}<br><small>${u.bike > 0 ? Utils.formatDuration(u.bikeDur) : ''}</small></td>
                                 <td>${u.run > 0  ? u.run.toFixed(1)  + 'km' : '-'}<br><small>${u.run > 0  ? Utils.formatDuration(u.runDur)  : ''}</small></td>
                                 <td>${u.other > 0 ? u.other + '次' : '-'}<br><small>${u.other > 0 ? Utils.formatDuration(u.otherDur) : ''}</small></td>
-                                <td class="team-total">${Utils.formatDuration(totalDur)}</td>
+                                <td class="team-total">${u.count}次<br><small>${totalKm}km</small></td>
+                                <td>${Utils.formatDuration(totalDur)}</td>
                             </tr>`;
                         }).join('')}
                     </tbody>
@@ -983,7 +990,8 @@ const App = {
     // ========== 排行榜 ==========
     renderRank() {
         const checkins = DB.getCheckins();
-        const period = this.currentRankPeriod === 'weekly' ? 'week' : 'month';
+        const periodMap = { 'weekly': 'week', 'monthly': 'month', 'yearly': 'year' };
+        const period = periodMap[this.currentRankPeriod] || 'week';
         
         const periodCheckins = checkins.filter(c => Utils.isInPeriod(c.date, period));
         
@@ -994,10 +1002,9 @@ const App = {
                 userStats[c.userId] = { nickname: c.nickname, swim: 0, bike: 0, run: 0, other: 0, total: 0 };
             }
             if (c.sport === 'other') {
-                userStats[c.userId].other += 1;  // 其他按次数
+                userStats[c.userId].other += 1;
             } else if (userStats[c.userId][c.sport] !== undefined) {
                 userStats[c.userId][c.sport] += c.distance;
-                // total 统一折算为 km（游泳 m→km）
                 userStats[c.userId].total += c.sport === 'swim' ? c.distance / 1000 : c.distance;
             }
         });
@@ -1005,7 +1012,6 @@ const App = {
         const isOtherTab = this.currentRankSport === 'other';
         const sortKey = this.currentRankSport === 'total' ? 'total' : this.currentRankSport;
 
-        // 「其他」排行只显示有「其他」打卡的人，其余排行只显示对应项>0的人
         let entries = Object.entries(userStats).map(([userId, stats]) => ({ userId, ...stats }));
         if (isOtherTab) {
             entries = entries.filter(e => e.other > 0);
@@ -1020,31 +1026,51 @@ const App = {
             UI.renderEmptyState(container, '暂无数据');
             return;
         }
+
+        const sportLabel = { swim: '游泳', bike: '骑行', run: '跑步', other: '次数', total: '总里程' };
+        const periodLabel = { weekly: '本周', monthly: '本月', yearly: '本年' };
         
-        container.innerHTML = sorted.map((item, index) => {
-            const isCurrentUser = item.userId === this.currentUser.id;
-            let displayVal, displayUnit;
-            if (this.currentRankSport === 'swim') {
-                displayVal = item.swim.toFixed(0);
-                displayUnit = 'm';
-            } else if (this.currentRankSport === 'total') {
-                displayVal = item.total.toFixed(1);
-                displayUnit = 'km';
-            } else if (this.currentRankSport === 'other') {
-                displayVal = item.other;
-                displayUnit = '次';
-            } else {
-                displayVal = item[sortKey].toFixed(1);
-                displayUnit = 'km';
-            }
-            return `
-                <div class="rank-item ${isCurrentUser ? 'highlight' : ''}">
-                    <span class="rank-position">${index + 1}</span>
-                    <span class="rank-user">${item.nickname}${isCurrentUser ? ' (我)' : ''}</span>
-                    <span class="rank-value">${displayVal}<span class="rank-unit">${displayUnit}</span></span>
-                </div>
-            `;
-        }).join('');
+        container.innerHTML = `
+            <div class="rank-table-wrap">
+                <table class="rank-table">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>成员</th>
+                            <th>${sportLabel[this.currentRankSport] || '总里程'}</th>
+                            <th>运动次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map((item, index) => {
+                            const isMe = item.userId === this.currentUser.id;
+                            let displayVal, displayUnit;
+                            if (this.currentRankSport === 'swim') {
+                                displayVal = item.swim.toFixed(0); displayUnit = 'm';
+                            } else if (this.currentRankSport === 'total') {
+                                displayVal = item.total.toFixed(1); displayUnit = 'km';
+                            } else if (this.currentRankSport === 'other') {
+                                displayVal = item.other; displayUnit = '次';
+                            } else {
+                                displayVal = item[sortKey].toFixed(1); displayUnit = 'km';
+                            }
+                            // 统计该用户在这个period内的打卡次数
+                            const userCheckins = periodCheckins.filter(c => c.userId === item.userId);
+                            return `
+                            <tr class="${isMe ? 'rank-me' : ''}">
+                                <td class="rank-pos">${index < 3 ? ['🥇','🥈','🥉'][index] : (index + 1)}</td>
+                                <td class="rank-name">${item.nickname}${isMe ? ' ⭐' : ''}</td>
+                                <td class="rank-val">${displayVal} ${displayUnit}</td>
+                                <td>${userCheckins.length}次</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align:center;font-size:12px;color:var(--text-light);margin-top:8px;">
+                📅 ${periodLabel[this.currentRankPeriod] || ''}数据统计
+            </div>
+        `;
     },
     
     // ========== 训练计划功能 ==========
