@@ -5,18 +5,36 @@
 }
 
 :root {
-    --primary: #4CAF50;
-    --primary-dark: #388E3C;
-    --secondary: #FF9800;
-    --danger: #f44336;
-    --bg: #f5f5f5;
+    --primary: #00BFA6;
+    --primary-dark: #009688;
+    --primary-light: #E0F7F3;
+    --secondary: #FF6D00;
+    --danger: #FF1744;
+    --bg: #F0F4F8;
     --card: #ffffff;
-    --text: #333333;
-    --text-light: #666666;
-    --border: #e0e0e0;
-    --swim-color: #2196F3;
-    --bike-color: #FF9800;
-    --run-color: #E91E63;
+    --text: #1A2332;
+    --text-light: #607D8B;
+    --border: #E0E6ED;
+    --swim-color: #2979FF;
+    --swim-bg: #E3F2FD;
+    --bike-color: #FF9100;
+    --bike-bg: #FFF3E0;
+    --run-color: #FF1744;
+    --run-bg: #FFEBEE;
+    --other-color: #AA00FF;
+    --other-bg: #F3E5F5;
+    --gradient-sport: linear-gradient(135deg, #2979FF 0%, #00BFA6 50%, #FF6D00 100%);
+    --gradient-card: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-swim: linear-gradient(135deg, #2979FF, #448AFF);
+    --gradient-bike: linear-gradient(135deg, #FF9100, #FFB74D);
+    --gradient-run: linear-gradient(135deg, #FF1744, #FF5252);
+    --gradient-other: linear-gradient(135deg, #AA00FF, #CE93D8);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
 }
 
 body {
@@ -25,12 +43,40 @@ body {
     color: var(--text);
     line-height: 1.6;
     min-height: 100vh;
-    /* 防止iOS橡皮筋效果 */
     overscroll-behavior: none;
+}
+
+/* 背景装饰 */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -30%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,191,166,0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -40%;
+    left: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,109,0,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
 }
 
 #app {
     min-height: 100vh;
+    position: relative;
+    z-index: 1;
 }
 
 /* 页面切换 */
@@ -49,7 +95,35 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0D47A1 0%, #00BFA6 40%, #FF6D00 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 登录页运动装饰元素 */
+#auth-page::before {
+    content: '🏊';
+    position: absolute;
+    top: 12%;
+    left: 8%;
+    font-size: 48px;
+    opacity: 0.15;
+    animation: floatUp 6s ease-in-out infinite;
+}
+
+#auth-page::after {
+    content: '🏃';
+    position: absolute;
+    bottom: 18%;
+    right: 10%;
+    font-size: 42px;
+    opacity: 0.15;
+    animation: floatUp 8s ease-in-out infinite reverse;
+}
+
+@keyframes floatUp {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
 }
 
 #auth-page.active {
@@ -59,10 +133,11 @@ body {
 .auth-container {
     width: 100%;
     max-width: 400px;
-    background: var(--card);
-    border-radius: 16px;
-    padding: 30px 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg);
+    padding: 36px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
 .logo {
@@ -71,26 +146,39 @@ body {
 }
 
 .logo-icon {
-    font-size: 48px;
+    font-size: 52px;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
 .logo h1 {
-    font-size: 24px;
+    font-size: 26px;
     color: var(--text);
     margin-bottom: 8px;
+    background: var(--gradient-sport);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
 }
 
 .subtitle {
     color: var(--text-light);
     font-size: 14px;
+    letter-spacing: 2px;
 }
 
 .auth-tabs {
     display: flex;
     margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    gap: 4px;
 }
 
 .tab-btn {
@@ -103,21 +191,23 @@ body {
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
+    font-weight: 500;
 }
 
 .tab-btn.active {
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .tab-btn.active::after {
     content: '';
     position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--primary);
+    bottom: -2px;
+    left: 10%;
+    right: 10%;
+    height: 3px;
+    background: var(--gradient-sport);
+    border-radius: 3px 3px 0 0;
 }
 
 .auth-form {
@@ -137,21 +227,24 @@ body {
     margin-bottom: 6px;
     font-size: 14px;
     color: var(--text-light);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .form-group input, .form-group select {
     width: 100%;
     padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
     font-size: 16px;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+    background: #FAFBFC;
 }
 
 .form-group input:focus, .form-group select:focus {
     outline: none;
     border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(0,191,166,0.1);
 }
 
 .form-row {
@@ -163,7 +256,6 @@ body {
     flex: 1;
 }
 
-/* 极小屏竖排 */
 @media (max-width: 320px) {
     .form-row {
         flex-direction: column;
@@ -174,18 +266,26 @@ body {
 .btn-primary {
     width: 100%;
     padding: 14px;
-    background: var(--primary);
+    background: var(--gradient-sport);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
 }
 
 .btn-block {
@@ -198,35 +298,45 @@ body {
     color: var(--text-light);
     font-size: 14px;
     cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-text:hover {
+    background: rgba(0,0,0,0.05);
 }
 
 /* ========== 主页面 ========== */
 #main-page {
     min-height: 100vh;
-    /* 底部留出导航栏+安全区高度 */
-    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 /* 顶部导航 */
 .header {
     position: sticky;
     top: 0;
-    background: var(--card);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.06);
     z-index: 100;
 }
 
 .logo-small {
-    font-size: 24px;
+    font-size: 22px;
+    letter-spacing: 2px;
 }
 
 .header-center {
-    font-size: 14px;
-    color: var(--text-light);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
 }
 
 /* 底部标签导航 */
@@ -235,12 +345,13 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--card);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: flex;
     justify-content: space-around;
-    /* 上方padding固定，下方加安全区 */
-    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 16px rgba(0,0,0,0.06);
     z-index: 100;
 }
 
@@ -248,26 +359,34 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border: none;
     background: none;
     color: var(--text-light);
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
-    transition: color 0.3s;
+    transition: all 0.3s;
+    position: relative;
+    border-radius: 8px;
 }
 
 .nav-tab.active {
     color: var(--primary);
 }
 
+.nav-tab.active .nav-icon {
+    transform: scale(1.15);
+}
+
 .nav-icon {
-    font-size: 20px;
+    font-size: 22px;
     margin-bottom: 2px;
+    transition: transform 0.3s;
 }
 
 .nav-label {
-    font-size: 11px;
+    font-size: 10px;
+    font-weight: 600;
 }
 
 /* 内容区域 */
@@ -281,23 +400,40 @@ body {
 
 .section.active {
     display: block;
+    animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .section-title {
-    font-size: 20px;
+    font-size: 22px;
     margin-bottom: 20px;
     color: var(--text);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 22px;
+    background: var(--gradient-sport);
+    border-radius: 4px;
 }
 
 /* ========== 打卡页面 ========== */
 .sport-selector {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 16px;
 }
 
-/* 小屏手机（≤360px）改为2x2 */
 @media (max-width: 360px) {
     .sport-selector {
         grid-template-columns: repeat(2, 1fr);
@@ -305,9 +441,9 @@ body {
 }
 
 .sport-btn {
-    padding: 12px 8px;
+    padding: 14px 8px;
     border: 2px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: var(--card);
     cursor: pointer;
     transition: all 0.3s;
@@ -316,36 +452,67 @@ body {
     align-items: center;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    position: relative;
+    overflow: hidden;
+}
+
+.sport-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: all 0.3s;
 }
 
 .sport-btn.active {
     border-color: var(--primary);
-    background: rgba(76, 175, 80, 0.05);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .sport-btn[data-sport="swim"].active {
     border-color: var(--swim-color);
-    background: rgba(33, 150, 243, 0.05);
+    background: var(--swim-bg);
+}
+.sport-btn[data-sport="swim"].active::after {
+    background: var(--gradient-swim);
 }
 
 .sport-btn[data-sport="bike"].active {
     border-color: var(--bike-color);
-    background: rgba(255, 152, 0, 0.05);
+    background: var(--bike-bg);
+}
+.sport-btn[data-sport="bike"].active::after {
+    background: var(--gradient-bike);
 }
 
 .sport-btn[data-sport="run"].active {
     border-color: var(--run-color);
-    background: rgba(233, 30, 99, 0.05);
+    background: var(--run-bg);
+}
+.sport-btn[data-sport="run"].active::after {
+    background: var(--gradient-run);
+}
+
+.sport-btn[data-sport="other"].active {
+    border-color: var(--other-color);
+    background: var(--other-bg);
+}
+.sport-btn[data-sport="other"].active::after {
+    background: var(--gradient-other);
 }
 
 .sport-icon {
-    font-size: 28px;
+    font-size: 30px;
     margin-bottom: 4px;
 }
 
 .sport-name {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .recent-checkins {
@@ -356,6 +523,7 @@ body {
     font-size: 16px;
     margin-bottom: 12px;
     color: var(--text-light);
+    font-weight: 700;
 }
 
 .checkin-list {
@@ -366,25 +534,40 @@ body {
 
 .checkin-item {
     background: var(--card);
-    padding: 14px;
-    border-radius: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid transparent;
+    transition: all 0.2s;
 }
 
+.checkin-item[data-sport="swim"] { border-left-color: var(--swim-color); }
+.checkin-item[data-sport="bike"] { border-left-color: var(--bike-color); }
+.checkin-item[data-sport="run"] { border-left-color: var(--run-color); }
+.checkin-item[data-sport="other"] { border-left-color: var(--other-color); }
+
 .checkin-sport {
-    font-size: 28px;
+    font-size: 30px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
 }
 
 .checkin-info {
     flex: 1;
+    min-width: 0;
 }
 
 .checkin-distance {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .checkin-meta {
@@ -411,8 +594,8 @@ body {
 
 .admin-member-label {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--primary);
+    font-weight: 700;
+    color: var(--primary-dark);
     padding: 10px 4px 4px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 4px;
@@ -420,20 +603,23 @@ body {
 
 /* ========== 全队统计/计划表格 ========== */
 .team-section-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 17px;
+    font-weight: 800;
     color: var(--text);
-    margin: 24px 0 12px;
-    padding-bottom: 8px;
+    margin: 28px 0 14px;
+    padding-bottom: 10px;
     border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .team-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 16px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .team-table {
@@ -441,32 +627,38 @@ body {
     border-collapse: collapse;
     background: var(--card);
     font-size: 13px;
-    min-width: 360px;
+    min-width: 420px;
 }
 
 .team-table thead tr {
-    background: linear-gradient(90deg, #4CAF50, #388E3C);
+    background: var(--gradient-sport);
     color: #fff;
 }
 
 .team-table th {
-    padding: 10px 8px;
+    padding: 12px 10px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 0.5px;
 }
 
 .team-table tbody tr {
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid #F0F4F8;
     transition: background 0.15s;
 }
 
+.team-table tbody tr:nth-child(even) {
+    background: #FAFBFC;
+}
+
 .team-table tbody tr:hover {
-    background: #f9fbe7;
+    background: var(--primary-light);
 }
 
 .team-table td {
-    padding: 9px 8px;
+    padding: 10px 8px;
     text-align: center;
     vertical-align: middle;
     color: var(--text);
@@ -480,14 +672,14 @@ body {
 }
 
 .team-table td.team-name {
-    font-weight: 600;
+    font-weight: 700;
     text-align: left;
     color: var(--primary-dark);
     white-space: nowrap;
 }
 
 .team-table td.team-total {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--secondary);
 }
 
@@ -506,21 +698,21 @@ body {
 
 .plan-badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 20px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
 }
 
 .plan-badge.done {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: #E8F5E9;
+    color: #2E7D32;
 }
 
 .plan-badge.pending {
-    background: #fff8e1;
-    color: #f57f17;
+    background: #FFF8E1;
+    color: #F57F17;
 }
 
 .plan-note-sm {
@@ -538,18 +730,20 @@ body {
 .period-btn {
     flex: 1;
     padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
     background: var(--card);
     font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .period-btn.active {
-    background: var(--primary);
+    background: var(--gradient-sport);
     color: white;
-    border-color: var(--primary);
+    border-color: transparent;
+    box-shadow: var(--shadow-md);
 }
 
 #goals-container {
@@ -558,54 +752,66 @@ body {
 
 .goal-card {
     background: var(--card);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary);
+    transition: all 0.2s;
 }
+
+.goal-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.goal-card.swim-goal { border-left-color: var(--swim-color); }
+.goal-card.bike-goal { border-left-color: var(--bike-color); }
+.goal-card.run-goal { border-left-color: var(--run-color); }
 
 .goal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .goal-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 15px;
 }
 
 .goal-value {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-light);
+    font-weight: 600;
 }
 
 .goal-progress {
-    background: #e0e0e0;
-    height: 8px;
-    border-radius: 4px;
+    background: #E8ECEF;
+    height: 10px;
+    border-radius: 5px;
     overflow: hidden;
 }
 
 .goal-progress-bar {
     height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s ease;
+    border-radius: 5px;
+    transition: width 0.6s ease;
 }
 
 .goal-progress-bar.swim {
-    background: var(--swim-color);
+    background: var(--gradient-swim);
 }
 
 .goal-progress-bar.bike {
-    background: var(--bike-color);
+    background: var(--gradient-bike);
 }
 
 .goal-progress-bar.run {
-    background: var(--run-color);
+    background: var(--gradient-run);
 }
 
 .goal-stats {
@@ -614,18 +820,21 @@ body {
     margin-top: 8px;
     font-size: 12px;
     color: var(--text-light);
+    font-weight: 500;
 }
 
 .set-goals-form {
     background: var(--card);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 2px dashed var(--border);
 }
 
 .set-goals-form h3 {
     font-size: 16px;
     margin-bottom: 16px;
+    font-weight: 700;
 }
 
 /* ========== 统计页面 ========== */
@@ -635,21 +844,27 @@ body {
 
 .stats-period select {
     width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     background: var(--card);
+    font-weight: 600;
+    transition: border-color 0.3s;
+}
+
+.stats-period select:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 .stats-cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 24px;
 }
 
-/* 宽屏显示3列 */
 @media (min-width: 480px) {
     .stats-cards {
         grid-template-columns: repeat(3, 1fr);
@@ -658,14 +873,32 @@ body {
 
 .stat-card {
     background: var(--card);
-    border-radius: 12px;
-    padding: 16px 12px;
+    border-radius: var(--radius-md);
+    padding: 18px 14px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-card.swim {
     border-top: 3px solid var(--swim-color);
+}
+.stat-card.swim::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle, rgba(41,121,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
 }
 
 .stat-card.bike {
@@ -677,23 +910,24 @@ body {
 }
 
 .stat-card.other {
-    border-top: 3px solid #9C27B0;
+    border-top: 3px solid var(--other-color);
 }
 
 .stat-icon {
-    font-size: 24px;
+    font-size: 28px;
     margin-bottom: 8px;
 }
 
 .stat-distance {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: var(--text);
 }
 
 .stat-unit {
     font-size: 12px;
     color: var(--text-light);
+    font-weight: 600;
 }
 
 .stat-duration {
@@ -706,6 +940,7 @@ body {
     font-size: 16px;
     margin-bottom: 12px;
     color: var(--text-light);
+    font-weight: 700;
 }
 
 /* ========== 动态页面 ========== */
@@ -715,11 +950,12 @@ body {
 
 .feed-filter select {
     width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     background: var(--card);
+    font-weight: 600;
 }
 
 .feed-list {
@@ -730,9 +966,14 @@ body {
 
 .feed-item {
     background: var(--card);
-    border-radius: 12px;
-    padding: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.feed-item:hover {
+    box-shadow: var(--shadow-md);
 }
 
 .feed-header {
@@ -743,7 +984,7 @@ body {
 }
 
 .feed-user {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 15px;
 }
 
@@ -759,7 +1000,7 @@ body {
 }
 
 .feed-sport {
-    font-size: 32px;
+    font-size: 36px;
 }
 
 .feed-details {
@@ -768,36 +1009,39 @@ body {
 
 .feed-distance {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .feed-duration {
     font-size: 13px;
     color: var(--text-light);
+    margin-top: 2px;
 }
 
 /* ========== 排行榜页面 ========== */
 .rank-period-toggle {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-bottom: 16px;
 }
 
 .rank-period-btn {
     flex: 1;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 10px 6px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
     background: var(--card);
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .rank-period-btn.active {
-    background: var(--primary);
+    background: var(--gradient-sport);
     color: white;
-    border-color: var(--primary);
+    border-color: transparent;
+    box-shadow: var(--shadow-md);
 }
 
 .rank-tabs {
@@ -810,20 +1054,22 @@ body {
 
 .rank-tab {
     flex-shrink: 0;
-    padding: 8px 14px;
-    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border: 2px solid var(--border);
     border-radius: 20px;
     background: var(--card);
     font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
     white-space: nowrap;
 }
 
 .rank-tab.active {
-    background: var(--primary);
+    background: var(--gradient-sport);
     color: white;
-    border-color: var(--primary);
+    border-color: transparent;
+    box-shadow: var(--shadow-md);
 }
 
 .rank-list {
@@ -834,77 +1080,95 @@ body {
 
 .rank-item {
     background: var(--card);
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.rank-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateX(2px);
 }
 
 .rank-item.highlight {
-    background: rgba(76, 175, 80, 0.08);
-    border: 1px solid rgba(76, 175, 80, 0.3);
+    background: linear-gradient(135deg, var(--primary-light), #F0FFF4);
+    border: 2px solid rgba(0,191,166,0.3);
 }
 
 .rank-position {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 14px;
-    background: var(--border);
+    background: #E8ECEF;
+    color: var(--text-light);
+    flex-shrink: 0;
 }
 
 .rank-item:nth-child(1) .rank-position {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
+    background: linear-gradient(135deg, #FFD700, #FFA000);
     color: white;
+    box-shadow: 0 2px 8px rgba(255,215,0,0.4);
 }
 
 .rank-item:nth-child(2) .rank-position {
-    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+    background: linear-gradient(135deg, #CFD8DC, #90A4AE);
     color: white;
+    box-shadow: 0 2px 8px rgba(144,164,174,0.4);
 }
 
 .rank-item:nth-child(3) .rank-position {
-    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    background: linear-gradient(135deg, #CD7F32, #A1887F);
     color: white;
+    box-shadow: 0 2px 8px rgba(205,127,50,0.4);
 }
 
 .rank-user {
     flex: 1;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .rank-value {
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 800;
+    font-size: 17px;
+    background: var(--gradient-sport);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .rank-unit {
     font-size: 12px;
     color: var(--text-light);
     margin-left: 2px;
+    -webkit-text-fill-color: var(--text-light);
 }
 
 /* ========== Toast提示 ========== */
 .toast {
     position: fixed;
-    bottom: 80px;
+    bottom: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(26,35,50,0.9);
     color: white;
-    padding: 12px 24px;
-    border-radius: 24px;
+    padding: 12px 28px;
+    border-radius: 30px;
     font-size: 14px;
+    font-weight: 600;
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
+    backdrop-filter: blur(10px);
 }
 
 .toast.show {
@@ -922,18 +1186,19 @@ body {
 /* ========== 空状态 ========== */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 48px 20px;
     color: var(--text-light);
 }
 
 .empty-icon {
-    font-size: 48px;
+    font-size: 52px;
     margin-bottom: 12px;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .empty-text {
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 /* ========== 响应式 ========== */
@@ -941,29 +1206,28 @@ body {
     #auth-page {
         padding: 40px;
     }
-    
+
     .auth-container {
-        padding: 40px 36px;
+        padding: 44px 40px;
     }
-    
+
     .content {
-        max-width: 600px;
+        max-width: 640px;
         margin: 0 auto;
     }
-    
+
     .stats-cards {
         grid-template-columns: repeat(3, 1fr);
     }
 
-    /* 桌面端Modal居中显示 */
     .modal-overlay {
         align-items: center;
         padding: 20px;
     }
 
     .modal-box {
-        border-radius: 16px;
-        max-width: 440px;
+        border-radius: var(--radius-lg);
+        max-width: 480px;
     }
 
     @keyframes modalSlideUp {
@@ -974,12 +1238,10 @@ body {
 
 /* 移动端通用touch优化 */
 @media (max-width: 767px) {
-    /* 防止点击高亮 */
     button, a, input, select {
         -webkit-tap-highlight-color: transparent;
     }
 
-    /* 按钮更容易点击（最小44px高） */
     .btn-primary, .period-btn, .rank-period-btn, .rank-tab {
         min-height: 44px;
         touch-action: manipulation;
@@ -990,24 +1252,20 @@ body {
         touch-action: manipulation;
     }
 
-    /* 输入框字体不低于16px，防止iOS自动缩放 */
     .form-group input,
     .form-group select,
     .form-group textarea {
         font-size: 16px;
     }
 
-    /* 头部略微调小 */
     .header {
         padding: 10px 14px;
     }
 
-    /* Toast位置适配导航栏 */
     .toast {
-        bottom: calc(80px + env(safe-area-inset-bottom));
+        bottom: calc(90px + env(safe-area-inset-bottom));
     }
 
-    /* 内容区域左右padding减小 */
     .content {
         padding: 12px;
     }
@@ -1024,17 +1282,19 @@ body {
 }
 
 .day-nav-btn {
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--border);
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--border);
     border-radius: 50%;
     background: var(--card);
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--text);
+    font-weight: 700;
 }
 
 .day-nav-btn:hover {
@@ -1046,24 +1306,27 @@ body {
 .plan-date-label {
     flex: 1;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     text-align: center;
 }
 
 .btn-add-plan {
-    background: var(--primary);
+    background: var(--gradient-sport);
     color: white;
     border: none;
-    padding: 8px 14px;
-    border-radius: 20px;
+    padding: 8px 16px;
+    border-radius: 22px;
     font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
+    transition: all 0.2s;
 }
 
 .btn-add-plan:hover {
-    background: var(--primary-dark);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
 }
 
 .plans-list {
@@ -1074,16 +1337,26 @@ body {
 
 .plan-item {
     background: var(--card);
-    border-radius: 12px;
-    padding: 14px 14px 14px 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
     position: relative;
+    border-left: 4px solid var(--primary);
+    transition: all 0.2s;
 }
+
+.plan-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.plan-item[data-sport="swim"] { border-left-color: var(--swim-color); }
+.plan-item[data-sport="bike"] { border-left-color: var(--bike-color); }
+.plan-item[data-sport="run"] { border-left-color: var(--run-color); }
+.plan-item[data-sport="other"] { border-left-color: var(--other-color); }
 
 .plan-item.completed {
     opacity: 0.7;
-    background: rgba(76, 175, 80, 0.05);
-    border-left: 3px solid var(--primary);
+    background: var(--primary-light);
 }
 
 .plan-item .plan-header {
@@ -1096,12 +1369,12 @@ body {
 }
 
 .plan-sport-icon {
-    font-size: 24px;
+    font-size: 26px;
 }
 
 .plan-title {
     flex: 1;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 15px;
 }
 
@@ -1109,6 +1382,7 @@ body {
     font-size: 12px;
     color: var(--text-light);
     margin-right: 48px;
+    font-weight: 500;
 }
 
 .plan-body {
@@ -1137,14 +1411,14 @@ body {
 .plan-progress {
     flex: 1;
     height: 6px;
-    background: #e0e0e0;
+    background: #E8ECEF;
     border-radius: 3px;
     overflow: hidden;
 }
 
 .plan-progress-bar {
     height: 100%;
-    background: var(--primary);
+    background: var(--gradient-sport);
     border-radius: 3px;
     transition: width 0.4s ease;
 }
@@ -1152,26 +1426,30 @@ body {
 .plan-progress-text {
     font-size: 12px;
     white-space: nowrap;
+    font-weight: 600;
 }
 
 .plan-actions {
     position: absolute;
-    top: 12px;
-    right: 10px;
+    top: 14px;
+    right: 12px;
     display: flex;
     gap: 2px;
 }
 
 .btn-icon {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border: none;
     background: transparent;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-    font-size: 14px;
+    opacity: 0.4;
+    transition: all 0.2s;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-icon:hover {
@@ -1189,13 +1467,13 @@ body {
     background: rgba(0, 0, 0, 0.5);
     z-index: 200;
     display: flex;
-    align-items: flex-end; /* 手机端从底部弹出，体验更好 */
+    align-items: flex-end;
     justify-content: center;
     padding: 0;
-    /* 默认隐藏 */
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
+    backdrop-filter: blur(4px);
 }
 
 .modal-overlay.open {
@@ -1205,14 +1483,14 @@ body {
 
 .modal-box {
     width: 100%;
-    max-width: 480px;
+    max-width: 500px;
     max-height: 92vh;
     background: var(--card);
-    border-radius: 20px 20px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     overflow: hidden;
     animation: modalSlideUp 0.3s ease-out;
-    /* 底部加安全区 */
     padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.2);
 }
 
 @keyframes modalSlideUp {
@@ -1224,29 +1502,109 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--border);
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 17px;
 }
 
 .modal-close {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border: none;
-    background: transparent;
+    background: var(--bg);
     font-size: 18px;
     cursor: pointer;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
 .modal-close:hover {
-    background: var(--bg);
+    background: var(--border);
 }
 
 .modal-body {
-    padding: 20px;
+    padding: 22px;
     max-height: calc(92vh - 60px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+/* ========== 排行榜表格样式 ========== */
+.rank-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    font-size: 13px;
+    min-width: 340px;
+}
+
+.rank-table thead tr {
+    background: var(--gradient-sport);
+    color: #fff;
+}
+
+.rank-table th {
+    padding: 12px 10px;
+    text-align: center;
+    font-weight: 700;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.rank-table tbody tr {
+    border-bottom: 1px solid #F0F4F8;
+    transition: background 0.15s;
+}
+
+.rank-table tbody tr:nth-child(even) {
+    background: #FAFBFC;
+}
+
+.rank-table tbody tr:hover {
+    background: var(--primary-light);
+}
+
+.rank-table tbody tr.rank-me {
+    background: var(--primary-light);
+    border-left: 3px solid var(--primary);
+}
+
+.rank-table td {
+    padding: 10px 8px;
+    text-align: center;
+    vertical-align: middle;
+    color: var(--text);
+}
+
+.rank-table td.rank-pos {
+    font-weight: 800;
+    color: var(--text-light);
+}
+
+.rank-table tbody tr:nth-child(1) td.rank-pos { color: #FFA000; }
+.rank-table tbody tr:nth-child(2) td.rank-pos { color: #90A4AE; }
+.rank-table tbody tr:nth-child(3) td.rank-pos { color: #A1887F; }
+
+.rank-table td.rank-name {
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    color: var(--primary-dark);
+}
+
+.rank-table td.rank-val {
+    font-weight: 800;
+    color: var(--secondary);
 }
