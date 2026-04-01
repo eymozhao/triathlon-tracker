@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#4CAF50">
+    <title>铁人三项训练打卡</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 登录/注册页面 -->
+        <div id="auth-page" class="page active">
+            <div class="auth-container">
+                <div class="logo">
+                    <span class="logo-icon">🏊🚴🏃</span>
+                    <h1>铁人三项训练打卡</h1>
+                    <p class="subtitle">记录每一次突破</p>
+                </div>
+                
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">登录</button>
+                    <button class="tab-btn" data-tab="register">注册</button>
+                </div>
+                
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="login-username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="login-password" placeholder="请输入密码" required>
+                    </div>
+                    <button type="submit" class="btn-primary">登录</button>
+                </form>
+                
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="reg-username" placeholder="请输入用户名（至少2个字符）" required>
+                    </div>
+                    <div class="form-group">
+                        <label>昵称</label>
+                        <input type="text" id="reg-nickname" placeholder="请输入昵称（显示给队友看）" required>
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="reg-password" placeholder="请输入密码（至少4个字符）" required>
+                    </div>
+                    <button type="submit" class="btn-primary">注册</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 主页面 -->
+        <div id="main-page" class="page">
+            <!-- 顶部导航 -->
+            <header class="header">
+                <div class="header-left">
+                    <span class="logo-small">🏊🚴🏃</span>
+                </div>
+                <div class="header-center">
+                    <span id="current-user"></span>
+                </div>
+                <div class="header-right">
+                    <button id="logout-btn" class="btn-text">退出</button>
+                </div>
+            </header>
+
+            <!-- 标签导航 -->
+            <nav class="tab-nav">
+                <button class="nav-tab active" data-page="checkin">
+                    <span class="nav-icon">✅</span>
+                    <span class="nav-label">打卡</span>
+                </button>
+                <button class="nav-tab" data-page="plan">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-label">计划</span>
+                </button>
+                <button class="nav-tab" data-page="goals">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-label">目标</span>
+                </button>
+                <button class="nav-tab" data-page="stats">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">统计</span>
+                </button>
+                <button class="nav-tab" data-page="feed">
+                    <span class="nav-icon">👀</span>
+                    <span class="nav-label">动态</span>
+                </button>
+                <button class="nav-tab" data-page="rank">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-label">排行</span>
+                </button>
+            </nav>
+
+            <!-- 内容区域 -->
+            <main class="content">
+                <!-- 打卡页面 -->
+                <section id="checkin-section" class="section active">
+                    <h2 class="section-title">今日打卡</h2>
+                    <form id="checkin-form" autocomplete="off">
+                        <div class="form-group">
+                            <label>训练项目</label>
+                            <div class="sport-selector">
+                                <button type="button" class="sport-btn active" data-sport="swim">
+                                    <span class="sport-icon">🏊</span>
+                                    <span class="sport-name">游泳</span>
+                                </button>
+                                <button type="button" class="sport-btn" data-sport="bike">
+                                    <span class="sport-icon">🚴</span>
+                                    <span class="sport-name">骑行</span>
+                                </button>
+                                <button type="button" class="sport-btn" data-sport="run">
+                                    <span class="sport-icon">🏃</span>
+                                    <span class="sport-name">跑步</span>
+                                </button>
+                                <button type="button" class="sport-btn" data-sport="other">
+                                    <span class="sport-icon">💪</span>
+                                    <span class="sport-name">其他</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group" id="checkin-distance-group">
+                                <label for="checkin-distance">距离 (km)</label>
+                                <input type="number" id="checkin-distance" placeholder="0.0" step="0.1" min="0.1">
+                            </div>
+                            <div class="form-group" id="checkin-content-group" style="display:none;">
+                                <label for="checkin-content">训练内容</label>
+                                <input type="text" id="checkin-content" placeholder="如：深蹲3组×10次">
+                            </div>
+                            <div class="form-group">
+                                <label>时长 (分钟)</label>
+                                <input type="number" id="checkin-duration" placeholder="0" min="1">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>日期</label>
+                            <input type="date" id="checkin-date">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-block">✅ 提交打卡</button>
+                    </form>
+                    
+                    <div class="recent-checkins">
+                        <h3>最近打卡</h3>
+                        <div id="recent-list" class="checkin-list"></div>
+                    </div>
+                </section>
+
+                <!-- 训练计划页面 -->
+                <section id="plan-section" class="section">
+                    <div class="plan-header-bar">
+                        <button class="day-nav-btn" id="plan-prev-day">‹</button>
+                        <span class="plan-date-label" id="plan-date-label" title="点击回到今天">今天</span>
+                        <button class="day-nav-btn" id="plan-next-day">›</button>
+                        <button class="btn-add-plan" id="add-plan-btn">+ 添加计划</button>
+                    </div>
+                    <div id="plans-list" class="plans-list"></div>
+                </section>
+
+                <!-- 目标页面 -->
+                <section id="goals-section" class="section">
+                    <h2 class="section-title">我的目标</h2>
+                    
+                    <div class="goal-period-toggle">
+                        <button class="period-btn active" data-period="weekly">每周目标</button>
+                        <button class="period-btn" data-period="monthly">每月目标</button>
+                    </div>
+                    
+                    <div id="goals-container"></div>
+                    
+                    <div class="set-goals-form">
+                        <h3>设定目标</h3>
+                        <div class="form-group">
+                            <label>🏊 游泳 (m)</label>
+                            <input type="number" id="goal-swim" placeholder="0" step="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🚴 骑行 (km)</label>
+                            <input type="number" id="goal-bike" placeholder="0" step="0.1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🏃 跑步 (km)</label>
+                            <input type="number" id="goal-run" placeholder="0" step="0.1" min="0">
+                        </div>
+                        <button id="save-goals-btn" class="btn-primary btn-block">保存目标</button>
+                    </div>
+                </section>
+
+                <!-- 统计页面 -->
+                <section id="stats-section" class="section">
+                    <h2 class="section-title">我的统计</h2>
+                    
+                    <div class="stats-period">
+                        <select id="stats-period-select">
+                            <option value="week">本周</option>
+                            <option value="month">本月</option>
+                            <option value="year">今年</option>
+                            <option value="all">全部</option>
+                        </select>
+                    </div>
+                    
+                    <div id="stats-summary" class="stats-cards"></div>
+                    
+                    <div class="stats-history">
+                        <h3>历史记录</h3>
+                        <div id="history-list" class="checkin-list"></div>
+                    </div>
+
+                    <!-- 管理员：全队统计表格 -->
+                    <div id="team-stats-section" style="display:none;">
+                        <h3 class="team-section-title">👑 全队训练统计</h3>
+                        <div id="team-stats-table"></div>
+                    </div>
+                </section>
+
+                <!-- 动态页面 -->
+                <section id="feed-section" class="section">
+                    <h2 class="section-title">团队动态</h2>
+                    
+                    <div class="feed-filter">
+                        <select id="feed-sport-filter">
+                            <option value="all">全部项目</option>
+                            <option value="swim">🏊 游泳</option>
+                            <option value="bike">🚴 骑行</option>
+                            <option value="run">🏃 跑步</option>
+                            <option value="other">💪 其他</option>
+                        </select>
+                    </div>
+                    
+                    <div id="feed-list" class="feed-list"></div>
+                </section>
+
+                <!-- 排行榜页面 -->
+                <section id="rank-section" class="section">
+                    <h2 class="section-title">排行榜</h2>
+                    
+                    <div class="rank-period-toggle">
+                        <button class="rank-period-btn active" data-period="weekly">本周</button>
+                        <button class="rank-period-btn" data-period="monthly">本月</button>
+                    </div>
+                    
+                    <div class="rank-tabs">
+                        <button class="rank-tab active" data-sport="total">总里程</button>
+                        <button class="rank-tab" data-sport="swim">游泳</button>
+                        <button class="rank-tab" data-sport="bike">骑行</button>
+                        <button class="rank-tab" data-sport="run">跑步</button>
+                        <button class="rank-tab" data-sport="other">其他</button>
+                    </div>
+                    
+                    <div id="rank-list" class="rank-list"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- 打卡编辑 Modal -->
+    <div id="checkin-edit-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span>修改打卡记录</span>
+                <button id="checkin-edit-modal-close" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-checkin-id">
+                <div class="form-group">
+                    <label>训练项目</label>
+                    <div class="sport-selector">
+                        <button type="button" class="edit-sport-btn active" data-sport="swim">
+                            <span class="sport-icon">🏊</span>
+                            <span class="sport-name">游泳</span>
+                        </button>
+                        <button type="button" class="edit-sport-btn" data-sport="bike">
+                            <span class="sport-icon">🚴</span>
+                            <span class="sport-name">骑行</span>
+                        </button>
+                        <button type="button" class="edit-sport-btn" data-sport="run">
+                            <span class="sport-icon">🏃</span>
+                            <span class="sport-name">跑步</span>
+                        </button>
+                        <button type="button" class="edit-sport-btn" data-sport="other">
+                            <span class="sport-icon">💪</span>
+                            <span class="sport-name">其他</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" id="edit-distance-group">
+                        <label for="edit-checkin-distance">距离 (km)</label>
+                        <input type="number" id="edit-checkin-distance" placeholder="0.0" step="0.1" min="0.1">
+                    </div>
+                    <div class="form-group" id="edit-content-group" style="display:none;">
+                        <label for="edit-checkin-content">训练内容</label>
+                        <input type="text" id="edit-checkin-content" placeholder="如：深蹲3组×10次">
+                    </div>
+                    <div class="form-group">
+                        <label>时长 (分钟)</label>
+                        <input type="number" id="edit-checkin-duration" placeholder="0" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>日期</label>
+                    <input type="date" id="edit-checkin-date">
+                </div>
+                <button id="save-checkin-edit-btn" class="btn-primary btn-block">💾 保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 训练计划 Modal -->
+    <div id="plan-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span id="modal-title">添加训练计划</span>
+                <button id="plan-modal-close" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="plan-id">
+                <div class="form-group">
+                    <label>训练项目</label>
+                    <div class="sport-selector">
+                        <button type="button" class="plan-sport-btn active" data-sport="swim">
+                            <span class="sport-icon">🏊</span>
+                            <span class="sport-name">游泳</span>
+                        </button>
+                        <button type="button" class="plan-sport-btn" data-sport="bike">
+                            <span class="sport-icon">🚴</span>
+                            <span class="sport-name">骑行</span>
+                        </button>
+                        <button type="button" class="plan-sport-btn" data-sport="run">
+                            <span class="sport-icon">🏃</span>
+                            <span class="sport-name">跑步</span>
+                        </button>
+                        <button type="button" class="plan-sport-btn" data-sport="other">
+                            <span class="sport-icon">💪</span>
+                            <span class="sport-name">其他</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>计划名称（可选）</label>
+                    <input type="text" id="plan-title" placeholder="如：长距离骑行训练">
+                </div>
+                <div class="form-row">
+                    <div class="form-group" id="plan-distance-group">
+                        <label for="plan-distance">计划距离 (km)</label>
+                        <input type="number" id="plan-distance" placeholder="0.0" step="0.1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>计划时长 (分钟)</label>
+                        <input type="number" id="plan-duration" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>强度</label>
+                    <select id="plan-intensity">
+                        <option value="easy">🟢 轻松</option>
+                        <option value="moderate" selected>🟡 中等</option>
+                        <option value="hard">🔴 强度</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>备注（可选）</label>
+                    <input type="text" id="plan-note" placeholder="如：保持有氧心率区间">
+                </div>
+                <button id="save-plan-btn" class="btn-primary btn-block">保存计划</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
