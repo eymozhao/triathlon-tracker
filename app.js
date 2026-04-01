@@ -121,7 +121,25 @@ const DB = {
         if (idx !== -1) {
             users[idx].isAdmin = true;
             this.saveUsers(users);
+            return users[idx]; // 返回更新后的用户对象
         }
+        return null;
+    },
+
+    // 强制确保管理员身份（每次调用都检查，不依赖缓存）
+    ensureAdmin(username) {
+        const ADMIN_USERNAMES = ['eymozhao'];
+        if (!ADMIN_USERNAMES.includes(username)) return false;
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.username === username);
+        if (idx !== -1) {
+            if (!users[idx].isAdmin) {
+                users[idx].isAdmin = true;
+                this.saveUsers(users);
+            }
+            return true;
+        }
+        return false;
     }
 };
 
@@ -303,10 +321,10 @@ const App = {
         this.planViewDate = Utils.toLocalDateStr(new Date());
 
         // 自动将指定账号标记为管理员（刷新页面时也生效）
-        const ADMIN_USERNAMES = ['eymozhao'];
-        if (this.currentUser && ADMIN_USERNAMES.includes(this.currentUser.username) && !this.currentUser.isAdmin) {
-            DB.setAdmin(this.currentUser.id);
-            this.currentUser.isAdmin = true;
+        if (this.currentUser) {
+            if (DB.ensureAdmin(this.currentUser.username)) {
+                this.currentUser = DB.getCurrentUser(); // 重新读取确保最新数据
+            }
         }
         
         if (this.currentUser) {
@@ -532,13 +550,8 @@ const App = {
         
         if (user) {
             // 自动将指定账号设为管理员
-            const ADMIN_USERNAMES = ['eymozhao'];
-            if (ADMIN_USERNAMES.includes(user.username) && !user.isAdmin) {
-                DB.setAdmin(user.id);
-                user.isAdmin = true;
-            }
-            this.currentUser = user;
-            DB.setCurrentUser(user);
+            DB.ensureAdmin(user.username);
+            this.currentUser = DB.getCurrentUser(); // 重新读取确保 isAdmin 已更新
             UI.toast('登录成功！', 'success');
             this.showMainPage();
         } else {
