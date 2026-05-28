@@ -2126,6 +2126,8 @@ const App = {
             if (ADMIN_USERNAMES.includes(cachedUser.username) && !cachedUser.isAdmin) {
                 cachedUser.isAdmin = true;
                 DB.setCurrentUser(cachedUser);
+                // 同步回写云数据库，确保换浏览器也是管理员
+                DB.updateUser(cachedUser.id, { isAdmin: true }).catch(() => {});
             }
             this.bindEvents();
             this.showMainPage();
@@ -2135,7 +2137,13 @@ const App = {
                 DB.findUser(cachedUser.username).then(freshUser => {
                     if (freshUser) {
                         const merged = { ...freshUser };
-                        if (ADMIN_USERNAMES.includes(merged.username)) merged.isAdmin = true;
+                        if (ADMIN_USERNAMES.includes(merged.username)) {
+                            merged.isAdmin = true;
+                            // 如果云数据库里没标记 isAdmin，回写一下
+                            if (!freshUser.isAdmin) {
+                                DB.updateUser(merged.id, { isAdmin: true }).catch(() => {});
+                            }
+                        }
                         this.currentUser = merged;
                         DB.setCurrentUser(merged);
                         document.getElementById('current-user').textContent =
@@ -2428,9 +2436,10 @@ const App = {
             if (users.find(u => u.username === username)) { UI.toast('用户名已存在', 'error'); return; }
         }
         const passwordHash = await sha256(password);
-        const newUser = await DB.createUser({ username, nickname, passwordHash });
+        const isAdmin = ADMIN_USERNAMES.includes(username);
+        const newUser = await DB.createUser({ username, nickname, passwordHash, isAdmin });
         this.currentUser = newUser; DB.setCurrentUser(newUser);
-        UI.toast('注册成功！', 'success'); this.showMainPage();
+        UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : ''), 'success'); this.showMainPage();
         await this.refreshFromCloud();
     },
     switchSection(page) {
