@@ -5,9 +5,1287 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#00BFA6">
+    <meta name="theme-color" content="#4CAF50">
     <title>铁人三项训练打卡</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- 腾讯云开发 Web SDK -->
+    <script src="https://imgcache.qq.com/qcloud/tcbjs/1.10.24/tcb.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #4CAF50;
+    --primary-dark: #388E3C;
+    --secondary: #FF9800;
+    --danger: #f44336;
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --text: #333333;
+    --text-light: #666666;
+    --border: #e0e0e0;
+    --swim-color: #2196F3;
+    --bike-color: #FF9800;
+    --run-color: #E91E63;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    overscroll-behavior: none;
+}
+
+#app {
+    min-height: 100vh;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+/* ========== 登录/注册页面 ========== */
+#auth-page {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#auth-page.active {
+    display: flex;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 30px 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.logo h1 {
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+@media (max-width: 320px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* ========== 主页面 ========== */
+#main-page {
+    min-height: 100vh;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    z-index: 100;
+}
+
+.logo-small {
+    font-size: 24px;
+}
+
+.header-center {
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.tab-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    z-index: 100;
+}
+
+.nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    color: var(--text-light);
+    font-size: 12px;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.nav-tab.active {
+    color: var(--primary);
+}
+
+.nav-icon {
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.nav-label {
+    font-size: 11px;
+}
+
+.content {
+    padding: 16px;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.section-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: var(--text);
+}
+
+/* ========== 打卡页面 ========== */
+.sport-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 360px) {
+    .sport-selector {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.sport-btn {
+    padding: 12px 8px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.sport-btn.active {
+    border-color: var(--primary);
+    background: rgba(76, 175, 80, 0.05);
+}
+
+.sport-btn[data-sport="swim"].active {
+    border-color: var(--swim-color);
+    background: rgba(33, 150, 243, 0.05);
+}
+
+.sport-btn[data-sport="bike"].active {
+    border-color: var(--bike-color);
+    background: rgba(255, 152, 0, 0.05);
+}
+
+.sport-btn[data-sport="run"].active {
+    border-color: var(--run-color);
+    background: rgba(233, 30, 99, 0.05);
+}
+
+.sport-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+.sport-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.recent-checkins {
+    margin-top: 24px;
+}
+
+.recent-checkins h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-light);
+}
+
+.checkin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkin-item {
+    background: var(--card);
+    padding: 14px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.checkin-sport {
+    font-size: 28px;
+}
+
+.checkin-info {
+    flex: 1;
+}
+
+.checkin-distance {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.checkin-meta {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.checkin-date {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.checkin-item-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.checkin-item-actions .btn-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+}
+
+.admin-member-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 10px 4px 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+}
+
+/* ========== 全队统计/计划表格 ========== */
+.team-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+}
+
+.team-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.team-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    font-size: 13px;
+    min-width: 360px;
+}
+
+.team-table thead tr {
+    background: linear-gradient(90deg, #4CAF50, #388E3C);
+    color: #fff;
+}
+
+.team-table th {
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.team-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+}
+
+.team-table tbody tr:hover {
+    background: #f9fbe7;
+}
+
+.team-table td {
+    padding: 9px 8px;
+    text-align: center;
+    vertical-align: middle;
+    color: var(--text);
+    line-height: 1.4;
+}
+
+.team-table td small {
+    display: block;
+    color: var(--text-light);
+    font-size: 11px;
+}
+
+.team-table td.team-name {
+    font-weight: 600;
+    text-align: left;
+    color: var(--primary-dark);
+    white-space: nowrap;
+}
+
+.team-table td.team-total {
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+.plan-table td.team-name {
+    min-width: 60px;
+}
+
+.plan-row-done td {
+    color: #888;
+}
+
+.plan-row-done td.team-name {
+    color: #aaa;
+}
+
+.plan-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.plan-badge.done {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.plan-badge.pending {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+.plan-note-sm {
+    color: var(--text-light);
+    font-size: 11px;
+}
+
+/* ========== 目标页面 ========== */
+.goal-period-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.period-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.period-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+#goals-container {
+    margin-bottom: 24px;
+}
+
+.goal-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.goal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.goal-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.goal-value {
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.goal-progress {
+    background: #e0e0e0;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.goal-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.goal-progress-bar.swim {
+    background: var(--swim-color);
+}
+
+.goal-progress-bar.bike {
+    background: var(--bike-color);
+}
+
+.goal-progress-bar.run {
+    background: var(--run-color);
+}
+
+.goal-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.set-goals-form {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.set-goals-form h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+/* ========== 统计页面 ========== */
+.stats-period {
+    margin-bottom: 20px;
+}
+
+.stats-period select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--card);
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+@media (min-width: 480px) {
+    .stats-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.stat-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.stat-card.swim { border-top: 3px solid var(--swim-color); }
+.stat-card.bike { border-top: 3px solid var(--bike-color); }
+.stat-card.run  { border-top: 3px solid var(--run-color); }
+.stat-card.other { border-top: 3px solid #9C27B0; }
+
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.stat-distance {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stat-unit {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.stat-duration {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.stats-history h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-light);
+}
+
+/* ========== 动态页面 ========== */
+.feed-filter {
+    margin-bottom: 16px;
+}
+
+.feed-filter select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--card);
+}
+
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feed-item {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.feed-user {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.feed-time {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.feed-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feed-sport {
+    font-size: 32px;
+}
+
+.feed-details {
+    flex: 1;
+}
+
+.feed-distance {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.feed-duration {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+/* ========== 排行榜页面 ========== */
+.rank-period-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.rank-period-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.rank-period-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.rank-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.rank-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.rank-tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rank-item {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.rank-item.highlight {
+    background: rgba(76, 175, 80, 0.08);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.rank-position {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--border);
+}
+
+.rank-item:nth-child(1) .rank-position {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
+}
+
+.rank-item:nth-child(2) .rank-position {
+    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+    color: white;
+}
+
+.rank-item:nth-child(3) .rank-position {
+    background: linear-gradient(135deg, #CD7F32, #8B4513);
+    color: white;
+}
+
+.rank-user {
+    flex: 1;
+    font-weight: 500;
+}
+
+.rank-value {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.rank-unit {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-left: 2px;
+}
+
+/* ========== Toast提示 ========== */
+.toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.toast.show { opacity: 1; }
+.toast.success { background: var(--primary); }
+.toast.error { background: var(--danger); }
+
+/* ========== 空状态 ========== */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 14px;
+}
+
+/* ========== 响应式 ========== */
+@media (min-width: 768px) {
+    #auth-page { padding: 40px; }
+    .auth-container { padding: 40px 36px; }
+    .content { max-width: 600px; margin: 0 auto; }
+    .stats-cards { grid-template-columns: repeat(3, 1fr); }
+    .modal-overlay { align-items: center; padding: 20px; }
+    .modal-box { border-radius: 16px; max-width: 440px; }
+    @keyframes modalSlideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+}
+
+@media (max-width: 767px) {
+    button, a, input, select { -webkit-tap-highlight-color: transparent; }
+    .btn-primary, .period-btn, .rank-period-btn, .rank-tab { min-height: 44px; touch-action: manipulation; }
+    .nav-tab { min-height: 50px; touch-action: manipulation; }
+    .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
+    .header { padding: 10px 14px; }
+    .toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
+    .content { padding: 12px; }
+}
+
+/* ========== 训练计划页面 ========== */
+.plan-header-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.day-nav-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-nav-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.plan-date-label {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-add-plan {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-add-plan:hover { background: var(--primary-dark); }
+
+.plans-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.plan-item {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    position: relative;
+}
+
+.plan-item.completed {
+    opacity: 0.7;
+    background: rgba(76, 175, 80, 0.05);
+    border-left: 3px solid var(--primary);
+}
+
+.plan-item .plan-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    justify-content: flex-start;
+    border-bottom: none;
+}
+
+.plan-sport-icon { font-size: 24px; }
+
+.plan-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.plan-status {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-right: 48px;
+}
+
+.plan-body {
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.plan-detail { margin-bottom: 4px; }
+
+.plan-note {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.plan-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.plan-progress {
+    flex: 1;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.plan-progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+.plan-progress-text {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.plan-actions {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    display: flex;
+    gap: 2px;
+}
+
+.btn-icon {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    font-size: 14px;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+    background: var(--bg);
+}
+
+/* ========== Modal 弹窗 ========== */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 480px;
+    max-height: 92vh;
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    animation: modalSlideUp 0.3s ease-out;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.modal-close:hover { background: var(--bg); }
+
+.modal-body {
+    padding: 20px;
+    max-height: calc(92vh - 60px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ========== 快捷时长按钮 ========== */
+.quick-duration-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.quick-dur-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.quick-dur-btn:hover, .quick-dur-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+/* ========== 今日打卡汇总 ========== */
+.today-summary {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #f0f9f0;
+    border: 1px solid #c8e6c9;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #2e7d32;
+}
+.today-summary .ts-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #388e3c;
+}
+.today-summary .ts-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.today-summary .ts-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid #c8e6c9;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 13px;
+}
+
+/* ========== 统计次数行 ========== */
+.stats-counts-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.count-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 60px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 10px 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.count-badge .cb-icon { font-size: 18px; }
+.count-badge .cb-num { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.count-badge .cb-label { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.count-badge .cb-dur { font-size: 11px; color: var(--text-light); }
+
+/* ========== 登录页增强 ========== */
+.remember-row { margin: -4px 0 8px 0; }
+.remember-label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-light); cursor: pointer; user-select: none; }
+.remember-label input[type=checkbox] { width: auto; margin: 0; accent-color: var(--primary); }
+.login-error { background: #fff0f0; border: 1px solid #fcc; border-radius: 8px; padding: 10px 12px; font-size: 13px; color: #c62828; margin-bottom: 12px; line-height: 1.5; }
+
+/* ========== 忘记密码 ========== */
+.forgot-pwd-row { text-align: right; margin: -8px 0 12px; }
+.forgot-pwd-link { color: var(--text-light); font-size: 13px; cursor: pointer; background: none; border: none; text-decoration: underline; }
+.forgot-pwd-link:hover { color: var(--primary); }
+
+/* ========== 用户管理页 ========== */
+.user-mgmt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.user-mgmt-header h2 { margin: 0; font-size: 20px; }
+.btn-refresh { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.btn-refresh:hover { background: var(--bg); }
+
+.user-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.user-table { width: 100%; border-collapse: collapse; background: var(--card); font-size: 14px; min-width: 400px; }
+.user-table thead tr { background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; }
+.user-table th { padding: 10px 8px; text-align: center; font-weight: 600; white-space: nowrap; }
+.user-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.user-table tbody tr:hover { background: #f5f0ff; }
+.user-table td { padding: 10px 8px; text-align: center; vertical-align: middle; color: var(--text); }
+.user-table td.user-name-cell { font-weight: 600; text-align: left; }
+.user-table .admin-badge { display: inline-block; background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.user-table .user-badge { display: inline-block; background: #e0e0e0; color: #666; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.btn-reset-pwd { padding: 6px 14px; border: 1px solid #f44336; border-radius: 20px; background: #fff; color: #f44336; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.btn-reset-pwd:hover { background: #f44336; color: #fff; }
+
+/* ========== 忘记密码 Modal ========== */
+.pwd-reset-info { background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #e65100; line-height: 1.6; margin-bottom: 16px; }
+.pwd-reset-info strong { display: block; margin-bottom: 4px; }
+.pwd-reset-success { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 14px; text-align: center; color: #2e7d32; font-size: 14px; line-height: 1.8; }
+.pwd-reset-success .big-icon { font-size: 40px; display: block; margin-bottom: 8px; }
+
+/* 管理员用户管理tab */
+.nav-tab.admin-only { display: none; }
+.nav-tab.admin-only.visible { display: flex; }
+</style>
 </head>
 <body>
     <div id="app">
@@ -28,13 +1306,22 @@
                 <form id="login-form" class="auth-form active">
                     <div class="form-group">
                         <label>用户名</label>
-                        <input type="text" id="login-username" placeholder="请输入用户名" required>
+                        <input type="text" id="login-username" placeholder="请输入用户名" required autocomplete="username">
                     </div>
                     <div class="form-group">
                         <label>密码</label>
-                        <input type="password" id="login-password" placeholder="请输入密码" required>
+                        <input type="password" id="login-password" placeholder="请输入密码" required autocomplete="current-password">
                     </div>
+                    <div class="form-group remember-row">
+                        <label class="remember-label">
+                            <input type="checkbox" id="login-remember"> 记住用户名
+                        </label>
+                    </div>
+                    <div id="login-error" class="login-error" style="display:none;"></div>
                     <button type="submit" class="btn-primary">登录</button>
+                    <div class="forgot-pwd-row">
+                        <button class="forgot-pwd-link" id="forgot-pwd-btn">忘记密码？</button>
+                    </div>
                 </form>
                 
                 <form id="register-form" class="auth-form">
@@ -57,7 +1344,6 @@
 
         <!-- 主页面 -->
         <div id="main-page" class="page">
-            <!-- 顶部导航 -->
             <header class="header">
                 <div class="header-left">
                     <span class="logo-small">🏊🚴🏃</span>
@@ -70,7 +1356,6 @@
                 </div>
             </header>
 
-            <!-- 标签导航 -->
             <nav class="tab-nav">
                 <button class="nav-tab active" data-page="checkin">
                     <span class="nav-icon">✅</span>
@@ -96,20 +1381,16 @@
                     <span class="nav-icon">🏆</span>
                     <span class="nav-label">排行</span>
                 </button>
+                <button class="nav-tab admin-only" data-page="users" id="nav-users">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">用户</span>
+                </button>
             </nav>
 
-            <!-- 内容区域 -->
             <main class="content">
                 <!-- 打卡页面 -->
                 <section id="checkin-section" class="section active">
-                    <div class="checkin-hero">
-                        <div class="checkin-hero-bg"></div>
-                        <div class="checkin-hero-overlay"></div>
-                        <div class="checkin-hero-content">
-                            <h2 class="checkin-hero-title">今日打卡</h2>
-                            <p class="checkin-hero-subtitle">每一次训练，都是对自己的超越</p>
-                        </div>
-                    </div>
+                    <h2 class="section-title">今日打卡</h2>
                     <form id="checkin-form" autocomplete="off">
                         <div class="form-group">
                             <label>训练项目</label>
@@ -136,7 +1417,7 @@
                         <div class="form-row">
                             <div class="form-group" id="checkin-distance-group">
                                 <label for="checkin-distance">距离 (km)</label>
-                                <input type="number" id="checkin-distance" placeholder="0.0" step="0.1" min="0.1">
+                                <input type="number" id="checkin-distance" placeholder="0.0" step="any" min="0">
                             </div>
                             <div class="form-group" id="checkin-content-group" style="display:none;">
                                 <label for="checkin-content">训练内容</label>
@@ -145,6 +1426,13 @@
                             <div class="form-group">
                                 <label>时长 (分钟)</label>
                                 <input type="number" id="checkin-duration" placeholder="0" min="1">
+                                <div class="quick-duration-btns">
+                                    <button type="button" class="quick-dur-btn" data-min="30">30分</button>
+                                    <button type="button" class="quick-dur-btn" data-min="45">45分</button>
+                                    <button type="button" class="quick-dur-btn" data-min="60">1小时</button>
+                                    <button type="button" class="quick-dur-btn" data-min="90">1.5小时</button>
+                                    <button type="button" class="quick-dur-btn" data-min="120">2小时</button>
+                                </div>
                             </div>
                         </div>
                         
@@ -152,8 +1440,14 @@
                             <label>日期</label>
                             <input type="date" id="checkin-date">
                         </div>
+
+                        <div class="form-group">
+                            <label>备注（可选）</label>
+                            <input type="text" id="checkin-note" placeholder="如：状态不错，配速稳定">
+                        </div>
                         
                         <button type="submit" class="btn-primary btn-block">✅ 提交打卡</button>
+                        <div id="today-summary" class="today-summary" style="display:none;"></div>
                     </form>
                     
                     <div class="recent-checkins">
@@ -217,12 +1511,13 @@
                     
                     <div id="stats-summary" class="stats-cards"></div>
                     
+                    <div id="stats-counts" class="stats-counts-row"></div>
+
                     <div class="stats-history">
                         <h3>历史记录</h3>
                         <div id="history-list" class="checkin-list"></div>
                     </div>
 
-                    <!-- 管理员：全队统计表格 -->
                     <div id="team-stats-section" style="display:none;">
                         <h3 class="team-section-title">👑 全队训练统计</h3>
                         <div id="team-stats-table"></div>
@@ -253,18 +1548,26 @@
                     <div class="rank-period-toggle">
                         <button class="rank-period-btn active" data-period="weekly">本周</button>
                         <button class="rank-period-btn" data-period="monthly">本月</button>
-                        <button class="rank-period-btn" data-period="yearly">本年</button>
                     </div>
                     
                     <div class="rank-tabs">
                         <button class="rank-tab active" data-sport="total">总里程</button>
-                        <button class="rank-tab" data-sport="swim">🏊 游泳</button>
-                        <button class="rank-tab" data-sport="bike">🚴 骑行</button>
-                        <button class="rank-tab" data-sport="run">🏃 跑步</button>
-                        <button class="rank-tab" data-sport="other">💪 其他</button>
+                        <button class="rank-tab" data-sport="swim">游泳</button>
+                        <button class="rank-tab" data-sport="bike">骑行</button>
+                        <button class="rank-tab" data-sport="run">跑步</button>
+                        <button class="rank-tab" data-sport="other">其他</button>
                     </div>
                     
                     <div id="rank-list" class="rank-list"></div>
+                </section>
+
+                <!-- 用户管理页面（仅管理员） -->
+                <section id="users-section" class="section">
+                    <div class="user-mgmt-header">
+                        <h2 class="section-title" style="margin-bottom:0;">👥 用户管理</h2>
+                        <button class="btn-refresh" id="refresh-users-btn">🔄 刷新</button>
+                    </div>
+                    <div id="user-mgmt-table"></div>
                 </section>
             </main>
         </div>
@@ -303,7 +1606,7 @@
                 <div class="form-row">
                     <div class="form-group" id="edit-distance-group">
                         <label for="edit-checkin-distance">距离 (km)</label>
-                        <input type="number" id="edit-checkin-distance" placeholder="0.0" step="0.1" min="0.1">
+                        <input type="number" id="edit-checkin-distance" placeholder="0.0" step="any" min="0">
                     </div>
                     <div class="form-group" id="edit-content-group" style="display:none;">
                         <label for="edit-checkin-content">训练内容</label>
@@ -317,6 +1620,10 @@
                 <div class="form-group">
                     <label>日期</label>
                     <input type="date" id="edit-checkin-date">
+                </div>
+                <div class="form-group">
+                    <label>备注（可选）</label>
+                    <input type="text" id="edit-checkin-note" placeholder="如：状态不错，配速稳定">
                 </div>
                 <button id="save-checkin-edit-btn" class="btn-primary btn-block">💾 保存修改</button>
             </div>
@@ -387,6 +1694,1361 @@
     <!-- Toast提示 -->
     <div id="toast" class="toast"></div>
 
-    <script src="app.js"></script>
+    <!-- 忘记密码 Modal -->
+    <div id="pwd-reset-modal-overlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span>🔑 重置密码</span>
+                <button id="pwd-reset-modal-close" class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="pwd-reset-step1">
+                    <div class="pwd-reset-info">
+                        <strong>忘记密码怎么办？</strong>
+                        请输入你的用户名，然后联系管理员（eymozhao）帮你重置密码。<br>
+                        如果你是管理员，可以直接在"用户管理"页面操作。
+                    </div>
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="reset-username" placeholder="请输入你的用户名">
+                    </div>
+                    <div class="form-group">
+                        <label>新密码</label>
+                        <input type="password" id="reset-new-password" placeholder="请输入新密码（至少4个字符）">
+                    </div>
+                    <div class="form-group">
+                        <label>管理员密码（需管理员操作）</label>
+                        <input type="password" id="reset-admin-password" placeholder="输入管理员密码以确认重置">
+                    </div>
+                    <button id="do-reset-pwd-btn" class="btn-primary btn-block">重置密码</button>
+                    <div id="reset-error" class="login-error" style="display:none;margin-top:12px;"></div>
+                </div>
+                <div id="pwd-reset-step2" style="display:none;">
+                    <div class="pwd-reset-success">
+                        <span class="big-icon">✅</span>
+                        密码重置成功！<br>请使用新密码登录。
+                    </div>
+                    <button id="reset-back-to-login" class="btn-primary btn-block" style="margin-top:16px;">返回登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ========== 云开发配置 ==========
+// 环境ID：cloudbase-8g61yvl6a9f6f10d
+// ⚠️ 重要：需要在云开发控制台为以下集合设置安全规则（允许匿名用户读写）：
+//   tri_users:    { "read": true, "write": true }
+//   tri_checkins: { "read": true, "write": true }
+//   tri_goals:    { "read": true, "write": true }
+// 路径：云开发控制台 → 数据库 → 选择集合 → 权限设置 → 安全规则
+// 同时需要在：设置 → 全局设置 → 开启"未登录访问" 或 使用匿名登录
+const CLOUD_ENV_ID = 'eymozhao-8g63fctk0214beb5';
+const ADMIN_USERNAMES = ['eymozhao'];
+
+let cloudDB = null;
+let cloudApp = null;
+let cloudAuth = null;
+
+// ========== SHA-256 哈希（密码加密）==========
+async function sha256(message) {
+    try {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch(e) {
+        // 降级：简单字符串哈希（不推荐，仅备用）
+        let hash = 0;
+        for (let i = 0; i < message.length; i++) {
+            const char = message.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return 'fallback_' + Math.abs(hash).toString(16);
+    }
+}
+
+async function initCloud() {
+    try {
+        cloudApp = tcb.init({ env: CLOUD_ENV_ID });
+        cloudAuth = cloudApp.auth({ persistence: 'local' });
+
+        // 尝试匿名登录（让 Web SDK 有权限访问数据库）
+        const loginState = await cloudAuth.getLoginState();
+        if (!loginState) {
+            await cloudAuth.anonymousAuthProvider().signIn();
+            console.log('云开发匿名登录成功');
+        } else {
+            console.log('云开发已登录，loginType:', loginState.loginType);
+        }
+
+        cloudDB = cloudApp.database();
+        console.log('云开发初始化成功 ENV:', CLOUD_ENV_ID);
+        return true;
+    } catch(e) {
+        console.warn('云开发初始化失败，使用本地模式', e);
+        cloudDB = null;
+        return false;
+    }
+}
+
+// ========== 数据管理（云端 + 本地缓存双模式）==========
+const DB = {
+    // ------- 缓存工具 -------
+    _cache: {},
+    _setCache(key, data) { this._cache[key] = data; try { localStorage.setItem(key, JSON.stringify(data)); } catch(e){} },
+    _getCache(key, def) { if(this._cache[key]) return this._cache[key]; try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e){ return def; } },
+
+    // ------- 用户管理 -------
+    async getUsers() {
+        if (!cloudDB) return this._getCache('tri_users', []);
+        try {
+            const res = await cloudDB.collection('tri_users').limit(100).get();
+            const users = res.data || [];
+            this._setCache('tri_users', users);
+            return users;
+        } catch(e) { console.warn('获取用户失败，使用缓存', e); return this._getCache('tri_users', []); }
+    },
+    async findUser(username) {
+        if (!cloudDB) {
+            const users = this._getCache('tri_users', []);
+            return users.find(u => u.username === username) || null;
+        }
+        try {
+            const res = await cloudDB.collection('tri_users').where({ username }).limit(1).get();
+            return res.data[0] || null;
+        } catch(e) { console.warn('查询用户失败', e); return null; }
+    },
+    async createUser(userData) {
+        if (!cloudDB) {
+            const users = this._getCache('tri_users', []);
+            userData.id = 'user_' + Date.now();
+            userData.createdAt = new Date().toISOString();
+            users.push(userData);
+            this._setCache('tri_users', users);
+            return userData;
+        }
+        try {
+            userData.id = 'user_' + Date.now();
+            userData.createdAt = new Date().toISOString();
+            await cloudDB.collection('tri_users').add(userData);
+            // 更新缓存
+            const users = this._getCache('tri_users', []);
+            users.push(userData);
+            this._setCache('tri_users', users);
+            return userData;
+        } catch(e) { console.warn('创建用户失败，使用本地', e);
+            const users = this._getCache('tri_users', []);
+            users.push(userData);
+            this._setCache('tri_users', users);
+            return userData;
+        }
+    },
+    async updateUser(userId, updates) {
+        if (!cloudDB) {
+            const users = this._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === userId);
+            if (idx !== -1) { users[idx] = { ...users[idx], ...updates }; this._setCache('tri_users', users); return users[idx]; }
+            return null;
+        }
+        try {
+            await cloudDB.collection('tri_users').where({ id: userId }).update(updates);
+            const users = this._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === userId);
+            if (idx !== -1) { users[idx] = { ...users[idx], ...updates }; this._setCache('tri_users', users); }
+        } catch(e) { console.warn('更新用户失败', e); }
+    },
+    getCurrentUser() {
+        // 从 localStorage 取缓存的用户对象（包含 id/username/nickname）
+        try {
+            const cached = localStorage.getItem('tri_current_user_obj');
+            if (cached) return JSON.parse(cached);
+        } catch(e) {}
+        return null;
+    },
+    setCurrentUser(user) {
+        // 存完整用户对象（不含密码），方便跨页面快速恢复
+        const safeUser = { id: user.id, username: user.username, nickname: user.nickname, isAdmin: !!user.isAdmin };
+        localStorage.setItem('tri_current_user_obj', JSON.stringify(safeUser));
+        localStorage.setItem('tri_current_user', user.id);
+    },
+    logout() {
+        localStorage.removeItem('tri_current_user');
+        localStorage.removeItem('tri_current_user_obj');
+        localStorage.removeItem('tri_saved_credentials');
+    },
+    setAdmin(userId) { this.updateUser(userId, { isAdmin: true }); },
+
+    // ------- 打卡管理 -------
+    async getCheckins() {
+        if (!cloudDB) return this._getCache('tri_checkins', []);
+        try {
+            const res = await cloudDB.collection('tri_checkins').orderBy('createdAt', 'desc').limit(500).get();
+            const checkins = res.data || [];
+            this._setCache('tri_checkins', checkins);
+            return checkins;
+        } catch(e) { console.warn('获取打卡失败，使用缓存', e); return this._getCache('tri_checkins', []); }
+    },
+    async addCheckin(checkin) {
+        checkin.id = 'ck_' + Date.now();
+        checkin.createdAt = new Date().toISOString();
+        if (!cloudDB) {
+            const checkins = this._getCache('tri_checkins', []);
+            checkins.push(checkin);
+            this._setCache('tri_checkins', checkins);
+            return checkin;
+        }
+        try {
+            await cloudDB.collection('tri_checkins').add(checkin);
+            const checkins = this._getCache('tri_checkins', []);
+            checkins.unshift(checkin);
+            this._setCache('tri_checkins', checkins);
+            return checkin;
+        } catch(e) { console.warn('添加打卡失败，使用本地', e);
+            const checkins = this._getCache('tri_checkins', []);
+            checkins.unshift(checkin);
+            this._setCache('tri_checkins', checkins);
+            return checkin;
+        }
+    },
+    async updateCheckin(checkinId, updates) {
+        if (!cloudDB) {
+            const checkins = this._getCache('tri_checkins', []);
+            const idx = checkins.findIndex(c => c.id === checkinId);
+            if (idx !== -1) { checkins[idx] = { ...checkins[idx], ...updates, updatedAt: new Date().toISOString() }; this._setCache('tri_checkins', checkins); return checkins[idx]; }
+            return null;
+        }
+        try {
+            updates.updatedAt = new Date().toISOString();
+            await cloudDB.collection('tri_checkins').where({ id: checkinId }).update(updates);
+            const checkins = this._getCache('tri_checkins', []);
+            const idx = checkins.findIndex(c => c.id === checkinId);
+            if (idx !== -1) { checkins[idx] = { ...checkins[idx], ...updates }; this._setCache('tri_checkins', checkins); return checkins[idx]; }
+        } catch(e) { console.warn('更新打卡失败', e); }
+        return null;
+    },
+    async deleteCheckin(checkinId) {
+        if (!cloudDB) {
+            const checkins = this._getCache('tri_checkins', []);
+            this._setCache('tri_checkins', checkins.filter(c => c.id !== checkinId));
+            return;
+        }
+        try {
+            await cloudDB.collection('tri_checkins').where({ id: checkinId }).remove();
+            const checkins = this._getCache('tri_checkins', []);
+            this._setCache('tri_checkins', checkins.filter(c => c.id !== checkinId));
+        } catch(e) { console.warn('删除打卡失败', e); }
+    },
+
+    // ------- 目标管理 -------
+    getGoals(userId) {
+        const goals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
+        return goals[userId] || { weekly: { swim: 0, bike: 0, run: 0 }, monthly: { swim: 0, bike: 0, run: 0 } };
+    },
+    saveGoals(userId, goals) {
+        const allGoals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
+        allGoals[userId] = goals;
+        localStorage.setItem('tri_goals', JSON.stringify(allGoals));
+        // 异步同步到云端
+        if (cloudDB) {
+            cloudDB.collection('tri_goals').where({ userId }).get().then(res => {
+                if (res.data.length > 0) cloudDB.collection('tri_goals').where({ userId }).update({ goals });
+                else cloudDB.collection('tri_goals').add({ userId, goals });
+            }).catch(e => console.warn('同步目标失败', e));
+        }
+    },
+
+    // ------- 训练计划管理 -------
+    getPlans(userId) {
+        const plans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
+        return plans[userId] || [];
+    },
+    savePlans(userId, plans) {
+        const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
+        allPlans[userId] = plans;
+        localStorage.setItem('tri_plans', JSON.stringify(allPlans));
+    },
+    addPlan(userId, plan) {
+        const plans = this.getPlans(userId);
+        plan.id = 'plan_' + Date.now();
+        plan.createdAt = new Date().toISOString();
+        plans.push(plan);
+        this.savePlans(userId, plans);
+        return plan;
+    },
+    updatePlan(userId, planId, updates) {
+        const plans = this.getPlans(userId);
+        const index = plans.findIndex(p => p.id === planId);
+        if (index !== -1) {
+            plans[index] = { ...plans[index], ...updates };
+            this.savePlans(userId, plans);
+            return plans[index];
+        }
+        return null;
+    },
+    deletePlan(userId, planId) {
+        const plans = this.getPlans(userId);
+        this.savePlans(userId, plans.filter(p => p.id !== planId));
+    },
+    getAllPlans() { return JSON.parse(localStorage.getItem('tri_plans') || '{}'); },
+};
+
+// ========== 工具函数 ==========
+const Utils = {
+    sportNames: { swim: '游泳', bike: '骑行', run: '跑步', other: '其他' },
+    sportUnits: { swim: 'm', bike: 'km', run: 'km', other: null },
+    sportIcons: { swim: '🏊', bike: '🚴', run: '🏃', other: '💪' },
+    formatDistance(sport, distance) {
+        if (sport === 'other') return '';
+        return `${distance}${this.sportUnits[sport] || 'km'}`;
+    },
+    checkinSummary(c) {
+        if (c.sport === 'other') return `${c.content || '其他训练'} · ${this.formatDuration(c.duration)}`;
+        return `${this.formatDistance(c.sport, c.distance)} · ${this.formatDuration(c.duration)}`;
+    },
+    toLocalDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    },
+    formatDate(dateStr) {
+        const today = this.toLocalDateStr(new Date());
+        const yesterday = this.toLocalDateStr(new Date(Date.now() - 86400000));
+        if (dateStr === today) return '今天';
+        if (dateStr === yesterday) return '昨天';
+        const parts = dateStr.split('-');
+        return `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+    },
+    formatDateTime(isoStr) {
+        const date = new Date(isoStr);
+        const diff = new Date() - date;
+        if (diff < 60000) return '刚刚';
+        if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+        if (diff < 172800000) return '昨天';
+        return `${date.getMonth() + 1}月${date.getDate()}日`;
+    },
+    formatDuration(minutes) {
+        minutes = parseInt(minutes) || 0;
+        if (minutes < 60) return `${minutes}分钟`;
+        const h = Math.floor(minutes / 60), m = minutes % 60;
+        return m > 0 ? `${h}小时${m}分钟` : `${h}小时`;
+    },
+    getWeekRange() {
+        const now = new Date();
+        const day = now.getDay();
+        const diffToMon = (day === 0 ? -6 : 1 - day);
+        const start = new Date(now);
+        start.setDate(now.getDate() + diffToMon);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        return { start: this.toLocalDateStr(start), end: this.toLocalDateStr(end) };
+    },
+    getMonthRange() {
+        const now = new Date();
+        return {
+            start: this.toLocalDateStr(new Date(now.getFullYear(), now.getMonth(), 1)),
+            end: this.toLocalDateStr(new Date(now.getFullYear(), now.getMonth() + 1, 0))
+        };
+    },
+    getYearRange() {
+        const year = new Date().getFullYear();
+        return { start: `${year}-01-01`, end: `${year}-12-31` };
+    },
+    isInPeriod(dateStr, period) {
+        let range;
+        if (period === 'week') range = this.getWeekRange();
+        else if (period === 'month') range = this.getMonthRange();
+        else if (period === 'year') range = this.getYearRange();
+        else return true;
+        return dateStr >= range.start && dateStr <= range.end;
+    },
+    weekDayName(dateStr) {
+        return ['周日','周一','周二','周三','周四','周五','周六'][new Date(dateStr + 'T00:00:00').getDay()];
+    },
+    intensityLabel(level) {
+        return { easy: '🟢 轻松', moderate: '🟡 中等', hard: '🔴 强度' }[level] || level;
+    }
+};
+
+// ========== UI 组件 ==========
+const UI = {
+    toast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    },
+    renderEmptyState(container, message = '暂无数据') {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">${message}</div></div>`;
+    },
+    showLoading(container) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon" style="animation:spin 1s linear infinite;display:inline-block">⏳</div><div class="empty-text">加载中...</div></div>`;
+    }
+};
+
+// ========== 应用主体 ==========
+const App = {
+    currentUser: null,
+    currentSport: 'swim',
+    currentGoalPeriod: 'weekly',
+    currentStatsPeriod: 'week',
+    currentRankPeriod: 'weekly',
+    currentRankSport: 'total',
+    feedFilter: 'all',
+    planViewDate: null,
+    _allCheckins: [], // 内存缓存
+
+    async init() {
+        // 先初始化云开发（含匿名登录）
+        await initCloud();
+        this.planViewDate = Utils.toLocalDateStr(new Date());
+
+        // 从本地缓存快速恢复登录态（让页面立即可用，不要让用户等待）
+        const cachedUser = DB.getCurrentUser();
+
+        if (cachedUser) {
+            this.currentUser = cachedUser;
+            if (ADMIN_USERNAMES.includes(cachedUser.username) && !cachedUser.isAdmin) {
+                cachedUser.isAdmin = true;
+                DB.setCurrentUser(cachedUser);
+            }
+            this.bindEvents();
+            this.showMainPage();
+            // 后台从云端刷新用户信息和数据
+            this.refreshFromCloud().then(() => {
+                // 从云端同步最新用户信息（例如昵称、isAdmin等）
+                DB.findUser(cachedUser.username).then(freshUser => {
+                    if (freshUser) {
+                        const merged = { ...freshUser };
+                        if (ADMIN_USERNAMES.includes(merged.username)) merged.isAdmin = true;
+                        this.currentUser = merged;
+                        DB.setCurrentUser(merged);
+                        document.getElementById('current-user').textContent =
+                            merged.nickname + (merged.isAdmin ? ' 👑' : '');
+                        // 同步缓存里的用户列表
+                        const users = DB._getCache('tri_users', []);
+                        const idx = users.findIndex(u => u.id === merged.id);
+                        if (idx !== -1) users[idx] = merged; else users.push(merged);
+                        DB._setCache('tri_users', users);
+                    }
+                }).catch(() => {});
+            });
+        } else {
+            this.bindEvents();
+            this.showAuthPage();
+            // 恢复记住的用户名
+            const remembered = localStorage.getItem('tri_remembered_username');
+            if (remembered) {
+                const el = document.getElementById('login-username');
+                if (el) el.value = remembered;
+                const cb = document.getElementById('login-remember');
+                if (cb) cb.checked = true;
+            }
+        }
+    },
+
+    async refreshFromCloud() {
+        try {
+            this._allCheckins = await DB.getCheckins();
+            this.renderRecentCheckins();
+            this.renderStats();
+            this.renderFeed();
+            this.renderRank();
+        } catch(e) { console.warn('刷新云端数据失败', e); }
+    },
+
+    bindEvents() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = e.target.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                document.getElementById(tab + '-form').classList.add('active');
+            });
+        });
+        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleLogin(); });
+        document.getElementById('register-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleRegister(); });
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            DB.logout(); this.currentUser = null; this._allCheckins = []; this.showAuthPage();
+        });
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => this.switchSection(e.currentTarget.dataset.page));
+        });
+        document.querySelectorAll('.sport-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this.currentSport = e.currentTarget.dataset.sport;
+                this.updateCheckinFormFields(this.currentSport);
+            });
+        });
+        this.updateCheckinFormFields(this.currentSport);
+        const checkinDateEl = document.getElementById('checkin-date');
+        if (checkinDateEl) checkinDateEl.value = Utils.toLocalDateStr(new Date());
+        document.getElementById('checkin-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleCheckin(); });
+        // 快捷时长按钮
+        document.querySelectorAll('.quick-dur-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('checkin-duration').value = btn.dataset.min;
+                document.querySelectorAll('.quick-dur-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentGoalPeriod = e.target.dataset.period;
+                this.renderGoals();
+            });
+        });
+        document.getElementById('save-goals-btn').addEventListener('click', () => this.saveGoals());
+        document.getElementById('stats-period-select').addEventListener('change', (e) => {
+            this.currentStatsPeriod = e.target.value; this.renderStats();
+        });
+        document.getElementById('feed-sport-filter').addEventListener('change', (e) => {
+            this.feedFilter = e.target.value; this.renderFeed();
+        });
+        document.querySelectorAll('.rank-period-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.rank-period-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentRankPeriod = e.target.dataset.period;
+                this.renderRank();
+            });
+        });
+        document.querySelectorAll('.rank-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentRankSport = e.target.dataset.sport;
+                this.renderRank();
+            });
+        });
+        document.getElementById('plan-prev-day').addEventListener('click', () => {
+            const d = new Date(this.planViewDate); d.setDate(d.getDate() - 1);
+            this.planViewDate = Utils.toLocalDateStr(d); this.renderPlans();
+        });
+        document.getElementById('plan-next-day').addEventListener('click', () => {
+            const d = new Date(this.planViewDate); d.setDate(d.getDate() + 1);
+            this.planViewDate = Utils.toLocalDateStr(d); this.renderPlans();
+        });
+        document.getElementById('plan-date-label').addEventListener('click', () => {
+            this.planViewDate = Utils.toLocalDateStr(new Date()); this.renderPlans();
+        });
+        document.getElementById('add-plan-btn').addEventListener('click', () => this.openPlanModal());
+        document.getElementById('plan-modal-close').addEventListener('click', () => this.closePlanModal());
+        document.getElementById('plan-modal-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closePlanModal();
+        });
+        document.querySelectorAll('.plan-sport-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.plan-sport-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this._updatePlanModalFields(e.currentTarget.dataset.sport);
+            });
+        });
+        document.getElementById('save-plan-btn').addEventListener('click', () => this.savePlan());
+        document.getElementById('checkin-edit-modal-close').addEventListener('click', () => this.closeCheckinEditModal());
+        document.getElementById('checkin-edit-modal-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closeCheckinEditModal();
+        });
+        document.querySelectorAll('.edit-sport-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.edit-sport-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                this._updateEditModalFields(e.currentTarget.dataset.sport);
+            });
+        });
+        document.getElementById('save-checkin-edit-btn').addEventListener('click', () => this.saveCheckinEdit());
+        // 忘记密码
+        document.getElementById('forgot-pwd-btn').addEventListener('click', () => this.openPwdResetModal());
+        document.getElementById('pwd-reset-modal-close').addEventListener('click', () => this.closePwdResetModal());
+        document.getElementById('pwd-reset-modal-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closePwdResetModal();
+        });
+        document.getElementById('do-reset-pwd-btn').addEventListener('click', () => this.doResetPassword());
+        document.getElementById('reset-back-to-login').addEventListener('click', () => this.closePwdResetModal());
+        // 用户管理刷新按钮
+        const refreshBtn = document.getElementById('refresh-users-btn');
+        if (refreshBtn) refreshBtn.addEventListener('click', () => this.renderUserManagement());
+    },
+
+    showAuthPage() {
+        document.getElementById('auth-page').classList.add('active');
+        document.getElementById('main-page').classList.remove('active');
+    },
+    showMainPage() {
+        document.getElementById('auth-page').classList.remove('active');
+        document.getElementById('main-page').classList.add('active');
+        document.getElementById('current-user').textContent = this.currentUser.nickname + (this.currentUser.isAdmin ? ' 👑' : '');
+        // 管理员显示用户管理tab
+        const navUsers = document.getElementById('nav-users');
+        if (navUsers) navUsers.classList.toggle('visible', !!this.currentUser.isAdmin);
+        const el = document.getElementById('checkin-date');
+        if (el) el.value = Utils.toLocalDateStr(new Date());
+        this.updateCheckinFormFields(this.currentSport);
+        // 使用缓存快速渲染
+        this._allCheckins = DB._getCache('tri_checkins', []);
+        this.renderRecentCheckins();
+        this.renderGoals();
+        this.renderStats();
+        this.renderFeed();
+        this.renderRank();
+        this.renderPlans();
+    },
+    async handleLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        const remember = document.getElementById('login-remember').checked;
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+
+        if (!username || !password) { this._showLoginError('请填写用户名和密码'); return; }
+        UI.toast('登录中...', 'info');
+
+        const pwdHash = await sha256(password);
+
+        // 记住用户名
+        if (remember) { localStorage.setItem('tri_remembered_username', username); }
+        else { localStorage.removeItem('tri_remembered_username'); }
+
+        try {
+            // 尝试云端查询，最多重试2次
+            let user = null;
+            let cloudError = null;
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    user = await DB.findUser(username);
+                    if (user) break;
+                } catch(e) {
+                    cloudError = e;
+                    if (attempt === 0) await new Promise(r => setTimeout(r, 1000)); // 等1秒再重试
+                }
+            }
+            
+            if (!user) {
+                // 云端查不到，尝试本地缓存
+                const users = DB._getCache('tri_users', []);
+                user = users.find(u => u.username === username &&
+                    ((u.passwordHash && u.passwordHash === pwdHash) || (u.password && u.password === password)));
+                if (user) {
+                    this._completeLogin(user);
+                    UI.toast('登录成功（离线模式）', 'success');
+                    return;
+                }
+                if (cloudError) {
+                    this._showLoginError('网络连接失败，请检查网络后重试');
+                } else {
+                    this._showLoginError('用户名不存在，请先注册');
+                }
+                return;
+            }
+
+            // 兼容旧账户（明文密码）和新账户（SHA-256哈希）
+            const pwdMatch = (user.passwordHash && user.passwordHash === pwdHash)
+                          || (user.password && user.password === password);
+
+            if (pwdMatch) {
+                // 如果是旧账户（明文），自动升级为哈希
+                if (user.password && !user.passwordHash) {
+                    await DB.updateUser(user.id, { passwordHash: pwdHash, password: null });
+                    user.passwordHash = pwdHash;
+                    delete user.password;
+                }
+                if (ADMIN_USERNAMES.includes(user.username) && !user.isAdmin) {
+                    await DB.updateUser(user.id, { isAdmin: true });
+                    user.isAdmin = true;
+                }
+                this._completeLogin(user);
+                UI.toast('登录成功！', 'success');
+                await this.refreshFromCloud();
+            } else {
+                this._showLoginError('密码错误，请重试');
+            }
+        } catch(e) {
+            console.error('登录出错', e);
+            // 降级：本地验证
+            const users = DB._getCache('tri_users', []);
+            const user = users.find(u => u.username === username &&
+                ((u.passwordHash && u.passwordHash === pwdHash) || (u.password && u.password === password)));
+            if (user) {
+                this._completeLogin(user);
+                UI.toast('登录成功（离线模式）', 'success');
+            } else {
+                this._showLoginError('登录失败，请检查网络或账号密码');
+            }
+        }
+    },
+    _completeLogin(user) {
+        this.currentUser = user;
+        DB.setCurrentUser(user);
+        const users = DB._getCache('tri_users', []);
+        if (!users.find(u => u.id === user.id)) { users.push(user); DB._setCache('tri_users', users); }
+        this.showMainPage();
+        // 管理员显示用户管理tab
+        const navUsers = document.getElementById('nav-users');
+        if (navUsers) navUsers.classList.toggle('visible', !!user.isAdmin);
+    },
+    _showLoginError(msg) {
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+        UI.toast(msg, 'error');
+    },
+    async handleRegister() {
+        const username = document.getElementById('reg-username').value.trim();
+        const nickname = document.getElementById('reg-nickname').value.trim();
+        const password = document.getElementById('reg-password').value;
+        if (username.length < 2) { UI.toast('用户名至少2个字符', 'error'); return; }
+        if (nickname.length < 1) { UI.toast('请输入昵称', 'error'); return; }
+        if (password.length < 4) { UI.toast('密码至少4个字符', 'error'); return; }
+        UI.toast('注册中...', 'info');
+        try {
+            const existing = await DB.findUser(username);
+            if (existing) { UI.toast('用户名已存在', 'error'); return; }
+        } catch(e) {
+            const users = DB._getCache('tri_users', []);
+            if (users.find(u => u.username === username)) { UI.toast('用户名已存在', 'error'); return; }
+        }
+        const passwordHash = await sha256(password);
+        const newUser = await DB.createUser({ username, nickname, passwordHash });
+        this.currentUser = newUser; DB.setCurrentUser(newUser);
+        UI.toast('注册成功！', 'success'); this.showMainPage();
+        await this.refreshFromCloud();
+    },
+    switchSection(page) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(page + '-section').classList.add('active');
+        const map = { checkin: 'renderRecentCheckins', goals: 'renderGoals', stats: 'renderStats', feed: 'renderFeed', rank: 'renderRank', plan: 'renderPlans', users: 'renderUserManagement' };
+        if (map[page]) this[map[page]]();
+        // 切换到需要最新数据的页面时，拉取云端
+        if (['feed', 'rank', 'stats'].includes(page)) { this.refreshFromCloud(); }
+    },
+    async handleCheckin() {
+        const durationStr = document.getElementById('checkin-duration').value;
+        const dateEl = document.getElementById('checkin-date');
+        const date = dateEl ? dateEl.value : '';
+        const duration = parseInt(durationStr);
+        if (!durationStr || isNaN(duration) || duration <= 0) { UI.toast('请输入有效时长', 'error'); return; }
+        if (!date) { UI.toast('请选择日期', 'error'); return; }
+        let distance = 0, content = '';
+        if (this.currentSport === 'other') {
+            content = document.getElementById('checkin-content').value.trim();
+            if (!content) { UI.toast('请输入训练内容', 'error'); return; }
+        } else {
+            const distanceStr = document.getElementById('checkin-distance').value;
+            distance = parseFloat(distanceStr);
+            if (!distanceStr || isNaN(distance) || distance <= 0) { UI.toast('请输入有效距离', 'error'); return; }
+        }
+        const note = document.getElementById('checkin-note').value.trim();
+        UI.toast('提交中...', 'info');
+        const checkin = await DB.addCheckin({ userId: this.currentUser.id, nickname: this.currentUser.nickname, sport: this.currentSport, distance, content, duration, date, note });
+        this._allCheckins.unshift(checkin);
+        UI.toast('打卡成功！🎉', 'success');
+        document.getElementById('checkin-distance').value = '';
+        document.getElementById('checkin-content').value = '';
+        document.getElementById('checkin-duration').value = '';
+        document.getElementById('checkin-note').value = '';
+        document.querySelectorAll('.quick-dur-btn').forEach(b => b.classList.remove('active'));
+        if (dateEl) dateEl.value = Utils.toLocalDateStr(new Date());
+        this.renderRecentCheckins(); this.renderPlans();
+        this.renderTodaySummary(date);
+    },
+    renderTodaySummary(date) {
+        const el = document.getElementById('today-summary');
+        if (!el) return;
+        const todayCheckins = this._allCheckins.filter(c => c.userId === this.currentUser.id && c.date === date);
+        if (todayCheckins.length === 0) { el.style.display = 'none'; return; }
+        const totals = { swim: 0, bike: 0, run: 0, other: 0, swimDur: 0, bikeDur: 0, runDur: 0, otherDur: 0 };
+        todayCheckins.forEach(c => {
+            if (c.sport === 'swim') { totals.swim += c.distance; totals.swimDur += c.duration; }
+            else if (c.sport === 'bike') { totals.bike += c.distance; totals.bikeDur += c.duration; }
+            else if (c.sport === 'run') { totals.run += c.distance; totals.runDur += c.duration; }
+            else { totals.other++; totals.otherDur += c.duration; }
+        });
+        const items = [];
+        if (totals.swim > 0) items.push(`<span class="ts-item">🏊 ${totals.swim.toFixed(0)}m · ${Utils.formatDuration(totals.swimDur)}</span>`);
+        if (totals.bike > 0) items.push(`<span class="ts-item">🚴 ${totals.bike.toFixed(1)}km · ${Utils.formatDuration(totals.bikeDur)}</span>`);
+        if (totals.run > 0) items.push(`<span class="ts-item">🏃 ${totals.run.toFixed(1)}km · ${Utils.formatDuration(totals.runDur)}</span>`);
+        if (totals.other > 0) items.push(`<span class="ts-item">💪 ${totals.other}次 · ${Utils.formatDuration(totals.otherDur)}</span>`);
+        el.innerHTML = `<div class="ts-title">📅 今日累计（${todayCheckins.length}次打卡）</div><div class="ts-items">${items.join('')}</div>`;
+        el.style.display = 'block';
+    },
+    updateCheckinFormFields(sport) {
+        const distGroup = document.getElementById('checkin-distance-group');
+        const contentGroup = document.getElementById('checkin-content-group');
+        const distLabel = document.querySelector('label[for="checkin-distance"]');
+        if (sport === 'other') { distGroup.style.display = 'none'; contentGroup.style.display = 'block'; }
+        else {
+            distGroup.style.display = 'block'; contentGroup.style.display = 'none';
+            if (distLabel) distLabel.textContent = sport === 'swim' ? '距离 (m)' : '距离 (km)';
+        }
+    },
+    renderRecentCheckins() {
+        const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 10);
+        const container = document.getElementById('recent-list');
+        if (checkins.length === 0) { UI.renderEmptyState(container, '还没有打卡记录'); return; }
+        container.innerHTML = checkins.map(c => `
+            <div class="checkin-item">
+                <span class="checkin-sport">${Utils.sportIcons[c.sport]}</span>
+                <div class="checkin-info">
+                    <div class="checkin-distance">${Utils.checkinSummary(c)}</div>
+                    <div class="checkin-meta">${Utils.sportNames[c.sport]} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
+                </div>
+                <div class="checkin-item-actions">
+                    <button class="btn-icon" title="修改" onclick="App.openCheckinEditModal('${c.id}')">✏️</button>
+                    <button class="btn-icon" title="删除" onclick="App.deleteCheckinConfirm('${c.id}')">🗑️</button>
+                </div>
+            </div>`).join('');
+    },
+    renderGoals() {
+        const goals = DB.getGoals(this.currentUser.id);
+        const currentGoals = goals[this.currentGoalPeriod];
+        const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        const period = this.currentGoalPeriod === 'weekly' ? 'week' : 'month';
+        const progress = { swim: 0, bike: 0, run: 0 };
+        checkins.forEach(c => { if (Utils.isInPeriod(c.date, period) && c.sport !== 'other' && progress[c.sport] !== undefined) progress[c.sport] += c.distance; });
+        const container = document.getElementById('goals-container');
+        container.innerHTML = ['swim', 'bike', 'run'].map(sport => {
+            const goal = currentGoals[sport] || 0, done = progress[sport];
+            const unit = Utils.sportUnits[sport];
+            const percent = goal > 0 ? Math.min(100, (done / goal) * 100) : 0;
+            return `<div class="goal-card">
+                <div class="goal-header">
+                    <span class="goal-title">${Utils.sportIcons[sport]} ${Utils.sportNames[sport]}</span>
+                    <span class="goal-value">目标: ${goal} ${unit}</span>
+                </div>
+                <div class="goal-progress"><div class="goal-progress-bar ${sport}" style="width: ${percent}%"></div></div>
+                <div class="goal-stats"><span>已完成: ${done.toFixed(1)} ${unit}</span><span>${percent.toFixed(0)}%</span></div>
+            </div>`;
+        }).join('');
+        document.getElementById('goal-swim').value = currentGoals.swim || '';
+        document.getElementById('goal-bike').value = currentGoals.bike || '';
+        document.getElementById('goal-run').value = currentGoals.run || '';
+    },
+    saveGoals() {
+        const goals = DB.getGoals(this.currentUser.id);
+        goals[this.currentGoalPeriod] = {
+            swim: parseFloat(document.getElementById('goal-swim').value) || 0,
+            bike: parseFloat(document.getElementById('goal-bike').value) || 0,
+            run: parseFloat(document.getElementById('goal-run').value) || 0
+        };
+        DB.saveGoals(this.currentUser.id, goals);
+        UI.toast('目标已保存！', 'success'); this.renderGoals();
+    },
+    renderStats() {
+        const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        const periodMap = { week: 'week', month: 'month', year: 'year' };
+        const periodCheckins = this.currentStatsPeriod === 'all' ? checkins : checkins.filter(c => Utils.isInPeriod(c.date, periodMap[this.currentStatsPeriod]));
+        const stats = { swim: { distance: 0, duration: 0, count: 0 }, bike: { distance: 0, duration: 0, count: 0 }, run: { distance: 0, duration: 0, count: 0 }, other: { count: 0, duration: 0 } };
+        periodCheckins.forEach(c => {
+            if (c.sport === 'other') { stats.other.count++; stats.other.duration += c.duration; }
+            else if (stats[c.sport]) { stats[c.sport].distance += c.distance; stats[c.sport].duration += c.duration; stats[c.sport].count++; }
+        });
+        document.getElementById('stats-summary').innerHTML = `
+            <div class="stat-card swim"><div class="stat-icon">🏊</div><div class="stat-distance">${stats.swim.distance.toFixed(0)}</div><div class="stat-unit">m</div><div class="stat-duration">${Utils.formatDuration(stats.swim.duration)}</div></div>
+            <div class="stat-card bike"><div class="stat-icon">🚴</div><div class="stat-distance">${stats.bike.distance.toFixed(1)}</div><div class="stat-unit">km</div><div class="stat-duration">${Utils.formatDuration(stats.bike.duration)}</div></div>
+            <div class="stat-card run"><div class="stat-icon">🏃</div><div class="stat-distance">${stats.run.distance.toFixed(1)}</div><div class="stat-unit">km</div><div class="stat-duration">${Utils.formatDuration(stats.run.duration)}</div></div>
+            <div class="stat-card other"><div class="stat-icon">💪</div><div class="stat-distance">${stats.other.count}</div><div class="stat-unit">次</div><div class="stat-duration">${Utils.formatDuration(stats.other.duration)}</div></div>`;
+        // 次数统计行
+        const totalCount = stats.swim.count + stats.bike.count + stats.run.count + stats.other.count;
+        const totalDur = stats.swim.duration + stats.bike.duration + stats.run.duration + stats.other.duration;
+        document.getElementById('stats-counts').innerHTML = `
+            <div class="count-badge"><span class="cb-icon">📊</span><span class="cb-num">${totalCount}</span><span class="cb-label">总次数</span><span class="cb-dur">${Utils.formatDuration(totalDur)}</span></div>
+            ${stats.swim.count > 0 ? `<div class="count-badge"><span class="cb-icon">🏊</span><span class="cb-num">${stats.swim.count}</span><span class="cb-label">游泳次数</span><span class="cb-dur">${Utils.formatDuration(stats.swim.duration)}</span></div>` : ''}
+            ${stats.bike.count > 0 ? `<div class="count-badge"><span class="cb-icon">🚴</span><span class="cb-num">${stats.bike.count}</span><span class="cb-label">骑行次数</span><span class="cb-dur">${Utils.formatDuration(stats.bike.duration)}</span></div>` : ''}
+            ${stats.run.count > 0 ? `<div class="count-badge"><span class="cb-icon">🏃</span><span class="cb-num">${stats.run.count}</span><span class="cb-label">跑步次数</span><span class="cb-dur">${Utils.formatDuration(stats.run.duration)}</span></div>` : ''}
+            ${stats.other.count > 0 ? `<div class="count-badge"><span class="cb-icon">💪</span><span class="cb-num">${stats.other.count}</span><span class="cb-label">其他次数</span><span class="cb-dur">${Utils.formatDuration(stats.other.duration)}</span></div>` : ''}`;
+        // 历史记录：受时间筛选影响，最多显示50条
+        const historyContainer = document.getElementById('history-list');
+        const sortedCheckins = periodCheckins.sort((a, b) => new Date(b.date) - new Date(a.date) || new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 50);
+        if (sortedCheckins.length === 0) { UI.renderEmptyState(historyContainer, '暂无记录'); }
+        else {
+            historyContainer.innerHTML = sortedCheckins.map(c => `
+                <div class="checkin-item">
+                    <span class="checkin-sport">${Utils.sportIcons[c.sport]}</span>
+                    <div class="checkin-info">
+                        <div class="checkin-distance">${Utils.checkinSummary(c)}</div>
+                        <div class="checkin-meta">${Utils.sportNames[c.sport]} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
+                    </div>
+                    <div class="checkin-item-actions">
+                        <button class="btn-icon" title="修改" onclick="App.openCheckinEditModal('${c.id}')">✏️</button>
+                        <button class="btn-icon" title="删除" onclick="App.deleteCheckinConfirm('${c.id}')">🗑️</button>
+                    </div>
+                </div>`).join('');
+        }
+        const teamSection = document.getElementById('team-stats-section');
+        if (this.currentUser.isAdmin) { teamSection.style.display = 'block'; this.renderTeamStats(); }
+        else teamSection.style.display = 'none';
+    },
+    renderTeamStats() {
+        const allCheckins = this._allCheckins;
+        const users = DB._getCache('tri_users', []);
+        const period = this.currentStatsPeriod;
+        let filtered;
+        if (period === 'week') filtered = allCheckins.filter(c => Utils.isInPeriod(c.date, 'week'));
+        else if (period === 'month') filtered = allCheckins.filter(c => Utils.isInPeriod(c.date, 'month'));
+        else if (period === 'year') filtered = allCheckins.filter(c => Utils.isInPeriod(c.date, 'year'));
+        else filtered = allCheckins;
+        const userMap = {};
+        users.forEach(u => { userMap[u.id] = { nickname: u.nickname, swim: 0, swimDur: 0, bike: 0, bikeDur: 0, run: 0, runDur: 0, other: 0, otherDur: 0 }; });
+        filtered.forEach(c => {
+            if (!userMap[c.userId]) userMap[c.userId] = { nickname: c.nickname, swim: 0, swimDur: 0, bike: 0, bikeDur: 0, run: 0, runDur: 0, other: 0, otherDur: 0 };
+            const u = userMap[c.userId];
+            if (c.sport === 'swim') { u.swim += c.distance; u.swimDur += c.duration; }
+            else if (c.sport === 'bike') { u.bike += c.distance; u.bikeDur += c.duration; }
+            else if (c.sport === 'run') { u.run += c.distance; u.runDur += c.duration; }
+            else if (c.sport === 'other') { u.other++; u.otherDur += c.duration; }
+        });
+        const rows = Object.values(userMap).filter(u => u.swim > 0 || u.bike > 0 || u.run > 0 || u.other > 0);
+        const container = document.getElementById('team-stats-table');
+        if (rows.length === 0) { UI.renderEmptyState(container, '暂无团队数据'); return; }
+        container.innerHTML = `<div class="team-table-wrap"><table class="team-table"><thead><tr><th>成员</th><th>🏊 游泳</th><th>🚴 骑行</th><th>🏃 跑步</th><th>💪 其他</th><th>总时长</th></tr></thead><tbody>
+            ${rows.map(u => {
+                const totalDur = u.swimDur + u.bikeDur + u.runDur + u.otherDur;
+                return `<tr><td class="team-name">${u.nickname}</td>
+                    <td>${u.swim > 0 ? u.swim.toFixed(0) + 'm' : '-'}<br><small>${u.swim > 0 ? Utils.formatDuration(u.swimDur) : ''}</small></td>
+                    <td>${u.bike > 0 ? u.bike.toFixed(1) + 'km' : '-'}<br><small>${u.bike > 0 ? Utils.formatDuration(u.bikeDur) : ''}</small></td>
+                    <td>${u.run > 0 ? u.run.toFixed(1) + 'km' : '-'}<br><small>${u.run > 0 ? Utils.formatDuration(u.runDur) : ''}</small></td>
+                    <td>${u.other > 0 ? u.other + '次' : '-'}<br><small>${u.other > 0 ? Utils.formatDuration(u.otherDur) : ''}</small></td>
+                    <td class="team-total">${Utils.formatDuration(totalDur)}</td></tr>`;
+            }).join('')}
+        </tbody></table></div>`;
+    },
+    renderFeed() {
+        let checkins = [...this._allCheckins].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        if (this.feedFilter !== 'all') checkins = checkins.filter(c => c.sport === this.feedFilter);
+        const container = document.getElementById('feed-list');
+        if (checkins.length === 0) { UI.renderEmptyState(container, '还没有人打卡'); return; }
+        container.innerHTML = checkins.map(c => `
+            <div class="feed-item">
+                <div class="feed-header"><span class="feed-user">${c.nickname}</span><span class="feed-time">${Utils.formatDateTime(c.createdAt)}</span></div>
+                <div class="feed-content">
+                    <span class="feed-sport">${Utils.sportIcons[c.sport]}</span>
+                    <div class="feed-details">
+                        <div class="feed-distance">${c.sport === 'other' ? (c.content || '其他训练') : Utils.formatDistance(c.sport, c.distance)}</div>
+                        <div class="feed-duration">${Utils.formatDuration(c.duration)} · ${Utils.sportNames[c.sport]}</div>
+                    </div>
+                </div>
+            </div>`).join('');
+    },
+    renderRank() {
+        const checkins = this._allCheckins;
+        const period = this.currentRankPeriod === 'weekly' ? 'week' : 'month';
+        const periodCheckins = checkins.filter(c => Utils.isInPeriod(c.date, period));
+        const userStats = {};
+        periodCheckins.forEach(c => {
+            if (!userStats[c.userId]) userStats[c.userId] = { nickname: c.nickname, swim: 0, bike: 0, run: 0, other: 0, total: 0 };
+            if (c.sport === 'other') { userStats[c.userId].other += 1; }
+            else if (userStats[c.userId][c.sport] !== undefined) {
+                userStats[c.userId][c.sport] += c.distance;
+                userStats[c.userId].total += c.sport === 'swim' ? c.distance / 1000 : c.distance;
+            }
+        });
+        const isOtherTab = this.currentRankSport === 'other';
+        const sortKey = this.currentRankSport === 'total' ? 'total' : this.currentRankSport;
+        let entries = Object.entries(userStats).map(([userId, stats]) => ({ userId, ...stats }));
+        if (isOtherTab) entries = entries.filter(e => e.other > 0);
+        else if (this.currentRankSport !== 'total') entries = entries.filter(e => e[sortKey] > 0);
+        const sorted = entries.sort((a, b) => b[sortKey] - a[sortKey]);
+        const container = document.getElementById('rank-list');
+        if (sorted.length === 0) { UI.renderEmptyState(container, '暂无数据'); return; }
+        container.innerHTML = sorted.map((item, index) => {
+            const isCurrentUser = item.userId === this.currentUser.id;
+            let displayVal, displayUnit;
+            if (this.currentRankSport === 'swim') { displayVal = item.swim.toFixed(0); displayUnit = 'm'; }
+            else if (this.currentRankSport === 'total') { displayVal = item.total.toFixed(1); displayUnit = 'km'; }
+            else if (this.currentRankSport === 'other') { displayVal = item.other; displayUnit = '次'; }
+            else { displayVal = item[sortKey].toFixed(1); displayUnit = 'km'; }
+            return `<div class="rank-item ${isCurrentUser ? 'highlight' : ''}">
+                <span class="rank-position">${index + 1}</span>
+                <span class="rank-user">${item.nickname}${isCurrentUser ? ' (我)' : ''}</span>
+                <span class="rank-value">${displayVal}<span class="rank-unit">${displayUnit}</span></span>
+            </div>`;
+        }).join('');
+    },
+    renderPlans() {
+        const container = document.getElementById('plans-list');
+        const dateLabel = document.getElementById('plan-date-label');
+        if (dateLabel) {
+            const d = new Date(this.planViewDate + 'T00:00:00');
+            const weekDay = Utils.weekDayName(this.planViewDate);
+            const today = Utils.toLocalDateStr(new Date());
+            dateLabel.textContent = today === this.planViewDate ? `今天 ${weekDay}` : `${d.getMonth() + 1}月${d.getDate()}日 ${weekDay}`;
+        }
+        const isAdmin = this.currentUser.isAdmin;
+        const users = DB._getCache('tri_users', []);
+        if (isAdmin) {
+            const allPlans = DB.getAllPlans();
+            const allCheckins = this._allCheckins.filter(c => c.date === this.planViewDate);
+            const tableRows = [];
+            users.forEach(u => {
+                const uPlans = (allPlans[u.id] || []).filter(p => p.date === this.planViewDate);
+                const uCheckins = allCheckins.filter(c => c.userId === u.id);
+                tableRows.push({ user: u, plans: uPlans, checkins: uCheckins });
+            });
+            const hasAny = tableRows.some(r => r.plans.length > 0);
+            if (!hasAny) UI.renderEmptyState(container, '今日无人安排训练计划');
+            else container.innerHTML = this._renderAdminPlanTable(tableRows);
+        } else {
+            const plans = DB.getPlans(this.currentUser.id).filter(p => p.date === this.planViewDate);
+            const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id && c.date === this.planViewDate);
+            if (plans.length === 0) { UI.renderEmptyState(container, '暂无训练计划，点击右上角添加'); return; }
+            container.innerHTML = plans.map(p => this._renderPlanItem(p, checkins, true)).join('');
+        }
+    },
+    _renderAdminPlanTable(tableRows) {
+        const activeRows = tableRows.filter(r => r.plans.length > 0);
+        let html = `<div class="team-table-wrap"><table class="team-table plan-table"><thead><tr><th>成员</th><th>计划项目</th><th>计划内容</th><th>状态</th></tr></thead><tbody>`;
+        activeRows.forEach(({ user, plans, checkins }) => {
+            plans.forEach((p, idx) => {
+                const isOther = p.sport === 'other';
+                const unit = Utils.sportUnits[p.sport] || 'km';
+                let planDesc, isDone;
+                if (isOther) { planDesc = Utils.formatDuration(p.plannedDuration); isDone = checkins.some(c => c.sport === 'other'); }
+                else {
+                    const doneDist = checkins.filter(c => c.sport === p.sport).reduce((s, c) => s + c.distance, 0);
+                    planDesc = `${p.plannedDistance}${unit} · ${Utils.formatDuration(p.plannedDuration)}`;
+                    isDone = p.plannedDistance > 0 && doneDist >= p.plannedDistance;
+                }
+                const statusBadge = isDone ? '<span class="plan-badge done">✅ 完成</span>' : '<span class="plan-badge pending">⏳ 未完成</span>';
+                html += `<tr class="${isDone ? 'plan-row-done' : ''}">
+                    <td class="team-name">${idx === 0 ? user.nickname : ''}</td>
+                    <td>${Utils.sportIcons[p.sport]} ${p.title || Utils.sportNames[p.sport]}</td>
+                    <td>${planDesc}${p.note ? '<br><small class="plan-note-sm">' + p.note + '</small>' : ''}</td>
+                    <td>${statusBadge}</td></tr>`;
+            });
+        });
+        html += `</tbody></table></div>`;
+        return html;
+    },
+    _renderPlanItem(p, checkins, showActions) {
+        const done = checkins.filter(c => c.sport === p.sport);
+        const isOther = p.sport === 'other';
+        const unit = Utils.sportUnits[p.sport] || 'km';
+        let isCompleted, progressHtml, planDetailHtml;
+        if (isOther) {
+            isCompleted = done.length > 0;
+            planDetailHtml = `计划: ${p.plannedDuration ? Utils.formatDuration(p.plannedDuration) : ''}`;
+            progressHtml = `<div class="plan-progress-row"><span class="plan-progress-text">${isCompleted ? '✅ 已打卡 ' + done.length + ' 次' : '未打卡'}</span></div>`;
+        } else {
+            const doneDist = done.reduce((s, c) => s + c.distance, 0);
+            isCompleted = p.plannedDistance > 0 && doneDist >= p.plannedDistance;
+            planDetailHtml = `计划: ${p.plannedDistance} ${unit} · ${Utils.formatDuration(p.plannedDuration)}`;
+            progressHtml = `<div class="plan-progress-row"><div class="plan-progress"><div class="plan-progress-bar" style="width: ${Math.min(100, (doneDist / (p.plannedDistance || 1)) * 100)}%"></div></div><span class="plan-progress-text">${doneDist.toFixed(p.sport === 'swim' ? 0 : 1)} / ${p.plannedDistance} ${unit}</span></div>`;
+        }
+        const actionsHtml = showActions ? `<div class="plan-actions"><button class="btn-icon" onclick="App.editPlan('${p.id}')">✏️</button><button class="btn-icon" onclick="App.deletePlanConfirm('${p.id}')">🗑️</button></div>` : '';
+        return `<div class="plan-item ${isCompleted ? 'completed' : ''}" data-id="${p.id}">
+            <div class="plan-header">
+                <span class="plan-sport-icon">${Utils.sportIcons[p.sport]}</span>
+                <span class="plan-title">${p.title || Utils.sportNames[p.sport]}</span>
+                <span class="plan-status">${isCompleted ? '✅ 已完成' : '⏳ 进行中'}</span>
+            </div>
+            <div class="plan-body">
+                <div class="plan-detail">${planDetailHtml}</div>
+                ${p.intensity ? `<div class="plan-detail">${Utils.intensityLabel(p.intensity)}</div>` : ''}
+                ${p.note ? `<div class="plan-note">${p.note}</div>` : ''}
+                ${progressHtml}
+            </div>
+            ${actionsHtml}
+        </div>`;
+    },
+    openPlanModal(plan = null) {
+        document.getElementById('plan-modal-overlay').classList.add('open');
+        if (plan) {
+            document.getElementById('plan-id').value = plan.id;
+            document.querySelectorAll('.plan-sport-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.plan-sport-btn[data-sport="${plan.sport}"]`).classList.add('active');
+            this._updatePlanModalFields(plan.sport);
+            document.getElementById('plan-title').value = plan.title || '';
+            document.getElementById('plan-distance').value = plan.plannedDistance || '';
+            document.getElementById('plan-duration').value = plan.plannedDuration || '';
+            document.getElementById('plan-intensity').value = plan.intensity || '';
+            document.getElementById('plan-note').value = plan.note || '';
+            document.getElementById('modal-title').textContent = '编辑训练计划';
+        } else {
+            document.getElementById('plan-id').value = '';
+            document.querySelectorAll('.plan-sport-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.plan-sport-btn[data-sport="swim"]').classList.add('active');
+            this._updatePlanModalFields('swim');
+            document.getElementById('plan-title').value = '';
+            document.getElementById('plan-distance').value = '';
+            document.getElementById('plan-duration').value = '';
+            document.getElementById('plan-intensity').value = 'moderate';
+            document.getElementById('plan-note').value = '';
+            document.getElementById('modal-title').textContent = '添加训练计划';
+        }
+    },
+    _updatePlanModalFields(sport) {
+        const distGroup = document.getElementById('plan-distance-group');
+        const distLabel = document.querySelector('label[for="plan-distance"]');
+        if (sport === 'other') { if (distGroup) distGroup.style.display = 'none'; }
+        else {
+            if (distGroup) distGroup.style.display = 'block';
+            if (distLabel) distLabel.textContent = sport === 'swim' ? '计划距离 (m)' : '计划距离 (km)';
+        }
+    },
+    closePlanModal() { document.getElementById('plan-modal-overlay').classList.remove('open'); },
+    savePlan() {
+        const id = document.getElementById('plan-id').value;
+        const sportBtn = document.querySelector('.plan-sport-btn.active');
+        const sport = sportBtn ? sportBtn.dataset.sport : 'swim';
+        const title = document.getElementById('plan-title').value.trim();
+        const distance = parseFloat(document.getElementById('plan-distance').value) || 0;
+        const duration = parseInt(document.getElementById('plan-duration').value) || 0;
+        const intensity = document.getElementById('plan-intensity').value;
+        const note = document.getElementById('plan-note').value.trim();
+        if (sport !== 'other' && !distance && !duration) { UI.toast('请输入计划距离或时长', 'error'); return; }
+        if (sport === 'other' && !duration) { UI.toast('请输入计划时长', 'error'); return; }
+        if (id) { DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note }); UI.toast('计划已更新', 'success'); }
+        else { DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: this.planViewDate }); UI.toast('计划已添加', 'success'); }
+        this.closePlanModal(); this.renderPlans();
+    },
+    editPlan(planId) {
+        const plan = DB.getPlans(this.currentUser.id).find(p => p.id === planId);
+        if (plan) this.openPlanModal(plan);
+    },
+    deletePlanConfirm(planId) {
+        if (confirm('确定删除这条训练计划？')) { DB.deletePlan(this.currentUser.id, planId); UI.toast('已删除', 'success'); this.renderPlans(); }
+    },
+    openCheckinEditModal(checkinId) {
+        const c = this._allCheckins.find(item => item.id === checkinId);
+        if (!c) return;
+        document.getElementById('edit-checkin-id').value = c.id;
+        document.querySelectorAll('.edit-sport-btn').forEach(b => b.classList.remove('active'));
+        const sportBtn = document.querySelector(`.edit-sport-btn[data-sport="${c.sport}"]`);
+        if (sportBtn) sportBtn.classList.add('active');
+        this._updateEditModalFields(c.sport);
+        document.getElementById('edit-checkin-distance').value = c.distance || '';
+        document.getElementById('edit-checkin-content').value = c.content || '';
+        document.getElementById('edit-checkin-duration').value = c.duration;
+        document.getElementById('edit-checkin-date').value = c.date;
+        document.getElementById('edit-checkin-note').value = c.note || '';
+        document.getElementById('checkin-edit-modal-overlay').classList.add('open');
+    },
+    _updateEditModalFields(sport) {
+        const distGroup = document.getElementById('edit-distance-group');
+        const contentGroup = document.getElementById('edit-content-group');
+        const distLabel = document.querySelector('label[for="edit-checkin-distance"]');
+        if (sport === 'other') { if (distGroup) distGroup.style.display = 'none'; if (contentGroup) contentGroup.style.display = 'block'; }
+        else {
+            if (distGroup) distGroup.style.display = 'block'; if (contentGroup) contentGroup.style.display = 'none';
+            if (distLabel) distLabel.textContent = sport === 'swim' ? '距离 (m)' : '距离 (km)';
+        }
+    },
+    closeCheckinEditModal() { document.getElementById('checkin-edit-modal-overlay').classList.remove('open'); },
+    async saveCheckinEdit() {
+        const id = document.getElementById('edit-checkin-id').value;
+        if (!id) return;
+        const sportBtn = document.querySelector('.edit-sport-btn.active');
+        const sport = sportBtn ? sportBtn.dataset.sport : 'swim';
+        const durationStr = document.getElementById('edit-checkin-duration').value;
+        const date = document.getElementById('edit-checkin-date').value;
+        const duration = parseInt(durationStr);
+        if (!durationStr || isNaN(duration) || duration <= 0) { UI.toast('请输入有效时长', 'error'); return; }
+        if (!date) { UI.toast('请选择日期', 'error'); return; }
+        let distance = 0, content = '';
+        if (sport === 'other') {
+            content = document.getElementById('edit-checkin-content').value.trim();
+            if (!content) { UI.toast('请输入训练内容', 'error'); return; }
+        } else {
+            const distanceStr = document.getElementById('edit-checkin-distance').value;
+            distance = parseFloat(distanceStr);
+            if (!distanceStr || isNaN(distance) || distance <= 0) { UI.toast('请输入有效距离', 'error'); return; }
+        }
+        await DB.updateCheckin(id, { sport, distance, content, duration, date, note: document.getElementById('edit-checkin-note').value.trim() });
+        // 更新内存缓存
+        const noteVal = document.getElementById('edit-checkin-note').value.trim();
+        const idx = this._allCheckins.findIndex(c => c.id === id);
+        if (idx !== -1) this._allCheckins[idx] = { ...this._allCheckins[idx], sport, distance, content, duration, date, note: noteVal };
+        UI.toast('打卡记录已更新 ✅', 'success');
+        this.closeCheckinEditModal();
+        this.renderRecentCheckins(); this.renderStats(); this.renderGoals(); this.renderPlans(); this.renderFeed(); this.renderRank();
+    },
+    async deleteCheckinConfirm(checkinId) {
+        if (confirm('确定删除这条打卡记录？删除后无法恢复。')) {
+            await DB.deleteCheckin(checkinId);
+            this._allCheckins = this._allCheckins.filter(c => c.id !== checkinId);
+            UI.toast('打卡记录已删除', 'success');
+            this.renderRecentCheckins(); this.renderStats(); this.renderGoals(); this.renderPlans(); this.renderFeed(); this.renderRank();
+        }
+    },
+
+    // ========== 密码重置 ==========
+    openPwdResetModal() {
+        document.getElementById('pwd-reset-step1').style.display = 'block';
+        document.getElementById('pwd-reset-step2').style.display = 'none';
+        document.getElementById('reset-error').style.display = 'none';
+        document.getElementById('reset-username').value = '';
+        document.getElementById('reset-new-password').value = '';
+        document.getElementById('reset-admin-password').value = '';
+        document.getElementById('pwd-reset-modal-overlay').classList.add('open');
+    },
+    closePwdResetModal() {
+        document.getElementById('pwd-reset-modal-overlay').classList.remove('open');
+    },
+    async doResetPassword() {
+        const username = document.getElementById('reset-username').value.trim();
+        const newPassword = document.getElementById('reset-new-password').value;
+        const adminPassword = document.getElementById('reset-admin-password').value;
+        const errEl = document.getElementById('reset-error');
+        errEl.style.display = 'none';
+
+        if (!username) { this._showResetError('请输入用户名'); return; }
+        if (!newPassword || newPassword.length < 4) { this._showResetError('新密码至少4个字符'); return; }
+
+        // 查找目标用户
+        let targetUser = null;
+        try { targetUser = await DB.findUser(username); } catch(e) {}
+        if (!targetUser) {
+            const users = DB._getCache('tri_users', []);
+            targetUser = users.find(u => u.username === username);
+        }
+        if (!targetUser) { this._showResetError('用户名不存在，请检查后重试'); return; }
+
+        // 验证管理员密码（必须是管理员才能重置）
+        if (!adminPassword) { this._showResetError('请输入管理员密码以确认操作'); return; }
+
+        // 验证管理员身份
+        let adminUser = null;
+        const adminPwdHash = await sha256(adminPassword);
+        try {
+            // 先查管理员用户
+            for (const adminName of ADMIN_USERNAMES) {
+                try { adminUser = await DB.findUser(adminName); if (adminUser) break; } catch(e) {}
+            }
+            if (!adminUser) {
+                const users = DB._getCache('tri_users', []);
+                adminUser = users.find(u => ADMIN_USERNAMES.includes(u.username));
+            }
+        } catch(e) {}
+
+        if (!adminUser) { this._showResetError('管理员账号不存在，无法重置'); return; }
+
+        // 验证管理员密码
+        const adminMatch = (adminUser.passwordHash && adminUser.passwordHash === adminPwdHash)
+                        || (adminUser.password && adminUser.password === adminPassword);
+        if (!adminMatch) { this._showResetError('管理员密码错误，无权操作'); return; }
+
+        // 执行密码重置
+        const newHash = await sha256(newPassword);
+        try {
+            await DB.updateUser(targetUser.id, { passwordHash: newHash, password: null });
+            // 更新本地缓存
+            const users = DB._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === targetUser.id);
+            if (idx !== -1) { users[idx].passwordHash = newHash; delete users[idx].password; DB._setCache('tri_users', users); }
+        } catch(e) {
+            // 本地降级
+            const users = DB._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === targetUser.id);
+            if (idx !== -1) { users[idx].passwordHash = newHash; delete users[idx].password; DB._setCache('tri_users', users); }
+        }
+
+        // 显示成功
+        document.getElementById('pwd-reset-step1').style.display = 'none';
+        document.getElementById('pwd-reset-step2').style.display = 'block';
+        UI.toast('密码重置成功！', 'success');
+    },
+    _showResetError(msg) {
+        const errEl = document.getElementById('reset-error');
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+    },
+
+    // ========== 用户管理（管理员） ==========
+    async renderUserManagement() {
+        if (!this.currentUser || !this.currentUser.isAdmin) {
+            document.getElementById('user-mgmt-table').innerHTML = '<div class="empty-state"><div class="empty-icon">🔒</div><div class="empty-text">仅管理员可访问</div></div>';
+            return;
+        }
+        UI.showLoading(document.getElementById('user-mgmt-table'));
+        let users = [];
+        try { users = await DB.getUsers(); } catch(e) { users = DB._getCache('tri_users', []); }
+
+        // 也加入缓存中但云端可能没有的用户
+        const cachedUsers = DB._getCache('tri_users', []);
+        const userMap = {};
+        users.forEach(u => userMap[u.id || u.username] = u);
+        cachedUsers.forEach(u => {
+            const key = u.id || u.username;
+            if (!userMap[key]) { userMap[key] = u; users.push(u); }
+        });
+
+        // 计算每个用户的打卡次数
+        const checkins = this._allCheckins.length > 0 ? this._allCheckins : DB._getCache('tri_checkins', []);
+        const userCheckinCount = {};
+        checkins.forEach(c => { userCheckinCount[c.userId] = (userCheckinCount[c.userId] || 0) + 1; });
+
+        // 计算每个用户最近打卡时间
+        const userLastCheckin = {};
+        checkins.forEach(c => {
+            if (!userLastCheckin[c.userId] || new Date(c.createdAt) > new Date(userLastCheckin[c.userId])) {
+                userLastCheckin[c.userId] = c.createdAt;
+            }
+        });
+
+        if (users.length === 0) {
+            document.getElementById('user-mgmt-table').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无用户</div></div>';
+            return;
+        }
+
+        const container = document.getElementById('user-mgmt-table');
+        container.innerHTML = `<div class="user-table-wrap"><table class="user-table"><thead><tr>
+            <th>用户名</th><th>昵称</th><th>角色</th><th>打卡次数</th><th>最近打卡</th><th>操作</th>
+        </tr></thead><tbody>
+        ${users.map(u => {
+            const isAdmin = ADMIN_USERNAMES.includes(u.username) || u.isAdmin;
+            const count = userCheckinCount[u.id] || 0;
+            const lastTime = userLastCheckin[u.id] ? Utils.formatDateTime(userLastCheckin[u.id]) : '暂无';
+            const roleBadge = isAdmin ? '<span class="admin-badge">👑 管理员</span>' : '<span class="user-badge">普通用户</span>';
+            const resetBtn = `<button class="btn-reset-pwd" onclick="App.adminResetPassword('${u.id}', '${(u.username || '').replace(/'/g, "\\'")}')">🔑 重置密码</button>`;
+            return `<tr>
+                <td class="user-name-cell">${u.username || '-'}</td>
+                <td>${u.nickname || '-'}</td>
+                <td>${roleBadge}</td>
+                <td>${count} 次</td>
+                <td>${lastTime}</td>
+                <td>${resetBtn}</td>
+            </tr>`;
+        }).join('')}
+        </tbody></table></div>`;
+    },
+
+    adminResetPassword(userId, username) {
+        const newPwd = prompt(`请输入「${username}」的新密码（至少4个字符）：`);
+        if (!newPwd || newPwd.length < 4) { UI.toast('密码至少4个字符，操作取消', 'error'); return; }
+
+        const confirmPwd = prompt(`请再次输入「${username}」的新密码以确认：`);
+        if (newPwd !== confirmPwd) { UI.toast('两次密码不一致，操作取消', 'error'); return; }
+
+        this._doAdminReset(userId, username, newPwd);
+    },
+
+    async _doAdminReset(userId, username, newPwd) {
+        const newHash = await sha256(newPwd);
+        try {
+            await DB.updateUser(userId, { passwordHash: newHash, password: null });
+        } catch(e) {
+            console.warn('云端更新密码失败，使用本地', e);
+        }
+        // 更新本地缓存
+        const users = DB._getCache('tri_users', []);
+        const idx = users.findIndex(u => u.id === userId);
+        if (idx !== -1) { users[idx].passwordHash = newHash; delete users[idx].password; DB._setCache('tri_users', users); }
+        UI.toast(`「${username}」的密码已重置成功！`, 'success');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => { App.init(); });
+</script>
 </body>
 </html>
