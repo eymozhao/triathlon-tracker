@@ -3400,7 +3400,7 @@ const App = {
 
         // 请假信息
         const leaveQuota = LEAVE_QUOTA[gender];
-        const usedLeave = DB.getMonthLeaveCount(user.id);
+        const usedLeave = await DB.getMonthLeaveCount(user.id);
         const remainLeave = Math.max(0, leaveQuota - usedLeave);
         const leaveQuotaEl = document.getElementById('leave-quota-info');
         if (leaveQuotaEl) {
