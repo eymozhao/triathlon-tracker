@@ -1389,6 +1389,18 @@ body {
 .btn-delete-leave { background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; padding: 2px 4px; }
 .btn-delete-leave:hover { color: #f44336; }
 
+/* 计划基数 + 建议时间卡片 */
+.plan-target-section { margin-top: 8px; }
+.plan-target-row { display: flex; gap: 10px; }
+.plan-target-card { flex: 1; border-radius: 12px; padding: 12px 14px; text-align: center; }
+.plan-base-card { background: #e3f2fd; border: 1.5px solid #90caf9; }
+.plan-suggest-card { background: #f3e5f5; border: 1.5px solid #ce93d8; }
+.ptc-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+.ptc-value { font-size: 22px; font-weight: 700; }
+.plan-base-card .ptc-value { color: #1565c0; }
+.plan-suggest-card .ptc-value { color: #7b1fa2; }
+.ptc-note { font-size: 11px; color: #999; margin-top: 2px; }
+
 /* 处罚规则提示 */
 .penalty-note { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 12px; padding: 12px 16px; margin-top: 20px; font-size: 13px; color: #795548; line-height: 1.7; }
 
@@ -1642,10 +1654,25 @@ body {
                     
                     <div class="set-goals-form">
                         <h3>设定目标</h3>
-                        <div class="form-group">
-                            <label>⏱ 每周训练时长目标（分钟）</label>
-                            <input type="number" id="goal-weekly-duration" placeholder="按组别自动推荐" step="30" min="0">
-                            <div class="group-hint" id="weekly-duration-hint"></div>
+                        <!-- 本周训练目标（计划基数 + 组别建议） -->
+                        <div class="plan-target-section">
+                            <div class="plan-target-row">
+                                <div class="plan-target-card plan-base-card">
+                                    <div class="ptc-label">📋 本周计划总时长</div>
+                                    <div class="ptc-value" id="plan-base-duration">--</div>
+                                    <div class="ptc-note">根据训练计划自动计算</div>
+                                </div>
+                                <div class="plan-target-card plan-suggest-card">
+                                    <div class="ptc-label">💡 组别建议时间</div>
+                                    <div class="ptc-value" id="plan-suggest-duration">--</div>
+                                    <div class="ptc-note" id="plan-suggest-range"></div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top:12px;">
+                                <label>➕ 额外增加训练时间（分钟，可选）</label>
+                                <input type="number" id="goal-extra-duration" placeholder="0" step="30" min="0">
+                                <div class="group-hint">在计划总时长基础上额外增加，如 60 分钟 = 1小时</div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>🏊 游泳 (m)</label>
@@ -1963,35 +1990,40 @@ const GROUP_CONFIG = {
         desc: '标铁：1500m游泳 + 40km骑行 + 10km跑步',
         weeklyMinutes: [240, 360],   // 4-6小时
         weeklySessions: 4,
-        weeklyTarget: 300            // 默认5小时/周（分钟）
+        weeklyTarget: 300,           // 默认5小时/周（分钟）[保留兼容]
+        weeklyMin: 240
     },
     '113': {
         name: '113组', icon: '🥈',
         desc: '半程铁三：1.9km游 + 90km骑 + 21.1km跑',
         weeklyMinutes: [360, 480],   // 6-8小时
         weeklySessions: 6,
-        weeklyTarget: 420            // 默认7小时/周（分钟）
+        weeklyTarget: 420,
+        weeklyMin: 360
     },
     '226': {
         name: '226组', icon: '🥇',
         desc: '全程铁三：3.8km游 + 180km骑 + 42.2km跑',
         weeklyMinutes: [480, 600],   // 8-10小时
         weeklySessions: 8,
-        weeklyTarget: 540            // 默认9小时/周（分钟）
+        weeklyTarget: 540,
+        weeklyMin: 480
     },
     weight: {
         name: '其他组', icon: '💪',
         desc: '含减肥、增肌、撸铁等综合训练',
         weeklyMinutes: [360, 9999],  // 6小时+
         weeklySessions: null,
-        weeklyTarget: 420            // 默认7小时/周（分钟）
+        weeklyTarget: 420,
+        weeklyMin: 360
     },
     marathon: {
         name: '马拉松组', icon: '🏃',
         desc: '马拉松专项：跑步为主+交叉训练',
         weeklyMinutes: [300, 420],   // 5-7小时
         weeklySessions: 5,
-        weeklyTarget: 360            // 默认6小时/周（分钟）
+        weeklyTarget: 360,
+        weeklyMin: 300
     }
 };
 
@@ -2347,7 +2379,7 @@ const DB = {
             group: user.group || 'standard',
             penaltyType: user.penaltyType || 'redpacket',
             penaltyAmount: user.penaltyAmount || 5,
-            weeklyTarget: user.weeklyTarget || null
+            extraDuration: user.extraDuration || 0
         };
         localStorage.setItem('tri_current_user_obj', JSON.stringify(safeUser));
         localStorage.setItem('tri_current_user', user.id);
@@ -2920,8 +2952,6 @@ const App = {
         const password = document.getElementById('reg-password').value;
         // 注册时不选组别/处罚，统一给默认值，登录后自行修改
         const gender = 'male', group = 'standard', penaltyType = 'redpacket', penaltyAmount = 5;
-        const groupCfg = GROUP_CONFIG[group];
-        const weeklyTarget = groupCfg.weeklyTarget;
 
         if (username.length < 2) { UI.toast('用户名至少2个字符', 'error'); return; }
         if (nickname.length < 1) { UI.toast('请输入昵称', 'error'); return; }
@@ -2938,7 +2968,7 @@ const App = {
         const isAdmin = ADMIN_USERNAMES.includes(username);
         const newUser = await DB.createUser({
             username, nickname, passwordHash, isAdmin,
-            gender, group, penaltyType, penaltyAmount, weeklyTarget
+            gender, group, penaltyType, penaltyAmount, extraDuration: 0
         });
         this.currentUser = newUser; DB.setCurrentUser(newUser);
         UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : ''), 'success');
@@ -3037,6 +3067,22 @@ const App = {
                 </div>
             </div>`).join('');
     },
+    _getWeekPlanTotal() {
+        const plans = DB.getPlans(this.currentUser.id);
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        monday.setHours(0, 0, 0, 0);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+        return plans.filter(p => {
+            if (!p.date) return false;
+            const d = new Date(p.date + 'T00:00:00');
+            return d >= monday && d <= sunday;
+        }).reduce((sum, p) => sum + (p.plannedDuration || 0), 0);
+    },
     renderGoals() {
         const user = this.currentUser;
         const group = user.group || 'standard';
@@ -3077,8 +3123,10 @@ const App = {
         const goalGroupHint = document.getElementById('goal-group-hint');
         if (goalGroupHint) goalGroupHint.textContent = groupCfg.desc;
 
-        // 本周完成情况卡
-        const weeklyTarget = user.weeklyTarget || groupCfg.weeklyTarget;
+        // 本周完成情况卡 —— 以计划总时长 + 额外增量为目标
+        const planTotal = this._getWeekPlanTotal();
+        const extraDuration = parseInt(document.getElementById('goal-extra-duration')?.value) || 0;
+        const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (user.extraDuration ? extraDuration : groupCfg.weeklyMin);
         const weekProgress = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'))
             .reduce((s, c) => s + c.duration, 0);
         const weekPercent = weeklyTarget > 0 ? Math.min(100, Math.round(weekProgress / weeklyTarget * 100)) : 0;
@@ -3140,11 +3188,22 @@ const App = {
         document.getElementById('goal-bike').value = currentGoals.bike || '';
         document.getElementById('goal-run').value = currentGoals.run || '';
 
-        // 每周时长目标
-        const weekDurEl = document.getElementById('goal-weekly-duration');
-        const weekDurHint = document.getElementById('weekly-duration-hint');
-        if (weekDurEl) weekDurEl.value = weeklyTarget || '';
-        if (weekDurHint) weekDurHint.textContent = `${groupCfg.name}推荐: ${groupCfg.weeklyMinutes[0]/60}-${groupCfg.weeklyMinutes[1] > 600 ? '不限' : groupCfg.weeklyMinutes[1]/60}小时/周`;
+        // 计划基数 + 建议时间卡片
+        const planBaseEl = document.getElementById('plan-base-duration');
+        const planSuggestEl = document.getElementById('plan-suggest-duration');
+        const planSuggestRangeEl = document.getElementById('plan-suggest-range');
+        if (planBaseEl) planBaseEl.textContent = planTotal > 0 ? Utils.formatDuration(planTotal) : '暂无计划';
+        if (planSuggestEl) {
+            const minH = Math.round(groupCfg.weeklyMinutes[0] / 60);
+            const maxH = groupCfg.weeklyMinutes[1] >= 9999 ? '不限' : Math.round(groupCfg.weeklyMinutes[1] / 60);
+            planSuggestEl.textContent = `${minH}~${maxH}h`;
+        }
+        if (planSuggestRangeEl) {
+            planSuggestRangeEl.textContent = `组别推荐 ${groupCfg.weeklyMinutes[0]/60}-${groupCfg.weeklyMinutes[1] > 600 ? '不限' : groupCfg.weeklyMinutes[1]/60}小时/周`;
+        }
+        // 额外增量输入
+        const extraDurEl = document.getElementById('goal-extra-duration');
+        if (extraDurEl) extraDurEl.value = user.extraDuration || 0;
 
         // 请假信息
         const leaveQuota = LEAVE_QUOTA[gender];
@@ -3216,16 +3275,23 @@ const App = {
         const cfg = GROUP_CONFIG[group];
         const hint = document.getElementById('goal-group-hint');
         if (hint) hint.textContent = cfg ? cfg.desc : '';
-        // 自动推荐周时长
-        const durEl = document.getElementById('goal-weekly-duration');
-        if (durEl && cfg) durEl.value = cfg.weeklyTarget;
+        // 更新建议时间显示
+        const planSuggestEl = document.getElementById('plan-suggest-duration');
+        const planSuggestRangeEl = document.getElementById('plan-suggest-range');
+        if (planSuggestEl && cfg) {
+            const minH = Math.round(cfg.weeklyMinutes[0] / 60);
+            const maxH = cfg.weeklyMinutes[1] >= 9999 ? '不限' : Math.round(cfg.weeklyMinutes[1] / 60);
+            planSuggestEl.textContent = `${minH}~${maxH}h`;
+        }
+        if (planSuggestRangeEl && cfg) {
+            planSuggestRangeEl.textContent = `组别推荐 ${cfg.weeklyMinutes[0]/60}-${cfg.weeklyMinutes[1] > 600 ? '不限' : cfg.weeklyMinutes[1]/60}小时/周`;
+        }
     },
     saveProfileSettings() {
         const gender = this.currentUser.gender || 'male';
         const group = document.getElementById('goal-group') ? document.getElementById('goal-group').value : 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
-        const weeklyTarget = groupCfg.weeklyTarget;
-        const updates = { gender, group, weeklyTarget };
+        const updates = { gender, group };
         Object.assign(this.currentUser, updates);
         DB.setCurrentUser(this.currentUser);
         DB.updateUser(this.currentUser.id, updates).catch(() => {
@@ -3255,29 +3321,30 @@ const App = {
     },
     saveGoals() {
         const goals = DB.getGoals(this.currentUser.id);
-        const weeklyTarget = parseInt(document.getElementById('goal-weekly-duration').value) || null;
+        const extraDuration = parseInt(document.getElementById('goal-extra-duration').value) || 0;
         goals[this.currentGoalPeriod] = {
             swim: parseFloat(document.getElementById('goal-swim').value) || 0,
             bike: parseFloat(document.getElementById('goal-bike').value) || 0,
             run: parseFloat(document.getElementById('goal-run').value) || 0
         };
         DB.saveGoals(this.currentUser.id, goals);
-        if (weeklyTarget !== null) {
-            this.currentUser.weeklyTarget = weeklyTarget;
-            DB.setCurrentUser(this.currentUser);
-            DB.updateUser(this.currentUser.id, { weeklyTarget }).catch(() => {
-                const users = DB._getCache('tri_users', []);
-                const idx = users.findIndex(u => u.id === this.currentUser.id);
-                if (idx !== -1) { users[idx].weeklyTarget = weeklyTarget; DB._setCache('tri_users', users); }
-            });
-        }
+        this.currentUser.extraDuration = extraDuration;
+        DB.setCurrentUser(this.currentUser);
+        DB.updateUser(this.currentUser.id, { extraDuration }).catch(() => {
+            const users = DB._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === this.currentUser.id);
+            if (idx !== -1) { users[idx].extraDuration = extraDuration; DB._setCache('tri_users', users); }
+        });
         UI.toast('目标已保存！', 'success'); this.renderGoals();
     },
     renderStats() {
         const user = this.currentUser;
         const group = user.group || 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
-        const weeklyTarget = user.weeklyTarget || groupCfg.weeklyTarget;
+        // 以计划总时长 + 额外增量为目标
+        const planTotal = this._getWeekPlanTotal();
+        const extraDuration = user.extraDuration || 0;
+        const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (extraDuration > 0 ? extraDuration : groupCfg.weeklyMin);
 
         // 本周完成率面板（统计页顶部）
         const compPanel = document.getElementById('week-compliance-panel');
