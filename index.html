@@ -7,12 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4CAF50">
     <title>铁人三项训练打卡</title>
-    <!-- 腾讯云开发 Web SDK（双CDN容灾） -->
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js" onerror="
-        var s=document.createElement('script');
-        s.src='https://imgcache.qq.com/qcloud/tcbjs/1.10.24/tcb.js';
-        document.head.appendChild(s);
-    "></script>
+    <!-- 腾讯云开发 Web SDK -->
+    <script src="https://imgcache.qq.com/qcloud/tcbjs/1.10.24/tcb.js"></script>
 <style>
 * {
     margin: 0;
@@ -1445,6 +1441,7 @@ body {
                     <h1>铁人三项训练打卡</h1>
                     <p class="subtitle">记录每一次突破</p>
                     <p class="cloud-status-msg" id="auth-cloud-status">☁️ 正在连接云端...</p>
+                    <div id="cloud-diag" style="min-height:18px;margin:2px 0;"></div>
                 </div>
                 
                 <div class="auth-tabs">
@@ -2274,22 +2271,29 @@ async function sha256(message) {
     }
 }
 
+// 云端诊断信息，暴露到全局方便调试
+let cloudDiag = { sdk: '', env: CLOUD_ENV_ID, connected: false, users: 0, checkins: 0, plans: 0, error: '', stage: '' };
+
 async function initCloud() {
-    // 兼容新版 cloudbase 和旧版 tcb SDK
-    const SDK = window.cloudbase || window.tcb;
+    const SDK = window.tcb || window.cloudbase;
     if (!SDK) {
-        console.warn('CloudBase SDK 未加载，使用本地模式');
-        cloudDB = null;
+        cloudDiag.error = 'SDK 未加载';
         _updateCloudStatus(false, 'SDK未加载');
+        _renderCloudDiag();
         return false;
     }
+    cloudDiag.sdk = 'tcb.js';
     
     try {
+        cloudDiag.stage = '初始化SDK...';
+        _renderCloudDiag();
         console.log('🔄 正在连接云开发环境:', CLOUD_ENV_ID);
         cloudApp = SDK.init({ env: CLOUD_ENV_ID });
         cloudAuth = cloudApp.auth({ persistence: 'local' });
 
-        // 尝试匿名登录（让 Web SDK 有权限访问数据库）
+        // 匿名登录
+        cloudDiag.stage = '匿名登录...';
+        _renderCloudDiag();
         const loginState = await cloudAuth.getLoginState();
         if (!loginState) {
             console.log('🔑 执行匿名登录...');
@@ -2300,26 +2304,53 @@ async function initCloud() {
         }
 
         cloudDB = cloudApp.database();
+        cloudDiag.connected = true;
+        cloudDiag.stage = '';
         
-        // 快速验证数据库连接
+        // 验证各集合的访问权限和数据量
+        cloudDiag.stage = '检查数据库...';
+        _renderCloudDiag();
         try {
-            const testRes = await cloudDB.collection('tri_users').limit(1).get();
-            console.log('✅ 数据库连接正常，tri_users 记录数:', testRes.data ? testRes.data.length : 0);
-        } catch(dbErr) {
-            console.warn('⚠️ 数据库访问失败:', dbErr.message || dbErr);
-            _updateCloudStatus(false, '数据库无权限');
-            // cloudDB 仍然保留，让后续操作尝试
-        }
-        
-        console.log('✅ 云开发初始化成功 ENV:', CLOUD_ENV_ID);
+            const usersRes = await cloudDB.collection('tri_users').limit(100).get();
+            cloudDiag.users = usersRes.data ? usersRes.data.length : 0;
+        } catch(e) { cloudDiag.error += ' users表失败:' + (e.message||'').substring(0,30); }
+        try {
+            const ckRes = await cloudDB.collection('tri_checkins').limit(500).get();
+            cloudDiag.checkins = ckRes.data ? ckRes.data.length : 0;
+        } catch(e) { cloudDiag.error += ' 打卡表失败:' + (e.message||'').substring(0,30); }
+        try {
+            const plRes = await cloudDB.collection('tri_plans').limit(500).get();
+            cloudDiag.plans = plRes.data ? plRes.data.length : 0;
+        } catch(e) { cloudDiag.error += ' 计划表失败:' + (e.message||'').substring(0,30); }
+        cloudDiag.stage = '';
+
+        console.log('✅ 云开发初始化成功 | 用户:', cloudDiag.users, '打卡:', cloudDiag.checkins, '计划:', cloudDiag.plans);
         _updateCloudStatus(true, '云端已连接');
+        _renderCloudDiag();
         return true;
     } catch(e) {
-        console.warn('❌ 云开发初始化失败，使用本地模式:', e.message || e);
+        console.warn('❌ 云开发初始化失败:', e.message || e);
+        cloudDiag.error = (e.message || '未知错误').substring(0, 100);
+        cloudDiag.stage = '';
         cloudDB = null;
         _updateCloudStatus(false, '初始化失败');
+        _renderCloudDiag();
         return false;
     }
+}
+
+// 渲染登录页的云端诊断面板
+function _renderCloudDiag() {
+    const el = document.getElementById('cloud-diag');
+    if (!el) return;
+    const icon = cloudDiag.connected ? '✅' : (cloudDiag.error ? '❌' : '⏳');
+    const status = cloudDiag.stage || (cloudDiag.connected ? '云端已连接' : (cloudDiag.error ? '连接失败' : '连接中...'));
+    el.innerHTML = 
+        '<div style="font-size:12px;margin:4px 0;">' +
+        icon + ' SDK: ' + cloudDiag.sdk + ' | ' + status +
+        (cloudDiag.connected ? ' | 云端用户:' + cloudDiag.users + ' 打卡:' + cloudDiag.checkins + ' 计划:' + cloudDiag.plans : '') +
+        (cloudDiag.error ? '<br><span style="color:#f44336;">' + cloudDiag.error + '</span>' : '') +
+        '</div>';
 }
 
 function _updateCloudStatus(online, msg) {
@@ -2590,6 +2621,26 @@ const DB = {
     },
 
     // ------- 训练计划管理（云端同步）-------
+    // 从云端获取计划，同时更新 localStorage（调用后再读 getPlans 就有最新数据了）
+    async fetchPlansFromCloud(userId) {
+        if (!cloudDB) return [];
+        try {
+            const res = await cloudDB.collection('tri_plans').where({ userId }).limit(500).get();
+            const cloudPlans = res.data || [];
+            const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
+            // 云端数据与本地合并（云端优先）
+            const localPlans = allPlans[userId] || [];
+            const merged = [...cloudPlans];
+            const cloudIds = new Set(cloudPlans.map(p => p.id));
+            for (const p of localPlans) {
+                if (!cloudIds.has(p.id)) merged.push(p);
+            }
+            allPlans[userId] = merged;
+            localStorage.setItem('tri_plans', JSON.stringify(allPlans));
+            if (cloudPlans.length > 0) console.log('📥 计划数据已从云端同步，共', cloudPlans.length, '条');
+            return merged;
+        } catch(e) { console.warn('拉取云端计划失败', e); return []; }
+    },
     getPlans(userId) {
         const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
         return allPlans[userId] || [];
@@ -2634,21 +2685,17 @@ const DB = {
             cloudDB.collection('tri_plans').where({ id: planId }).remove().catch(e => console.warn('删除计划云端同步失败', e));
         }
     },
-    getAllPlans() { return JSON.parse(localStorage.getItem('tri_plans') || '{}'); },
-    // 从云端拉取计划数据
-    async fetchPlansFromCloud(userId) {
-        if (!cloudDB) return [];
-        try {
-            const res = await cloudDB.collection('tri_plans').where({ userId }).limit(500).get();
-            const cloudPlans = res.data || [];
-            if (cloudPlans.length > 0) {
-                const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
-                allPlans[userId] = cloudPlans;
-                localStorage.setItem('tri_plans', JSON.stringify(allPlans));
-                console.log('📥 计划数据已从云端同步，共', cloudPlans.length, '条');
-            }
-            return cloudPlans;
-        } catch(e) { console.warn('拉取云端计划失败', e); return []; }
+    async getAllPlans() {
+        if (cloudDB) {
+            try {
+                const res = await cloudDB.collection('tri_plans').limit(500).get();
+                const all = {};
+                (res.data || []).forEach(p => { if (!all[p.userId]) all[p.userId] = []; all[p.userId].push(p); });
+                localStorage.setItem('tri_plans', JSON.stringify(all));
+                return all;
+            } catch(e) { console.warn('拉取全部计划失败', e); }
+        }
+        return JSON.parse(localStorage.getItem('tri_plans') || '{}');
     },
 };
 
@@ -2905,12 +2952,12 @@ const App = {
         document.getElementById('plan-prev-week').addEventListener('click', () => {
             const d = new Date(this.planWeekStart + 'T00:00:00');
             d.setDate(d.getDate() - 7);
-            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans();
+            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans().catch(e=>{});
         });
         document.getElementById('plan-next-week').addEventListener('click', () => {
             const d = new Date(this.planWeekStart + 'T00:00:00');
             d.setDate(d.getDate() + 7);
-            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans();
+            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans().catch(e=>{});
         });
         document.getElementById('plan-modal-close').addEventListener('click', () => this.closePlanModal());
         document.getElementById('plan-modal-overlay').addEventListener('click', (e) => {
@@ -2971,8 +3018,7 @@ const App = {
         this.renderStats().catch(e => console.warn('renderStats failed', e));
         this.renderFeed().catch(e => console.warn('renderFeed failed', e));
         this.renderRank();
-        this.renderPlans();
-    },
+        this.renderPlans().catch(e=>{});    },
     async handleLogin() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
@@ -3159,7 +3205,7 @@ const App = {
         document.getElementById('checkin-note').value = '';
         document.querySelectorAll('.quick-dur-btn').forEach(b => b.classList.remove('active'));
         if (dateEl) dateEl.value = Utils.toLocalDateStr(new Date());
-        this.renderRecentCheckins(); this.renderPlans();
+        this.renderRecentCheckins(); this.renderPlans().catch(e=>{});
         this.renderTodaySummary(date);
     },
     renderTodaySummary(date) {
@@ -3210,8 +3256,8 @@ const App = {
                 </div>
             </div>`).join('');
     },
-    _getWeekPlanTotal() {
-        const plans = DB.getPlans(this.currentUser.id);
+    async _getWeekPlanTotal() {
+        const plans = await DB.getPlans(this.currentUser.id);
         const today = new Date();
         const dayOfWeek = today.getDay();
         const monday = new Date(today);
@@ -3267,7 +3313,7 @@ const App = {
         if (goalGroupHint) goalGroupHint.textContent = groupCfg.desc;
 
         // 本周完成情况卡 —— 以计划总时长 + 额外增量为目标
-        const planTotal = this._getWeekPlanTotal();
+        const planTotal = await this._getWeekPlanTotal();
         const extraDuration = parseInt(document.getElementById('goal-extra-duration')?.value) || 0;
         const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (user.extraDuration ? extraDuration : groupCfg.weeklyMin);
         const weekProgress = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'))
@@ -3485,7 +3531,7 @@ const App = {
         const group = user.group || 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
         // 以计划总时长 + 额外增量为目标
-        const planTotal = this._getWeekPlanTotal();
+        const planTotal = await this._getWeekPlanTotal();
         const extraDuration = user.extraDuration || 0;
         const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (extraDuration > 0 ? extraDuration : groupCfg.weeklyMin);
 
@@ -3648,7 +3694,8 @@ const App = {
         d.setDate(d.getDate() + diff);
         return Utils.toLocalDateStr(d);
     },
-    renderPlans() {
+    async renderPlans() {
+        await DB.fetchPlansFromCloud(this.currentUser.id);
         const container = document.getElementById('plans-week-list');
         const weekLabel = document.getElementById('plan-week-label');
         const today = Utils.toLocalDateStr(new Date());
@@ -3814,14 +3861,14 @@ const App = {
             const planDate = document.getElementById('plan-date').value || Utils.toLocalDateStr(new Date());
             DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate }); UI.toast('计划已添加', 'success');
         }
-        this.closePlanModal(); this.renderPlans();
+        this.closePlanModal(); this.renderPlans().catch(e=>{});
     },
     editPlan(planId) {
         const plan = DB.getPlans(this.currentUser.id).find(p => p.id === planId);
         if (plan) this.openPlanModal(plan);
     },
     deletePlanConfirm(planId) {
-        if (confirm('确定删除这条训练计划？')) { DB.deletePlan(this.currentUser.id, planId); UI.toast('已删除', 'success'); this.renderPlans(); }
+        if (confirm('确定删除这条训练计划？')) { DB.deletePlan(this.currentUser.id, planId); UI.toast('已删除', 'success'); this.renderPlans().catch(e=>{}); }
     },
     openCheckinEditModal(checkinId) {
         const c = this._allCheckins.find(item => item.id === checkinId);
