@@ -1289,6 +1289,79 @@ body {
 /* 管理员用户管理tab */
 .nav-tab.admin-only { display: none; }
 .nav-tab.admin-only.visible { display: flex; }
+
+/* ===== 新增组件样式 ===== */
+/* 注册页性别/处罚选择 */
+.gender-selector, .penalty-selector { display: flex; gap: 8px; }
+.gender-btn, .penalty-btn { flex: 1; padding: 10px 6px; border: 2px solid #e0e0e0; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+.gender-btn.active, .penalty-btn.active { border-color: #1976d2; background: #e3f2fd; color: #1976d2; font-weight: 600; }
+.form-select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fff; }
+.group-hint { font-size: 12px; color: #888; margin-top: 5px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; }
+
+/* 分组信息卡 */
+.group-info-card { background: linear-gradient(135deg, #1565c0, #1976d2); color: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+.group-badge-row { display: flex; align-items: center; gap: 12px; }
+.group-icon-big { font-size: 32px; }
+.group-info-text .group-name { font-size: 18px; font-weight: 700; }
+.group-info-text .group-desc { font-size: 12px; opacity: 0.85; margin: 2px 0; }
+.group-info-text .group-meta { font-size: 12px; opacity: 0.85; }
+
+/* 本周完成进度卡 */
+.week-progress-card { background: #fff; border: 1.5px solid #e3f2fd; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(25,118,210,0.07); }
+.week-progress-inner {}
+.week-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #333; }
+.week-progress-bar-wrap { background: #e8f5e9; border-radius: 8px; height: 12px; overflow: hidden; margin-bottom: 6px; }
+.week-progress-bar-fill { height: 100%; border-radius: 8px; transition: width 0.4s; }
+.week-progress-info { font-size: 13px; color: #555; }
+.gap-red { color: #f44336; font-weight: 600; }
+.done-green { color: #4caf50; font-weight: 600; }
+.penalty-msg { margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: #fff3e0; font-size: 13px; }
+.penalty-owed { color: #e65100; }
+.penalty-exempt { color: #388e3c; }
+
+/* 统计页本周合规面板 */
+.week-compliance-panel { background: #fff; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border: 1.5px solid #e0e0e0; }
+.compliance-inner {}
+.compliance-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.compliance-bar { background: #f0f0f0; border-radius: 8px; height: 10px; overflow: hidden; margin-bottom: 5px; }
+.compliance-fill { height: 100%; border-radius: 8px; transition: width 0.4s; }
+.compliance-nums { font-size: 12px; color: #666; }
+
+/* 请假区域 */
+.leave-section { background: #f9fbe7; border: 1.5px solid #dce775; border-radius: 14px; padding: 14px 16px; margin-top: 20px; }
+.leave-section h3 { margin: 0 0 10px; font-size: 15px; color: #558b2f; }
+.leave-quota-info { font-size: 13px; color: #555; margin-bottom: 12px; padding: 8px 12px; background: #fff; border-radius: 8px; }
+.leave-form { display: flex; flex-direction: column; gap: 8px; }
+.leave-history { margin-top: 12px; }
+.leave-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #fff; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
+.leave-date { font-weight: 600; color: #1976d2; min-width: 80px; }
+.leave-reason { flex: 1; color: #555; }
+.btn-delete-leave { background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; padding: 2px 4px; }
+.btn-delete-leave:hover { color: #f44336; }
+
+/* 处罚设置区域 */
+.penalty-settings-section { background: #fce4ec; border: 1.5px solid #f48fb1; border-radius: 14px; padding: 14px 16px; margin-top: 20px; }
+.penalty-settings-section h3 { margin: 0 0 10px; font-size: 15px; color: #c62828; }
+.penalty-status-card { padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 14px; font-weight: 500; }
+.penalty-ok { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 8px; }
+.penalty-due { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; }
+
+/* 训练库 */
+.training-tabs { display: flex; gap: 4px; overflow-x: auto; padding: 0 0 8px; margin-bottom: 12px; }
+.train-tab-btn { flex-shrink: 0; padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 20px; background: #fff; font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.train-tab-btn.active { border-color: #1976d2; background: #1976d2; color: #fff; font-weight: 600; }
+.train-plan-title { font-size: 16px; font-weight: 700; color: #1565c0; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #e3f2fd; }
+.train-phase { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; border: 1px solid #e0e0e0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.train-phase-header { font-size: 15px; font-weight: 700; color: #333; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.train-weekly-total { font-size: 12px; font-weight: normal; background: #e3f2fd; color: #1565c0; padding: 3px 9px; border-radius: 10px; }
+.train-week-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.train-week-table th { background: #f5f5f5; padding: 6px 8px; text-align: left; color: #666; font-weight: 600; }
+.train-week-table td { padding: 7px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.train-day { font-weight: 600; color: #1976d2; white-space: nowrap; width: 40px; }
+.train-content { color: #333; line-height: 1.5; }
+.train-dur { white-space: nowrap; color: #888; font-size: 12px; width: 50px; }
+.rest-row td { color: #bbb; }
+.train-tip { font-size: 12px; color: #777; background: #fffde7; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 10px; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -1336,6 +1409,35 @@ body {
                     <div class="form-group">
                         <label>昵称</label>
                         <input type="text" id="reg-nickname" placeholder="请输入昵称（显示给队友看）" required>
+                    </div>
+                    <div class="form-group">
+                        <label>性别</label>
+                        <div class="gender-selector">
+                            <button type="button" class="gender-btn active" data-gender="male">👨 男</button>
+                            <button type="button" class="gender-btn" data-gender="female">👩 女</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>训练组别</label>
+                        <select id="reg-group" class="form-select">
+                            <option value="standard">🥉 标铁组（每周4-6小时）</option>
+                            <option value="113">🥈 113组（每周6-8小时）</option>
+                            <option value="226">🥇 226组（每周8-10小时）</option>
+                            <option value="weight">💪 减肥组（每周6小时+）</option>
+                            <option value="marathon">🏃 马拉松组（每周5-7小时）</option>
+                        </select>
+                        <div class="group-hint" id="reg-group-hint">标铁：750m游泳 + 20km骑行 + 5km跑步</div>
+                    </div>
+                    <div class="form-group">
+                        <label>处罚方式</label>
+                        <div class="penalty-selector">
+                            <button type="button" class="penalty-btn active" data-penalty="redpacket">🧧 发红包</button>
+                            <button type="button" class="penalty-btn" data-penalty="doubletime">⏰ 双倍补时</button>
+                        </div>
+                    </div>
+                    <div class="form-group" id="penalty-amount-group">
+                        <label>红包金额（元/小时欠训）</label>
+                        <input type="number" id="reg-penalty-amount" placeholder="5" min="1" max="100" value="5">
                     </div>
                     <div class="form-group">
                         <label>密码</label>
@@ -1388,6 +1490,10 @@ body {
                 <button class="nav-tab admin-only" data-page="users" id="nav-users">
                     <span class="nav-icon">👥</span>
                     <span class="nav-label">用户</span>
+                </button>
+                <button class="nav-tab" data-page="training">
+                    <span class="nav-icon">📚</span>
+                    <span class="nav-label">训练库</span>
                 </button>
             </nav>
 
@@ -1474,7 +1580,13 @@ body {
                 <!-- 目标页面 -->
                 <section id="goals-section" class="section">
                     <h2 class="section-title">我的目标</h2>
-                    
+
+                    <!-- 分组信息卡片 -->
+                    <div id="my-group-card" class="group-info-card"></div>
+
+                    <!-- 本周完成情况 -->
+                    <div id="week-progress-card" class="week-progress-card"></div>
+
                     <div class="goal-period-toggle">
                         <button class="period-btn active" data-period="weekly">每周目标</button>
                         <button class="period-btn" data-period="monthly">每月目标</button>
@@ -1484,6 +1596,11 @@ body {
                     
                     <div class="set-goals-form">
                         <h3>设定目标</h3>
+                        <div class="form-group">
+                            <label>⏱ 每周训练时长目标（分钟）</label>
+                            <input type="number" id="goal-weekly-duration" placeholder="按组别自动推荐" step="30" min="0">
+                            <div class="group-hint" id="weekly-duration-hint"></div>
+                        </div>
                         <div class="form-group">
                             <label>🏊 游泳 (m)</label>
                             <input type="number" id="goal-swim" placeholder="0" step="1" min="0">
@@ -1498,12 +1615,51 @@ body {
                         </div>
                         <button id="save-goals-btn" class="btn-primary btn-block">保存目标</button>
                     </div>
+
+                    <!-- 请假申请 -->
+                    <div class="leave-section">
+                        <h3>🏖️ 请假申请</h3>
+                        <div id="leave-quota-info" class="leave-quota-info"></div>
+                        <div class="leave-form">
+                            <div class="form-group">
+                                <label>请假日期</label>
+                                <input type="date" id="leave-date">
+                            </div>
+                            <div class="form-group">
+                                <label>请假原因</label>
+                                <input type="text" id="leave-reason" placeholder="如：出差/比赛/伤病">
+                            </div>
+                            <button class="btn-secondary btn-block" onclick="App.applyLeave()">申请请假</button>
+                        </div>
+                        <div id="leave-history" class="leave-history"></div>
+                    </div>
+
+                    <!-- 处罚设置 -->
+                    <div class="penalty-settings-section">
+                        <h3>⚠️ 处罚设置</h3>
+                        <div id="penalty-status-card" class="penalty-status-card"></div>
+                        <div class="form-group">
+                            <label>处罚方式</label>
+                            <div class="penalty-selector">
+                                <button type="button" class="penalty-btn active" id="penalty-type-redpacket" onclick="App.setPenaltyType('redpacket')">🧧 发红包</button>
+                                <button type="button" class="penalty-btn" id="penalty-type-doubletime" onclick="App.setPenaltyType('doubletime')">⏰ 双倍补时</button>
+                            </div>
+                        </div>
+                        <div class="form-group" id="penalty-amount-settings-group">
+                            <label>红包金额（元/小时欠训）</label>
+                            <input type="number" id="penalty-amount-settings" placeholder="5" min="1" max="100">
+                        </div>
+                        <button class="btn-secondary btn-block" onclick="App.savePenaltySettings()">💾 保存处罚设置</button>
+                    </div>
                 </section>
 
                 <!-- 统计页面 -->
                 <section id="stats-section" class="section">
                     <h2 class="section-title">我的统计</h2>
-                    
+
+                    <!-- 本周打卡完成率面板 -->
+                    <div id="week-compliance-panel" class="week-compliance-panel"></div>
+
                     <div class="stats-period">
                         <select id="stats-period-select">
                             <option value="week">本周</option>
@@ -1572,6 +1728,19 @@ body {
                         <button class="btn-refresh" id="refresh-users-btn">🔄 刷新</button>
                     </div>
                     <div id="user-mgmt-table"></div>
+                </section>
+
+                <!-- 训练库页面 -->
+                <section id="training-section" class="section">
+                    <h2 class="section-title">📚 训练计划库</h2>
+                    <div class="training-tabs">
+                        <button class="train-tab-btn active" data-group="standard">🥉 标铁</button>
+                        <button class="train-tab-btn" data-group="113">🥈 113</button>
+                        <button class="train-tab-btn" data-group="226">🥇 226</button>
+                        <button class="train-tab-btn" data-group="weight">💪 减肥</button>
+                        <button class="train-tab-btn" data-group="marathon">🏃 马拉松</button>
+                    </div>
+                    <div id="training-plan-content" class="training-plan-content"></div>
                 </section>
             </main>
         </div>
@@ -1750,6 +1919,259 @@ body {
 const CLOUD_ENV_ID = 'eymozhao-8g63fctk0214beb5';
 const ADMIN_USERNAMES = ['eymozhao'];
 
+// ========== 训练分组配置 ==========
+const GROUP_CONFIG = {
+    standard: {
+        name: '标铁组', icon: '🥉',
+        desc: '标铁：750m游泳 + 20km骑行 + 5km跑步',
+        weeklyMinutes: [240, 360],   // 4-6小时
+        weeklySessions: 4,
+        weeklyTarget: 300            // 默认5小时/周（分钟）
+    },
+    '113': {
+        name: '113组', icon: '🥈',
+        desc: '半程铁三：1.9km游 + 90km骑 + 21.1km跑',
+        weeklyMinutes: [360, 480],   // 6-8小时
+        weeklySessions: 6,
+        weeklyTarget: 420            // 默认7小时/周（分钟）
+    },
+    '226': {
+        name: '226组', icon: '🥇',
+        desc: '全程铁三：3.8km游 + 180km骑 + 42.2km跑',
+        weeklyMinutes: [480, 600],   // 8-10小时
+        weeklySessions: 8,
+        weeklyTarget: 540            // 默认9小时/周（分钟）
+    },
+    weight: {
+        name: '减肥组', icon: '💪',
+        desc: '有氧减脂为主，持续低强度训练',
+        weeklyMinutes: [360, 9999],  // 6小时+
+        weeklySessions: null,
+        weeklyTarget: 420            // 默认7小时/周（分钟）
+    },
+    marathon: {
+        name: '马拉松组', icon: '🏃',
+        desc: '马拉松专项：跑步为主+交叉训练',
+        weeklyMinutes: [300, 420],   // 5-7小时
+        weeklySessions: 5,
+        weeklyTarget: 360            // 默认6小时/周（分钟）
+    }
+};
+
+// 请假配额（按性别）
+const LEAVE_QUOTA = { male: 1, female: 2 }; // 次/月
+
+// ========== 铁三&马拉松训练周计划模板 ==========
+const TRAINING_PLANS = {
+    standard: {
+        title: '标铁训练计划（基础12周）',
+        phases: [
+            {
+                phase: '第1-4周 · 基础建设期',
+                weeks: [
+                    { day: '周一', content: '游泳 800m（有氧配速）', duration: 40 },
+                    { day: '周二', content: '跑步 5km（轻松配速）', duration: 35 },
+                    { day: '周三', content: '骑行 30km（稳定中等强度）', duration: 70 },
+                    { day: '周四', content: '游泳 1000m（技术课）', duration: 50 },
+                    { day: '周五', content: '休息或拉伸', duration: 0 },
+                    { day: '周六', content: '骑行+跑步 砖训（20km骑+3km跑）', duration: 75 },
+                    { day: '周日', content: '休息 / 轻松游泳放松', duration: 30 }
+                ],
+                totalMins: 300, tip: '⚠️ 建立有氧基础，配速宜轻松，不追求速度'
+            },
+            {
+                phase: '第5-8周 · 强度提升期',
+                weeks: [
+                    { day: '周一', content: '游泳 1200m（含间歇组：4×200m）', duration: 55 },
+                    { day: '周二', content: '跑步 8km（含3km配速跑）', duration: 50 },
+                    { day: '周三', content: '骑行 40km（含5km TT冲刺）', duration: 90 },
+                    { day: '周四', content: '游泳 1500m（连续不停）', duration: 55 },
+                    { day: '周五', content: '力量训练（核心+腿部 45分钟）', duration: 45 },
+                    { day: '周六', content: '砖训 骑35km+跑5km', duration: 100 },
+                    { day: '周日', content: '轻松跑 6km', duration: 40 }
+                ],
+                totalMins: 435, tip: '💪 可开始加入心率区间训练，控制在Zone2-3'
+            },
+            {
+                phase: '第9-11周 · 赛前冲刺期',
+                weeks: [
+                    { day: '周一', content: '游泳 1500m（比赛配速）', duration: 40 },
+                    { day: '周二', content: '跑步 10km（含5km乳酸阈值跑）', duration: 55 },
+                    { day: '周三', content: '骑行 50km（含10km TT）', duration: 100 },
+                    { day: '周四', content: '游泳技术训练 1000m', duration: 40 },
+                    { day: '周五', content: '短跑激活 3km + 力量', duration: 35 },
+                    { day: '周六', content: '模拟赛 全程砖训', duration: 120 },
+                    { day: '周日', content: '恢复游泳 600m 放松', duration: 25 }
+                ],
+                totalMins: 415, tip: '🔥 最高峰值训练周，注意恢复睡眠'
+            },
+            {
+                phase: '第12周 · 减量恢复期（赛前）',
+                weeks: [
+                    { day: '周一', content: '游泳 600m 轻松', duration: 25 },
+                    { day: '周二', content: '跑步 4km 轻松', duration: 25 },
+                    { day: '周三', content: '骑行 20km 轻松', duration: 45 },
+                    { day: '周四', content: '游泳激活 400m', duration: 20 },
+                    { day: '周五', content: '休息，装备检查', duration: 0 },
+                    { day: '周六', content: '轻松活动 + 赛前准备', duration: 20 },
+                    { day: '周日', content: '🏆 比赛日！', duration: 0 }
+                ],
+                totalMins: 135, tip: '😴 减量周关键：减量50-60%，保持激活，充足睡眠，碳水储备'
+            }
+        ]
+    },
+    '113': {
+        title: '113半程铁三训练计划（基础16周）',
+        phases: [
+            {
+                phase: '第1-4周 · 有氧基础建设',
+                weeks: [
+                    { day: '周一', content: '游泳 1500m（有氧配速）', duration: 50 },
+                    { day: '周二', content: '跑步 8km（轻松）', duration: 50 },
+                    { day: '周三', content: '骑行 50km（中等强度）', duration: 100 },
+                    { day: '周四', content: '游泳 2000m（技术课含单臂）', duration: 65 },
+                    { day: '周五', content: '跑步 6km + 核心力量', duration: 50 },
+                    { day: '周六', content: '长骑 70km', duration: 140 },
+                    { day: '周日', content: '轻松恢复跑 8km', duration: 50 }
+                ],
+                totalMins: 505, tip: '建立大量有氧基础，骑行比例60%'
+            },
+            {
+                phase: '第9-12周 · 专项能力期',
+                weeks: [
+                    { day: '周一', content: '游泳间歇 8×200m（90sec rest）', duration: 65 },
+                    { day: '周二', content: '跑步 15km（含8km马配速）', duration: 80 },
+                    { day: '周三', content: '骑行 80km（含20km TT）', duration: 160 },
+                    { day: '周四', content: '游泳 2500m（连续）', duration: 70 },
+                    { day: '周五', content: '跑步节奏跑 12km', duration: 65 },
+                    { day: '周六', content: '砖训 骑90km+跑10km', duration: 220 },
+                    { day: '周日', content: '恢复游泳 1200m', duration: 40 }
+                ],
+                totalMins: 700, tip: '周六砖训是核心课，骑行后腿部疲劳跑步体验是关键'
+            }
+        ]
+    },
+    '226': {
+        title: '226全程铁三训练计划（精英20周）',
+        phases: [
+            {
+                phase: '第1-5周 · 基础有氧期',
+                weeks: [
+                    { day: '周一', content: '游泳 2000m + 核心30min', duration: 80 },
+                    { day: '周二', content: '跑步 12km（Zone2 有氧）', duration: 70 },
+                    { day: '周三', content: '骑行 80km（稳定功率 Zone2）', duration: 150 },
+                    { day: '周四', content: '游泳 3000m（含技术组）', duration: 80 },
+                    { day: '周五', content: '跑步 10km + 力量训练', duration: 80 },
+                    { day: '周六', content: '长骑 120km', duration: 240 },
+                    { day: '周日', content: '长跑 18km（轻松配速）', duration: 110 }
+                ],
+                totalMins: 810, tip: '关注营养补给：长骑每45min补一次碳水'
+            },
+            {
+                phase: '第12-16周 · 专项冲刺期',
+                weeks: [
+                    { day: '周一', content: '游泳 4000m（含模拟开放水域）', duration: 90 },
+                    { day: '周二', content: '跑步 20km（含10km马配速）', duration: 110 },
+                    { day: '周三', content: '骑行 120km（含30km TT）', duration: 230 },
+                    { day: '周四', content: '游泳 3500m（连续长游）', duration: 85 },
+                    { day: '周五', content: '轻松跑 10km + 激活', duration: 60 },
+                    { day: '周六', content: '超级砖训 160km骑+20km跑', duration: 360 },
+                    { day: '周日', content: '恢复游泳 1500m + 按摩', duration: 50 }
+                ],
+                totalMins: 985, tip: '⚠️ 训练量最高峰，需极度重视恢复：睡眠9h+，蛋白质补充'
+            }
+        ]
+    },
+    weight: {
+        title: '有氧减脂训练计划（12周）',
+        phases: [
+            {
+                phase: '第1-4周 · 习惯养成期',
+                weeks: [
+                    { day: '周一', content: '游泳 800m（轻松有氧）', duration: 40 },
+                    { day: '周二', content: '快走/慢跑 40分钟', duration: 40 },
+                    { day: '周三', content: '骑行/动感单车 45分钟', duration: 45 },
+                    { day: '周四', content: '游泳 1000m', duration: 50 },
+                    { day: '周五', content: '休息或拉伸瑜伽', duration: 30 },
+                    { day: '周六', content: '慢跑 5km + 核心练习', duration: 50 },
+                    { day: '周日', content: '户外骑行 30km（轻松）', duration: 70 }
+                ],
+                totalMins: 325, tip: '🌟 减脂关键：有氧训练 Zone2（心率维持60-70%最大心率），持续时间>40min'
+            },
+            {
+                phase: '第5-12周 · 持续燃脂期',
+                weeks: [
+                    { day: '周一', content: '游泳 1200m（间歇强化）', duration: 55 },
+                    { day: '周二', content: '跑步 6km（有氧配速）', duration: 45 },
+                    { day: '周三', content: '骑行 40km + HIIT 15min', duration: 100 },
+                    { day: '周四', content: '游泳 1500m', duration: 55 },
+                    { day: '周五', content: '力量训练（全身）45分钟', duration: 45 },
+                    { day: '周六', content: '长距离轻松跑 8km', duration: 60 },
+                    { day: '周日', content: '骑行 50km 有氧恢复', duration: 100 }
+                ],
+                totalMins: 460, tip: '💡 配合控制饮食：热量缺口 300-500卡/天，蛋白质充足保肌肉'
+            }
+        ]
+    },
+    marathon: {
+        title: '马拉松330训练计划（20周）',
+        phases: [
+            {
+                phase: '第1-4周 · 基础建设（周跑量40-50km）',
+                weeks: [
+                    { day: '周一', content: '休息或交叉训练（游泳/骑行）', duration: 40 },
+                    { day: '周二', content: 'E跑 10km（配速6:30/km轻松）', duration: 65 },
+                    { day: '周三', content: 'E跑 8km + 6×100m跑跳', duration: 55 },
+                    { day: '周四', content: 'M配速跑 12km（5:00/km目标配速）', duration: 60 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: 'T节奏跑 2×20min（4:40/km）', duration: 60 },
+                    { day: '周日', content: '长跑 26km（E配速）', duration: 163 }
+                ],
+                totalMins: 443, tip: '330目标配速：4:41/km。E跑比目标配速慢60-90秒'
+            },
+            {
+                phase: '第9-12周 · 强化期（周跑量60-70km）',
+                weeks: [
+                    { day: '周一', content: '休息或交叉训练', duration: 40 },
+                    { day: '周二', content: 'I间歇 6×1000m（4:10/km）90sec rest', duration: 65 },
+                    { day: '周三', content: 'E跑 10km', duration: 60 },
+                    { day: '周四', content: 'T节奏跑 3×20min（4:40/km）', duration: 75 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: 'M配速长跑 22km（前8km E后14km M配速5:00）', duration: 118 },
+                    { day: '周日', content: '长跑 32km（E配速）', duration: 200 }
+                ],
+                totalMins: 558, tip: '💪 本阶段训练量最大，每两周安排一次减量周（训练量降30%）'
+            },
+            {
+                phase: '第17-19周 · 减量期（周跑量逐步降至30km）',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: 'T节奏跑 2×15min', duration: 45 },
+                    { day: '周三', content: 'E跑 8km', duration: 50 },
+                    { day: '周四', content: 'M配速跑 6km', duration: 30 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: 'E跑 5km 激活', duration: 30 },
+                    { day: '周日', content: '休息，准备比赛装备', duration: 0 }
+                ],
+                totalMins: 155, tip: '😴 减量关键：体力储备 > 保持感觉。碳水负荷：赛前3天加量'
+            },
+            {
+                phase: '第20周 · 赛周',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '轻松跑 4km + 4×100m', duration: 25 },
+                    { day: '周三', content: '休息或轻松跑30min', duration: 30 },
+                    { day: '周四', content: '轻松跑 20min + 赛前激活', duration: 25 },
+                    { day: '周五', content: '休息 + 领号码布', duration: 0 },
+                    { day: '周六', content: '轻松步行15min，充分休息', duration: 15 },
+                    { day: '周日', content: '🏆 比赛日！目标330完赛！', duration: 0 }
+                ],
+                totalMins: 95, tip: '🍝 赛前一晚：大量碳水（意面/米饭）；比赛日起跑前2-3h吃早餐'
+            }
+        ]
+    }
+};
+
 let cloudDB = null;
 let cloudApp = null;
 let cloudAuth = null;
@@ -1881,7 +2303,15 @@ const DB = {
     },
     setCurrentUser(user) {
         // 存完整用户对象（不含密码），方便跨页面快速恢复
-        const safeUser = { id: user.id, username: user.username, nickname: user.nickname, isAdmin: !!user.isAdmin };
+        const safeUser = {
+            id: user.id, username: user.username, nickname: user.nickname,
+            isAdmin: !!user.isAdmin,
+            gender: user.gender || 'male',
+            group: user.group || 'standard',
+            penaltyType: user.penaltyType || 'redpacket',
+            penaltyAmount: user.penaltyAmount || 5,
+            weeklyTarget: user.weeklyTarget || null
+        };
         localStorage.setItem('tri_current_user_obj', JSON.stringify(safeUser));
         localStorage.setItem('tri_current_user', user.id);
     },
@@ -1892,7 +2322,35 @@ const DB = {
     },
     setAdmin(userId) { this.updateUser(userId, { isAdmin: true }); },
 
-    // ------- 打卡管理 -------
+    // ------- 请假管理 -------
+    getLeaves(userId) {
+        const all = this._getCache('tri_leaves', []);
+        return all.filter(l => l.userId === userId);
+    },
+    addLeave(leave) {
+        leave.id = 'lv_' + Date.now();
+        leave.createdAt = new Date().toISOString();
+        const all = this._getCache('tri_leaves', []);
+        all.push(leave);
+        this._setCache('tri_leaves', all);
+        if (cloudDB) {
+            cloudDB.collection('tri_leaves').add(leave).catch(e => console.warn('请假云端保存失败', e));
+        }
+        return leave;
+    },
+    deleteLeave(leaveId) {
+        const all = this._getCache('tri_leaves', []);
+        const idx = all.findIndex(l => l.id === leaveId);
+        if (idx !== -1) { all.splice(idx, 1); this._setCache('tri_leaves', all); }
+        if (cloudDB) cloudDB.collection('tri_leaves').where({ id: leaveId }).remove().catch(e => {});
+    },
+    // 获取本月已用请假次数
+    getMonthLeaveCount(userId) {
+        const now = new Date();
+        const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const leaves = this.getLeaves(userId);
+        return leaves.filter(l => (l.date || l.createdAt || '').startsWith(yearMonth)).length;
+    },
     async getCheckins() {
         if (!cloudDB) return this._getCache('tri_checkins', []);
         try {
@@ -2296,6 +2754,42 @@ const App = {
         // 用户管理刷新按钮
         const refreshBtn = document.getElementById('refresh-users-btn');
         if (refreshBtn) refreshBtn.addEventListener('click', () => this.renderUserManagement());
+
+        // 注册页：性别按钮
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // 注册页：处罚类型按钮
+        document.querySelectorAll('.penalty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 只影响同一容器内的按钮
+                btn.closest('.penalty-selector').querySelectorAll('.penalty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // 显示/隐藏红包金额输入框（注册页）
+                const amtGroup = document.getElementById('penalty-amount-group');
+                if (amtGroup) amtGroup.style.display = btn.dataset.penalty === 'redpacket' ? 'block' : 'none';
+            });
+        });
+
+        // 注册页：训练组别提示
+        const regGroupSel = document.getElementById('reg-group');
+        const groupHints = {
+            standard: '标铁：750m游泳 + 20km骑行 + 5km跑步',
+            '113': '半铁：1.9km游 + 90km骑 + 21.1km跑（推荐每周6-8小时）',
+            '226': '全铁：3.8km游 + 180km骑 + 42.2km跑（推荐每周8-10小时）',
+            weight: '有氧减脂为主，每周持续6小时+训练量',
+            marathon: '马拉松专项：跑步为主+交叉训练（推荐每周5-7小时）'
+        };
+        if (regGroupSel) {
+            regGroupSel.addEventListener('change', () => {
+                const hint = document.getElementById('reg-group-hint');
+                if (hint) hint.textContent = groupHints[regGroupSel.value] || '';
+            });
+        }
     },
 
     showAuthPage() {
@@ -2424,6 +2918,15 @@ const App = {
         const username = document.getElementById('reg-username').value.trim();
         const nickname = document.getElementById('reg-nickname').value.trim();
         const password = document.getElementById('reg-password').value;
+        const genderBtn = document.querySelector('.gender-btn.active');
+        const gender = genderBtn ? genderBtn.dataset.gender : 'male';
+        const group = document.getElementById('reg-group') ? document.getElementById('reg-group').value : 'standard';
+        const penaltyBtn = document.querySelector('.penalty-btn.active');
+        const penaltyType = penaltyBtn ? penaltyBtn.dataset.penalty : 'redpacket';
+        const penaltyAmount = parseInt(document.getElementById('reg-penalty-amount') ? document.getElementById('reg-penalty-amount').value : 5) || 5;
+        const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
+        const weeklyTarget = groupCfg.weeklyTarget;
+
         if (username.length < 2) { UI.toast('用户名至少2个字符', 'error'); return; }
         if (nickname.length < 1) { UI.toast('请输入昵称', 'error'); return; }
         if (password.length < 4) { UI.toast('密码至少4个字符', 'error'); return; }
@@ -2437,9 +2940,13 @@ const App = {
         }
         const passwordHash = await sha256(password);
         const isAdmin = ADMIN_USERNAMES.includes(username);
-        const newUser = await DB.createUser({ username, nickname, passwordHash, isAdmin });
+        const newUser = await DB.createUser({
+            username, nickname, passwordHash, isAdmin,
+            gender, group, penaltyType, penaltyAmount, weeklyTarget
+        });
         this.currentUser = newUser; DB.setCurrentUser(newUser);
-        UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : ''), 'success'); this.showMainPage();
+        UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : '') + ` [${groupCfg.name}]`, 'success');
+        this.showMainPage();
         await this.refreshFromCloud();
     },
     switchSection(page) {
@@ -2447,7 +2954,11 @@ const App = {
         document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(page + '-section').classList.add('active');
-        const map = { checkin: 'renderRecentCheckins', goals: 'renderGoals', stats: 'renderStats', feed: 'renderFeed', rank: 'renderRank', plan: 'renderPlans', users: 'renderUserManagement' };
+        const map = {
+            checkin: 'renderRecentCheckins', goals: 'renderGoals', stats: 'renderStats',
+            feed: 'renderFeed', rank: 'renderRank', plan: 'renderPlans',
+            users: 'renderUserManagement', training: 'renderTrainingLibrary'
+        };
         if (map[page]) this[map[page]]();
         // 切换到需要最新数据的页面时，拉取云端
         if (['feed', 'rank', 'stats'].includes(page)) { this.refreshFromCloud(); }
@@ -2531,12 +3042,80 @@ const App = {
             </div>`).join('');
     },
     renderGoals() {
-        const goals = DB.getGoals(this.currentUser.id);
+        const user = this.currentUser;
+        const group = user.group || 'standard';
+        const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
+        const gender = user.gender || 'male';
+        const goals = DB.getGoals(user.id);
         const currentGoals = goals[this.currentGoalPeriod];
-        const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        const checkins = this._allCheckins.filter(c => c.userId === user.id);
         const period = this.currentGoalPeriod === 'weekly' ? 'week' : 'month';
-        const progress = { swim: 0, bike: 0, run: 0 };
-        checkins.forEach(c => { if (Utils.isInPeriod(c.date, period) && c.sport !== 'other' && progress[c.sport] !== undefined) progress[c.sport] += c.distance; });
+        const progress = { swim: 0, bike: 0, run: 0, totalMins: 0 };
+        checkins.forEach(c => {
+            if (Utils.isInPeriod(c.date, period)) {
+                progress.totalMins += c.duration;
+                if (c.sport !== 'other' && progress[c.sport] !== undefined) progress[c.sport] += c.distance;
+            }
+        });
+
+        // 分组信息卡
+        const groupCard = document.getElementById('my-group-card');
+        if (groupCard) {
+            groupCard.innerHTML = `<div class="group-badge-row">
+                <span class="group-icon-big">${groupCfg.icon}</span>
+                <div class="group-info-text">
+                    <div class="group-name">${groupCfg.name}</div>
+                    <div class="group-desc">${groupCfg.desc}</div>
+                    <div class="group-meta">性别: ${gender === 'male' ? '👨 男' : '👩 女'} · 请假配额: <strong>${LEAVE_QUOTA[gender]}次/月</strong></div>
+                </div>
+            </div>`;
+        }
+
+        // 本周完成情况卡
+        const weeklyTarget = user.weeklyTarget || groupCfg.weeklyTarget;
+        const weekProgress = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'))
+            .reduce((s, c) => s + c.duration, 0);
+        const weekPercent = weeklyTarget > 0 ? Math.min(100, Math.round(weekProgress / weeklyTarget * 100)) : 0;
+        const weekGap = Math.max(0, weeklyTarget - weekProgress);
+        const penaltyType = user.penaltyType || 'redpacket';
+        const penaltyAmount = user.penaltyAmount || 5;
+
+        let penaltyMsg = '';
+        if (weekGap > 0) {
+            // 检查本周是否有请假
+            const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+            if (weekLeaves.length > 0) {
+                penaltyMsg = `<span class="penalty-exempt">🏖️ 本周已请假，免处罚</span>`;
+            } else if (penaltyType === 'redpacket') {
+                const owed = (weekGap / 60 * penaltyAmount).toFixed(1);
+                penaltyMsg = `<span class="penalty-owed">🧧 预计欠训罚款 ¥${owed}元（${Utils.formatDuration(weekGap)}×¥${penaltyAmount}/h）</span>`;
+            } else {
+                const doubleGap = weekGap * 2;
+                penaltyMsg = `<span class="penalty-owed">⏰ 下周需补训 ${Utils.formatDuration(doubleGap)}（欠训双倍）</span>`;
+            }
+        }
+
+        const weekCard = document.getElementById('week-progress-card');
+        if (weekCard && this.currentGoalPeriod === 'weekly') {
+            weekCard.style.display = 'block';
+            weekCard.innerHTML = `<div class="week-progress-inner">
+                <div class="week-progress-header">
+                    <span>本周训练完成率</span>
+                    <strong>${weekPercent}%</strong>
+                </div>
+                <div class="week-progress-bar-wrap">
+                    <div class="week-progress-bar-fill" style="width:${weekPercent}%;background:${weekPercent >= 100 ? '#4caf50' : weekPercent >= 60 ? '#ff9800' : '#f44336'}"></div>
+                </div>
+                <div class="week-progress-info">
+                    已训练 <strong>${Utils.formatDuration(weekProgress)}</strong> / 目标 <strong>${Utils.formatDuration(weeklyTarget)}</strong>
+                    ${weekGap > 0 ? `· 还差 <span class="gap-red">${Utils.formatDuration(weekGap)}</span>` : ' · <span class="done-green">✅ 本周达标！</span>'}
+                </div>
+                ${penaltyMsg ? `<div class="penalty-msg">${penaltyMsg}</div>` : ''}
+            </div>`;
+        } else if (weekCard) {
+            weekCard.style.display = 'none';
+        }
+
         const container = document.getElementById('goals-container');
         container.innerHTML = ['swim', 'bike', 'run'].map(sport => {
             const goal = currentGoals[sport] || 0, done = progress[sport];
@@ -2548,25 +3127,174 @@ const App = {
                     <span class="goal-value">目标: ${goal} ${unit}</span>
                 </div>
                 <div class="goal-progress"><div class="goal-progress-bar ${sport}" style="width: ${percent}%"></div></div>
-                <div class="goal-stats"><span>已完成: ${done.toFixed(1)} ${unit}</span><span>${percent.toFixed(0)}%</span></div>
+                <div class="goal-stats"><span>已完成: ${done.toFixed(sport === 'swim' ? 0 : 1)} ${unit}</span><span>${percent.toFixed(0)}%</span></div>
             </div>`;
         }).join('');
         document.getElementById('goal-swim').value = currentGoals.swim || '';
         document.getElementById('goal-bike').value = currentGoals.bike || '';
         document.getElementById('goal-run').value = currentGoals.run || '';
+
+        // 每周时长目标
+        const weekDurEl = document.getElementById('goal-weekly-duration');
+        const weekDurHint = document.getElementById('weekly-duration-hint');
+        if (weekDurEl) weekDurEl.value = weeklyTarget || '';
+        if (weekDurHint) weekDurHint.textContent = `${groupCfg.name}推荐: ${groupCfg.weeklyMinutes[0]/60}-${groupCfg.weeklyMinutes[1] > 600 ? '不限' : groupCfg.weeklyMinutes[1]/60}小时/周`;
+
+        // 请假信息
+        const leaveQuota = LEAVE_QUOTA[gender];
+        const usedLeave = DB.getMonthLeaveCount(user.id);
+        const remainLeave = Math.max(0, leaveQuota - usedLeave);
+        const leaveQuotaEl = document.getElementById('leave-quota-info');
+        if (leaveQuotaEl) {
+            leaveQuotaEl.innerHTML = `本月请假配额: <strong>${leaveQuota}次</strong> · 已用 <strong>${usedLeave}次</strong> · 剩余 <strong class="${remainLeave > 0 ? 'done-green' : 'gap-red'}">${remainLeave}次</strong>`;
+        }
+
+        // 请假记录
+        this._renderLeaveHistory();
+
+        // 处罚设置
+        const penaltyTypeRedBtn = document.getElementById('penalty-type-redpacket');
+        const penaltyTypeDblBtn = document.getElementById('penalty-type-doubletime');
+        if (penaltyTypeRedBtn) penaltyTypeRedBtn.classList.toggle('active', penaltyType === 'redpacket');
+        if (penaltyTypeDblBtn) penaltyTypeDblBtn.classList.toggle('active', penaltyType === 'doubletime');
+        const penaltyAmtGroup = document.getElementById('penalty-amount-settings-group');
+        if (penaltyAmtGroup) penaltyAmtGroup.style.display = penaltyType === 'redpacket' ? 'block' : 'none';
+        const penaltyAmtEl = document.getElementById('penalty-amount-settings');
+        if (penaltyAmtEl) penaltyAmtEl.value = penaltyAmount;
+
+        // 本周处罚状态卡
+        const penaltyStatusEl = document.getElementById('penalty-status-card');
+        if (penaltyStatusEl) {
+            if (weekGap <= 0) {
+                penaltyStatusEl.innerHTML = `<div class="penalty-ok">✅ 本周已达标，无需处罚！</div>`;
+            } else {
+                const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+                if (weekLeaves.length > 0) {
+                    penaltyStatusEl.innerHTML = `<div class="penalty-exempt">🏖️ 本周已请假（${weekLeaves[0].reason || '已申请'}），免处罚</div>`;
+                } else {
+                    penaltyStatusEl.innerHTML = penaltyType === 'redpacket'
+                        ? `<div class="penalty-due">🧧 本周欠训 ${Utils.formatDuration(weekGap)}，应发红包 ¥${(weekGap / 60 * penaltyAmount).toFixed(1)} 元</div>`
+                        : `<div class="penalty-due">⏰ 本周欠训 ${Utils.formatDuration(weekGap)}，下周须补 ${Utils.formatDuration(weekGap * 2)}</div>`;
+                }
+            }
+        }
+    },
+    _renderLeaveHistory() {
+        const el = document.getElementById('leave-history');
+        if (!el || !this.currentUser) return;
+        const leaves = DB.getLeaves(this.currentUser.id);
+        if (leaves.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:10px 0;"><span style="color:#aaa">暂无请假记录</span></div>'; return; }
+        el.innerHTML = leaves.slice(-10).reverse().map(l => `
+            <div class="leave-item">
+                <span class="leave-date">${l.date || l.createdAt?.substring(0,10) || '-'}</span>
+                <span class="leave-reason">${l.reason || '无备注'}</span>
+                <button class="btn-delete-leave" onclick="App.deleteLeave('${l.id}')">✕</button>
+            </div>`).join('');
+    },
+    applyLeave() {
+        const date = document.getElementById('leave-date').value;
+        const reason = document.getElementById('leave-reason').value.trim();
+        if (!date) { UI.toast('请选择请假日期', 'error'); return; }
+        const user = this.currentUser;
+        const gender = user.gender || 'male';
+        const quota = LEAVE_QUOTA[gender];
+        const used = DB.getMonthLeaveCount(user.id);
+        // 检查是本月的请假
+        const yearMonth = date.substring(0, 7);
+        const nowYM = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+        let usedThisMonth = used;
+        if (yearMonth !== nowYM) {
+            // 如果请假日期不在本月，统计那个月的
+            usedThisMonth = DB.getLeaves(user.id).filter(l => (l.date || '').startsWith(yearMonth)).length;
+        }
+        if (usedThisMonth >= quota) {
+            UI.toast(`本月请假次数已用完（${quota}次/${gender === 'male' ? '男' : '女'}）`, 'error'); return;
+        }
+        DB.addLeave({ userId: user.id, nickname: user.nickname, date, reason });
+        UI.toast('✅ 请假成功！本次训练免处罚', 'success');
+        document.getElementById('leave-date').value = '';
+        document.getElementById('leave-reason').value = '';
+        this.renderGoals();
+    },
+    deleteLeave(leaveId) {
+        if (confirm('确定撤销这次请假？')) {
+            DB.deleteLeave(leaveId);
+            UI.toast('请假已撤销', 'info');
+            this.renderGoals();
+        }
+    },
+    setPenaltyType(type) {
+        this.currentUser.penaltyType = type;
+        const penaltyAmtGroup = document.getElementById('penalty-amount-settings-group');
+        if (penaltyAmtGroup) penaltyAmtGroup.style.display = type === 'redpacket' ? 'block' : 'none';
+        document.getElementById('penalty-type-redpacket').classList.toggle('active', type === 'redpacket');
+        document.getElementById('penalty-type-doubletime').classList.toggle('active', type === 'doubletime');
+    },
+    savePenaltySettings() {
+        const penaltyType = this.currentUser.penaltyType || 'redpacket';
+        const penaltyAmount = parseInt(document.getElementById('penalty-amount-settings').value) || 5;
+        const weeklyTarget = parseInt(document.getElementById('goal-weekly-duration').value) || null;
+        const updates = { penaltyType, penaltyAmount, weeklyTarget };
+        Object.assign(this.currentUser, updates);
+        DB.setCurrentUser(this.currentUser);
+        DB.updateUser(this.currentUser.id, updates).catch(() => {
+            // 本地降级：更新缓存
+            const users = DB._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === this.currentUser.id);
+            if (idx !== -1) { users[idx] = { ...users[idx], ...updates }; DB._setCache('tri_users', users); }
+        });
+        UI.toast('✅ 设置已保存！', 'success');
+        this.renderGoals();
     },
     saveGoals() {
         const goals = DB.getGoals(this.currentUser.id);
+        const weeklyTarget = parseInt(document.getElementById('goal-weekly-duration').value) || null;
         goals[this.currentGoalPeriod] = {
             swim: parseFloat(document.getElementById('goal-swim').value) || 0,
             bike: parseFloat(document.getElementById('goal-bike').value) || 0,
             run: parseFloat(document.getElementById('goal-run').value) || 0
         };
         DB.saveGoals(this.currentUser.id, goals);
+        if (weeklyTarget !== null) {
+            this.currentUser.weeklyTarget = weeklyTarget;
+            DB.setCurrentUser(this.currentUser);
+            DB.updateUser(this.currentUser.id, { weeklyTarget }).catch(() => {
+                const users = DB._getCache('tri_users', []);
+                const idx = users.findIndex(u => u.id === this.currentUser.id);
+                if (idx !== -1) { users[idx].weeklyTarget = weeklyTarget; DB._setCache('tri_users', users); }
+            });
+        }
         UI.toast('目标已保存！', 'success'); this.renderGoals();
     },
     renderStats() {
-        const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        const user = this.currentUser;
+        const group = user.group || 'standard';
+        const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
+        const weeklyTarget = user.weeklyTarget || groupCfg.weeklyTarget;
+
+        // 本周完成率面板（统计页顶部）
+        const compPanel = document.getElementById('week-compliance-panel');
+        if (compPanel) {
+            const weekCheckins = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'));
+            const weekMins = weekCheckins.reduce((s, c) => s + c.duration, 0);
+            const weekPct = weeklyTarget > 0 ? Math.min(100, Math.round(weekMins / weeklyTarget * 100)) : 0;
+            const weekGap = Math.max(0, weeklyTarget - weekMins);
+            const penaltyType = user.penaltyType || 'redpacket';
+            const penaltyAmount = user.penaltyAmount || 5;
+            const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+            let statusMsg = '';
+            if (weekGap <= 0) statusMsg = `<span class="done-green">✅ 已达标</span>`;
+            else if (weekLeaves.length > 0) statusMsg = `<span class="penalty-exempt">🏖️ 本周请假免处罚</span>`;
+            else if (penaltyType === 'redpacket') statusMsg = `<span class="penalty-owed">🧧 欠罚款 ¥${(weekGap/60*penaltyAmount).toFixed(1)}</span>`;
+            else statusMsg = `<span class="penalty-owed">⏰ 补训 ${Utils.formatDuration(weekGap*2)}</span>`;
+            compPanel.innerHTML = `<div class="compliance-inner">
+                <div class="compliance-row"><span>${groupCfg.icon} 本周训练</span>${statusMsg}</div>
+                <div class="compliance-bar"><div class="compliance-fill" style="width:${weekPct}%;background:${weekPct>=100?'#4caf50':weekPct>=60?'#ff9800':'#f44336'}"></div></div>
+                <div class="compliance-nums">${Utils.formatDuration(weekMins)} / ${Utils.formatDuration(weeklyTarget)} · ${weekPct}%</div>
+            </div>`;
+        }
+
+        const checkins = this._allCheckins.filter(c => c.userId === user.id);
         const periodMap = { week: 'week', month: 'month', year: 'year' };
         const periodCheckins = this.currentStatsPeriod === 'all' ? checkins : checkins.filter(c => Utils.isInPeriod(c.date, periodMap[this.currentStatsPeriod]));
         const stats = { swim: { distance: 0, duration: 0, count: 0 }, bike: { distance: 0, duration: 0, count: 0 }, run: { distance: 0, duration: 0, count: 0 }, other: { count: 0, duration: 0 } };
@@ -3066,6 +3794,48 @@ const App = {
         const idx = users.findIndex(u => u.id === userId);
         if (idx !== -1) { users[idx].passwordHash = newHash; delete users[idx].password; DB._setCache('tri_users', users); }
         UI.toast(`「${username}」的密码已重置成功！`, 'success');
+    },
+
+    // ========== 训练计划库 ==========
+    _currentTrainingGroup: 'standard',
+    renderTrainingLibrary() {
+        const group = this._currentTrainingGroup || (this.currentUser && this.currentUser.group) || 'standard';
+        const plan = TRAINING_PLANS[group];
+        if (!plan) { document.getElementById('training-plan-content').innerHTML = '<div class="empty-state">暂无计划</div>'; return; }
+
+        // 激活对应Tab
+        document.querySelectorAll('.train-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.group === group));
+
+        const content = document.getElementById('training-plan-content');
+        content.innerHTML = `
+            <div class="train-plan-title">${plan.title}</div>
+            ${plan.phases.map(phase => `
+                <div class="train-phase">
+                    <div class="train-phase-header">${phase.phase}
+                        <span class="train-weekly-total">周训练量约 ${Utils.formatDuration(phase.totalMins)}</span>
+                    </div>
+                    <table class="train-week-table">
+                        <thead><tr><th>训练日</th><th>训练内容</th><th>时长</th></tr></thead>
+                        <tbody>
+                            ${phase.weeks.map(w => `<tr class="${w.duration === 0 ? 'rest-row' : ''}">
+                                <td class="train-day">${w.day}</td>
+                                <td class="train-content">${w.content}</td>
+                                <td class="train-dur">${w.duration > 0 ? Utils.formatDuration(w.duration) : '休息'}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <div class="train-tip">${phase.tip}</div>
+                </div>
+            `).join('')}
+        `;
+
+        // 绑定Tab切换
+        document.querySelectorAll('.train-tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                this._currentTrainingGroup = btn.dataset.group;
+                this.renderTrainingLibrary();
+            };
+        });
     }
 };
 
