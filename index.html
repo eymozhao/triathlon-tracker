@@ -8,7 +8,8 @@
     <meta name="theme-color" content="#4CAF50">
     <title>铁人三项训练打卡</title>
     <!-- 腾讯云开发 Web SDK -->
-    <script src="https://imgcache.qq.com/qcloud/tcbjs/1.10.9/tcb.js"></script>
+    <!-- 腾讯云开发 Web SDK v2 (新版) -->
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js"></script>
 <style>
 * {
     margin: 0;
@@ -2282,7 +2283,7 @@ async function initCloud() {
         _renderCloudDiag();
         return false;
     }
-    cloudDiag.sdk = 'tcb.js';
+    cloudDiag.sdk = 'cloudbase.full.js v2.17.3';
     
     try {
         cloudDiag.stage = '初始化SDK...';
@@ -2297,7 +2298,10 @@ async function initCloud() {
         const loginState = await cloudAuth.getLoginState();
         if (!loginState) {
             console.log('🔑 执行匿名登录...');
-            await cloudAuth.anonymousAuthProvider().signIn();
+            const signInRes = await cloudAuth.signInAnonymously();
+            if (signInRes && signInRes.error) {
+                throw new Error('匿名登录失败: ' + (signInRes.error.message || JSON.stringify(signInRes.error)));
+            }
             console.log('✅ 云开发匿名登录成功');
         } else {
             console.log('✅ 云开发已登录，loginType:', loginState.loginType);
