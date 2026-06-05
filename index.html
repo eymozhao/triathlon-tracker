@@ -1318,6 +1318,59 @@ body {
     border-color: var(--primary);
 }
 
+/* ========== 其他打卡子类型 + HYROX ========== */
+.other-type-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.other-type-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+}
+.other-type-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    font-weight: 600;
+}
+#checkin-other-type-group { margin-top: 0; }
+#checkin-hyrox-group { margin-top: 0; }
+.hyrox-station-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+}
+.hyrox-station-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: var(--bg);
+    transition: all 0.15s;
+    user-select: none;
+}
+.hyrox-station-item:has(input:checked) {
+    background: #e8f5e9;
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* ========== 今日打卡汇总 ========== */
 .today-summary {
     margin-top: 14px;
@@ -1504,6 +1557,25 @@ body {
 .train-dur { white-space: nowrap; color: #888; font-size: 12px; width: 50px; }
 .rest-row td { color: #bbb; }
 .train-tip { font-size: 12px; color: #777; background: #fffde7; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 10px; line-height: 1.6; }
+        /* 计划对比表格 */
+        .plan-compare-table-wrap { overflow-x:auto; margin:12px 0; }
+        .plan-compare-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .plan-compare-table th { background:#f5f5f5; padding:8px 10px; text-align:left; font-weight:600; white-space:nowrap; }
+        .plan-compare-table td { padding:7px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+        .plan-compare-table tr:hover td { background:#fafafa; }
+        .pc-plan { color:#1a73e8; font-weight:500; }
+        .pc-actual { color:#34a853; }
+        .pc-gap-pos { color:#ea4335; font-weight:600; }
+        .pc-gap-neg { color:#34a853; font-weight:600; }
+        .pc-type-btn { padding:6px 16px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:13px; cursor:pointer; transition:all .2s; }
+        .pc-type-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .pc-user-section { margin-bottom:20px; border:1px solid var(--border); border-radius:10px; padding:14px; }
+        .pc-user-header { display:flex; align-items:center; gap:8px; font-weight:600; font-size:15px; margin-bottom:10px; }
+        .btn-icon { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+        .btn-icon:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+        .pc-status-done { background:#e8f5e9; color:#2e7d32; padding:2px 8px; border-radius:4px; font-size:12px; }
+        .pc-status-miss { background:#fce8e6; color:#c62828; padding:2px 8px; border-radius:4px; font-size:12px; }
+        .pc-tag { font-size:11px; padding:2px 6px; border-radius:4px; background:#e8eaf6; color:#3f51b5; margin-right:4px; }
 </style>
 </head>
 <body>
@@ -1649,6 +1721,38 @@ body {
                             <div class="form-group" id="checkin-content-group" style="display:none;">
                                 <label for="checkin-content">训练内容</label>
                                 <input type="text" id="checkin-content" placeholder="如：深蹲3组×10次">
+                            </div>
+                            <!-- 其他训练子类型 -->
+                            <div class="form-group" id="checkin-other-type-group" style="display:none;">
+                                <label>训练类型</label>
+                                <div class="other-type-selector" id="other-type-selector">
+                                    <button type="button" class="other-type-btn active" data-other="strength">💪 力量</button>
+                                    <button type="button" class="other-type-btn" data-other="hyrox">🏋️ HYROX</button>
+                                    <button type="button" class="other-type-btn" data-other="custom">📋 其他</button>
+                                </div>
+                            </div>
+                            <!-- HYROX 专用字段 -->
+                            <div class="form-group" id="checkin-hyrox-group" style="display:none;">
+                                <label for="checkin-hyrox-rounds">HYROX 轮数</label>
+                                <select id="checkin-hyrox-rounds">
+                                    <option value="1">1轮（1km跑+8站）</option>
+                                    <option value="2">2轮</option>
+                                    <option value="3">3轮</option>
+                                    <option value="4">4轮</option>
+                                    <option value="6">6轮</option>
+                                    <option value="8">8轮（完整比赛）</option>
+                                </select>
+                                <label style="margin-top:8px;">完成站点（可多选）</label>
+                                <div class="hyrox-station-grid" id="hyrox-station-grid">
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="skierg"> SkiErg 滑雪机</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="sled-push"> Sled Push 推雪橇</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="sled-pull"> Sled Pull 拉雪橇</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="burpee"> Burpee 波比跳远</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="rowing"> Rowing 划船机</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="farmer"> Farmer Carry 农夫行走</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="lunges"> Sandbag Lunges 沙袋弓步</label>
+                                    <label class="hyrox-station-item"><input type="checkbox" data-station="wallball"> Wall Balls 墙球</label>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>时长 (分钟)</label>
@@ -1831,6 +1935,31 @@ body {
                     <div id="team-stats-section" style="display:none;">
                         <h3 class="team-section-title">👑 全队训练统计</h3>
                         <div id="team-stats-table"></div>
+                    </div>
+                    <!-- 计划 vs 实际打卡对比 -->
+                    <div id="plan-compare-section" style="margin-top:28px;">
+                        <h3 class="team-section-title">📊 计划 vs 实际打卡对比</h3>
+                        <!-- 周期类型选择 -->
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+                            <button class="pc-type-btn active" data-pc-type="week" onclick="App._switchPcType('week')">📅 按周</button>
+                            <button class="pc-type-btn" data-pc-type="month" onclick="App._switchPcType('month')">📆 按月</button>
+                        </div>
+                        <!-- 周期导航 -->
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+                            <button class="btn-icon" onclick="App._pcPrev()" title="上一周期">◀</button>
+                            <span id="pc-period-label" style="font-weight:600;font-size:15px;min-width:160px;text-align:center;"></span>
+                            <button class="btn-icon" onclick="App._pcNext()" title="下一周期">▶</button>
+                            <span id="pc-period-tip" style="font-size:12px;color:var(--text-light);"></span>
+                        </div>
+                        <!-- 用户选择（管理员） -->
+                        <div id="pc-user-select-row" style="display:none;margin-bottom:8px;">
+                            <label style="font-size:13px;color:var(--text-light);margin-right:8px;">成员</label>
+                            <select id="pc-user-select" style="padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;">
+                                <option value="_all_">📋 全部成员</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="App.renderPlanCompare()" style="padding:8px 18px;font-size:14px;margin-bottom:12px;">生成对比</button>
+                        <div id="plan-compare-result"></div>
                     </div>
                 </section>
 
@@ -2893,12 +3022,23 @@ const Utils = {
     sportNames: { swim: '游泳', bike: '骑行', run: '跑步', other: '其他' },
     sportUnits: { swim: 'm', bike: 'km', run: 'km', other: null },
     sportIcons: { swim: '🏊', bike: '🚴', run: '🏃', other: '💪' },
+    getSportName(c) {
+        if (c.sport === 'other' && c.content && c.content.startsWith('HYROX')) return 'HYROX';
+        return this.sportNames[c.sport] || '其他';
+    },
+    getSportIcon(c) {
+        if (c.sport === 'other' && c.content && c.content.startsWith('HYROX')) return '🏋️';
+        return this.sportIcons[c.sport] || '💪';
+    },
     formatDistance(sport, distance) {
         if (sport === 'other') return '';
         return `${distance}${this.sportUnits[sport] || 'km'}`;
     },
     checkinSummary(c) {
-        if (c.sport === 'other') return `${c.content || '其他训练'} · ${this.formatDuration(c.duration)}`;
+        if (c.sport === 'other') {
+            const label = c.content ? c.content : '其他训练';
+            return `${label} · ${this.formatDuration(c.duration)}`;
+        }
         return `${this.formatDistance(c.sport, c.distance)} · ${this.formatDuration(c.duration)}`;
     },
     toLocalDateStr(date) {
@@ -2906,6 +3046,10 @@ const Utils = {
         const m = String(date.getMonth() + 1).padStart(2, '0');
         const d = String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
+    },
+    escHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     },
     formatDate(dateStr) {
         const today = this.toLocalDateStr(new Date());
@@ -3096,6 +3240,13 @@ const App = {
             });
         });
         this.updateCheckinFormFields(this.currentSport);
+        // "其他"子类型切换
+        document.querySelectorAll('.other-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this._otherSubType = e.currentTarget.dataset.other;
+                this._updateOtherForm();
+            });
+        });
         const checkinDateEl = document.getElementById('checkin-date');
         if (checkinDateEl) checkinDateEl.value = Utils.toLocalDateStr(new Date());
         document.getElementById('checkin-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleCheckin(); });
@@ -3375,6 +3526,15 @@ const App = {
         if (map[page]) this[map[page]]();
         // 切换到需要最新数据的页面时，拉取云端
         if (['feed', 'rank', 'stats'].includes(page)) { this.refreshFromCloud(); }
+        // 切换到统计页时初始化对比工具
+        if (page === 'stats') {
+            App._updatePcLabel();
+            App._initPcUsers().then(() => {
+                const row = document.getElementById('pc-user-select-row');
+                const isAdmin = App.currentUser && App.currentUser.isAdmin;
+                if (row) row.style.display = isAdmin ? 'block' : 'none';
+            });
+        }
     },
     // ── 打卡照片处理 ──
     _handlePhotoSelect(fileList) {
@@ -3476,8 +3636,18 @@ const App = {
         if (!date) { UI.toast('请选择日期', 'error'); return; }
         let distance = 0, content = '';
         if (this.currentSport === 'other') {
-            content = document.getElementById('checkin-content').value.trim();
-            if (!content) { UI.toast('请输入训练内容', 'error'); return; }
+            if (this._otherSubType === 'hyrox') {
+                const rounds = document.getElementById('checkin-hyrox-rounds').value;
+                const stations = Array.from(document.querySelectorAll('#hyrox-station-grid input:checked'))
+                    .map(cb => cb.dataset.station);
+                if (stations.length === 0) { UI.toast('请至少勾选一个HYROX站点', 'error'); return; }
+                const stationNames = { skierg: 'SkiErg', 'sled-push': '推雪橇', 'sled-pull': '拉雪橇', burpee: '波比跳远', rowing: '划船机', farmer: '农夫行走', lunges: '沙袋弓步', wallball: '墙球' };
+                const stationText = stations.map(s => stationNames[s] || s).join('+');
+                content = `HYROX ${rounds}轮 | ${stationText}`;
+            } else {
+                content = document.getElementById('checkin-content').value.trim();
+                if (!content) { UI.toast('请输入训练内容', 'error'); return; }
+            }
         } else {
             const distanceStr = document.getElementById('checkin-distance').value;
             distance = parseFloat(distanceStr);
@@ -3540,12 +3710,37 @@ const App = {
     updateCheckinFormFields(sport) {
         const distGroup = document.getElementById('checkin-distance-group');
         const contentGroup = document.getElementById('checkin-content-group');
+        const otherTypeGroup = document.getElementById('checkin-other-type-group');
+        const hyroxGroup = document.getElementById('checkin-hyrox-group');
         const distLabel = document.querySelector('label[for="checkin-distance"]');
-        if (sport === 'other') { distGroup.style.display = 'none'; contentGroup.style.display = 'block'; }
-        else {
-            distGroup.style.display = 'block'; contentGroup.style.display = 'none';
+        if (sport === 'other') {
+            distGroup.style.display = 'none';
+            otherTypeGroup.style.display = 'block';
+            this._updateOtherForm();
+        } else {
+            distGroup.style.display = 'block';
+            contentGroup.style.display = 'none';
+            otherTypeGroup.style.display = 'none';
+            hyroxGroup.style.display = 'none';
             if (distLabel) distLabel.textContent = sport === 'swim' ? '距离 (m)' : '距离 (km)';
         }
+    },
+    // 当前"其他"子类型
+    _otherSubType: 'strength',
+    _updateOtherForm() {
+        const contentGroup = document.getElementById('checkin-content-group');
+        const hyroxGroup = document.getElementById('checkin-hyrox-group');
+        if (this._otherSubType === 'hyrox') {
+            contentGroup.style.display = 'none';
+            hyroxGroup.style.display = 'block';
+        } else {
+            contentGroup.style.display = 'block';
+            hyroxGroup.style.display = 'none';
+        }
+        // 高亮选中按钮
+        document.querySelectorAll('.other-type-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.other === this._otherSubType);
+        });
     },
     renderRecentCheckins() {
         const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id)
@@ -3554,10 +3749,10 @@ const App = {
         if (checkins.length === 0) { UI.renderEmptyState(container, '还没有打卡记录'); return; }
         container.innerHTML = checkins.map(c => `
             <div class="checkin-item">
-                <span class="checkin-sport">${Utils.sportIcons[c.sport]}</span>
+                <span class="checkin-sport">${Utils.getSportIcon(c)}</span>
                 <div class="checkin-info">
                     <div class="checkin-distance">${Utils.checkinSummary(c)}</div>
-                    <div class="checkin-meta">${Utils.sportNames[c.sport]} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
+                    <div class="checkin-meta">${Utils.getSportName(c)} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
                 </div>
                 ${this._renderPhotoHtml(c)}
                 <div class="checkin-item-actions">
@@ -3946,10 +4141,10 @@ const App = {
         else {
             historyContainer.innerHTML = sortedCheckins.map(c => `
                 <div class="checkin-item">
-                    <span class="checkin-sport">${Utils.sportIcons[c.sport]}</span>
+                    <span class="checkin-sport">${Utils.getSportIcon(c)}</span>
                     <div class="checkin-info">
                         <div class="checkin-distance">${Utils.checkinSummary(c)}</div>
-                        <div class="checkin-meta">${Utils.sportNames[c.sport]} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
+                        <div class="checkin-meta">${Utils.getSportName(c)} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
                     </div>
                     <div class="checkin-item-actions">
                         <button class="btn-icon" title="修改" onclick="App.openCheckinEditModal('${c.id}')">✏️</button>
@@ -4004,10 +4199,10 @@ const App = {
             <div class="feed-item">
                 <div class="feed-header"><span class="feed-user">${c.nickname}</span><span class="feed-time">${Utils.formatDateTime(c.createdAt)}</span></div>
                 <div class="feed-content">
-                    <span class="feed-sport">${Utils.sportIcons[c.sport]}</span>
+                    <span class="feed-sport">${Utils.getSportIcon(c)}</span>
                     <div class="feed-details">
                         <div class="feed-distance">${c.sport === 'other' ? (c.content || '其他训练') : Utils.formatDistance(c.sport, c.distance)}</div>
-                        <div class="feed-duration">${Utils.formatDuration(c.duration)} · ${Utils.sportNames[c.sport]}${c.note ? ' · ' + c.note : ''}</div>
+                        <div class="feed-duration">${Utils.formatDuration(c.duration)} · ${Utils.getSportName(c)}${c.note ? ' · ' + c.note : ''}</div>
                     </div>
                 </div>
                 ${this._renderPhotoHtml(c)}
@@ -4505,6 +4700,228 @@ const App = {
 };
 
 document.addEventListener('DOMContentLoaded', () => { App.init(); });
+
+// ====== 计划 vs 实际打卡对比（重写：按周/按月 + 每人单独对比 + 管理员看全员） ======
+App._pcType = 'week'; // 'week' | 'month'
+App._pcOffset = 0;    // 0=当前周期, -1=上一周期, 1=下一周期
+App._pcAllUsers = [];
+
+// 切换周期类型
+App._switchPcType = function(type) {
+    App._pcType = type;
+    App._pcOffset = 0;
+    document.querySelectorAll('.pc-type-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('[data-pc-type="' + type + '"]').classList.add('active');
+    App._updatePcLabel();
+};
+
+// 获取周一
+App._getMonday = function(d) {
+    const dt = new Date(d);
+    const day = dt.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    dt.setDate(dt.getDate() + diff);
+    dt.setHours(0,0,0,0);
+    return dt;
+};
+
+// 更新周期标签
+App._updatePcLabel = function() {
+    const label = document.getElementById('pc-period-label');
+    const tip = document.getElementById('pc-period-tip');
+    if (!label) return;
+    const now = new Date();
+    if (App._pcType === 'week') {
+        const mon = App._getMonday(now);
+        mon.setDate(mon.getDate() + App._pcOffset * 7);
+        const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+        const wkNum = Math.ceil((mon.getDate() + 6 - mon.getDay()) / 7) || 1;
+        const yr = mon.getFullYear();
+        const monthNum = mon.getMonth() + 1;
+        label.textContent = '第' + wkNum + '周  ' + monthNum + '/' + mon.getDate() + ' - ' + (sun.getMonth()+1) + '/' + sun.getDate();
+        tip.textContent = yr + '年';
+    } else {
+        const dt = new Date(now.getFullYear(), now.getMonth() + App._pcOffset, 1);
+        label.textContent = dt.getFullYear() + '年' + (dt.getMonth()+1) + '月';
+        const lastDay = new Date(dt.getFullYear(), dt.getMonth()+1, 0);
+        tip.textContent = dt.getMonth()+1 + '/1 - ' + (lastDay.getMonth()+1) + '/' + lastDay.getDate();
+    }
+};
+
+// 上一周期
+App._pcPrev = function() { App._pcOffset--; App._updatePcLabel(); };
+// 下一周期
+App._pcNext = function() { App._pcOffset++; App._updatePcLabel(); };
+
+// 初始化用户列表
+App._initPcUsers = async function() {
+    try {
+        App._pcAllUsers = await DB.getUsers();
+        const sel = document.getElementById('pc-user-select');
+        if (!sel) return;
+        sel.innerHTML = '<option value="_all_">📋 全部成员</option>';
+        App._pcAllUsers.forEach(u => {
+            sel.innerHTML += '<option value="' + u.id + '">' + Utils.escHtml(u.nickname || u.username) + '</option>';
+        });
+    } catch(e) { /* ignore */ }
+};
+
+// 计算一段时间的日期范围
+App._getPcDateRange = function() {
+    const now = new Date();
+    let start, end;
+    if (App._pcType === 'week') {
+        const mon = App._getMonday(now);
+        mon.setDate(mon.getDate() + App._pcOffset * 7);
+        start = new Date(mon);
+        end = new Date(mon); end.setDate(end.getDate() + 7); end.setMilliseconds(-1);
+    } else {
+        start = new Date(now.getFullYear(), now.getMonth() + App._pcOffset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + App._pcOffset + 1, 0, 23, 59, 59);
+    }
+    return { start, end };
+};
+
+// 主对比函数
+App.renderPlanCompare = async function() {
+    const container = document.getElementById('plan-compare-result');
+    if (!container) return;
+    container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:20px;">正在生成对比...</div>';
+
+    // 确定要对比的用户
+    const isAdmin = App.currentUser && App.currentUser.isAdmin;
+    let targetUsers;
+    const selUserId = document.getElementById('pc-user-select')?.value;
+    if (isAdmin && selUserId === '_all_') {
+        targetUsers = [...App._pcAllUsers];
+    } else if (isAdmin && selUserId) {
+        targetUsers = App._pcAllUsers.filter(u => u.id === selUserId);
+    } else {
+        targetUsers = [App.currentUser];
+    }
+    if (!targetUsers.length) { container.innerHTML = '<p style="color:var(--text-light);">暂无用户数据</p>'; return; }
+
+    // 日期范围
+    const { start, end } = App._getPcDateRange();
+    const startStr = Utils.toLocalDateStr(start);
+    const endStr = Utils.toLocalDateStr(end);
+
+    // 获取所有打卡数据
+    const allCheckins = App._allCheckins.filter(c => c.date >= startStr && c.date <= endStr);
+
+    let html = '';
+
+    for (const user of targetUsers) {
+        const nickname = user.nickname || user.username;
+        const userCheckins = allCheckins.filter(c => c.userId === user.id);
+
+        // 从 tri_goals 读取用户自己设定的目标
+        const goals = await DB.getGoals(user.id);
+        const key = App._pcType === 'week' ? 'weekly' : 'monthly';
+        const g = goals[key] || {};
+        const planSwim = g.swim || 0;
+        const planBike = g.bike || 0;
+        const planRun  = g.run  || 0;
+
+        // 计算该用户在本周期的实际训练量
+        let actualSwim = 0, actualBike = 0, actualRun = 0, actualOther = 0, actualDur = 0;
+        const actualDetailItems = [];
+        userCheckins.forEach(c => {
+            if (c.sport === 'swim')       actualSwim += (c.distance || 0);
+            else if (c.sport === 'bike')  actualBike += (c.distance || 0);
+            else if (c.sport === 'run')   actualRun  += (c.distance || 0);
+            else if (c.sport === 'other') actualOther += 1;
+            actualDur += (c.duration || 0);
+            // 打卡明细
+            const icon = Utils.getSportIcon ? Utils.getSportIcon(c) : (c.sport==='swim'?'🏊':c.sport==='bike'?'🚴':c.sport==='run'?'🏃':'💪');
+            const name = Utils.getSportName ? Utils.getSportName(c) : c.sport;
+            let detail = icon + ' ' + name;
+            if (c.distance) detail += ' ' + c.distance.toFixed(1) + (c.sport==='swim'?'m':'km');
+            if (c.duration) detail += ' ' + Utils.formatDuration(c.duration);
+            if (c.content) detail += ' (' + c.content.substring(0,20) + ')';
+            actualDetailItems.push(detail);
+        });
+
+        // 计划明细：显示用户自己设定的目标
+        const planItems = [];
+        if (planSwim) planItems.push('🏊 游泳 ' + planSwim + 'm');
+        if (planBike) planItems.push('🚴 骑行 ' + planBike.toFixed(1) + 'km');
+        if (planRun)  planItems.push('🏃 跑步 ' + planRun.toFixed(1) + 'km');
+
+        const planItemsHtml = planItems.length
+            ? '<ul style="margin:4px 0;padding-left:16px;font-size:12px;color:#666;">' + planItems.map(i => '<li>' + i + '</li>').join('') + '</ul>'
+            : '<span style="color:#999;">未设定目标</span>';
+        const actualItemsHtml = actualDetailItems.length
+            ? '<ul style="margin:4px 0;padding-left:16px;font-size:12px;color:#666;">' + actualDetailItems.map(i => '<li>' + i + '</li>').join('') + '</ul>'
+            : '<span style="color:#999;">无打卡记录</span>';
+
+        // 对比辅助
+        const cmp = (actual, plan) => {
+            if (!plan) return { gap:'-', cls:'', label:'' };
+            const g = actual - plan;
+            const absOk = Math.abs(g) < (plan * 0.05); // 5% 以内算达标
+            const ok = g >= 0 || absOk;
+            const sign = g >= 0 ? '+' : '';
+            return { gap: sign + g.toFixed(1), cls: ok ? 'pc-gap-neg' : 'pc-gap-pos', label: ok ? '达标' : '不足' };
+        };
+        const sCmp = cmp(actualSwim, planSwim);
+        const bCmp = cmp(actualBike, planBike);
+        const rCmp = cmp(actualRun,  planRun);
+
+        html += '<div class="pc-user-section">' +
+            '<div class="pc-user-header">' +
+                '<span>' + Utils.escHtml(nickname) + '</span>' +
+                '<span style="font-size:12px;color:var(--text-light);">（' + (App._pcType==='week'?'本周目标':'本月目标') + '）</span>' +
+            '</div>' +
+            '<div class="plan-compare-table-wrap"><table class="plan-compare-table">' +
+            '<thead><tr><th>项目</th><th>训练目标</th><th>实际完成</th><th>差值</th><th>状态</th></tr></thead>' +
+            '<tbody>' +
+            '<tr>' +
+                '<td style="font-weight:600;">🏊 游泳</td>' +
+                '<td>' + (planSwim ? planSwim + 'm' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (actualSwim ? actualSwim + 'm' : '-') + '</td>' +
+                '<td class="' + (planSwim ? sCmp.cls : '') + '">' + (planSwim ? sCmp.gap + (planSwim&&Math.abs(actualSwim-planSwim)<planSwim*0.05?'✅':'') : '-') + '</td>' +
+                '<td><span class="pc-status-' + (planSwim&&(actualSwim>=planSwim||Math.abs(actualSwim-planSwim)<planSwim*0.05) ? 'done' : 'miss') + '">' + (planSwim ? (actualSwim>=planSwim||Math.abs(actualSwim-planSwim)<planSwim*0.05?'达标':'不足') : '-') + '</span></td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td style="font-weight:600;">🚴 骑行</td>' +
+                '<td>' + (planBike ? planBike.toFixed(1) + 'km' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (actualBike ? actualBike.toFixed(1) + 'km' : '-') + '</td>' +
+                '<td class="' + (planBike ? bCmp.cls : '') + '">' + (planBike ? bCmp.gap : '-') + '</td>' +
+                '<td><span class="pc-status-' + (planBike&&(actualBike>=planBike||Math.abs(actualBike-planBike)<planBike*0.05) ? 'done' : 'miss') + '">' + (planBike ? (actualBike>=planBike||Math.abs(actualBike-planBike)<planBike*0.05?'达标':'不足') : '-') + '</span></td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td style="font-weight:600;">🏃 跑步</td>' +
+                '<td>' + (planRun ? planRun.toFixed(1) + 'km' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (actualRun ? actualRun.toFixed(1) + 'km' : '-') + '</td>' +
+                '<td class="' + (planRun ? rCmp.cls : '') + '">' + (planRun ? rCmp.gap : '-') + '</td>' +
+                '<td><span class="pc-status-' + (planRun&&(actualRun>=planRun||Math.abs(actualRun-planRun)<planRun*0.05) ? 'done' : 'miss') + '">' + (planRun ? (actualRun>=planRun||Math.abs(actualRun-planRun)<planRun*0.05?'达标':'不足') : '-') + '</span></td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td style="font-weight:600;">💪 其他</td>' +
+                '<td>' + (actualOther ? actualOther + ' 次' : '-') + '</td>' +
+                '<td colspan="3" style="font-size:13px;color:#666;">打卡中「其他」类型次数</td>' +
+            '</tr>' +
+            '<tr style="border-top:2px solid #e0e0e0;">' +
+                '<td style="font-weight:700;">训练时长</td>' +
+                '<td colspan="4" style="font-size:13px;color:#666;">实际总时长：' + (actualDur ? Utils.formatDuration(actualDur) : '-') + '</td>' +
+            '</tr>' +
+            '<tr>' +
+                '<td style="font-weight:600;">打卡次数</td>' +
+                '<td colspan="4">' + userCheckins.length + ' 次打卡</td>' +
+            '</tr>' +
+            '</tbody></table></div>' +
+            // 详细列表
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">' +
+                '<div><strong style="font-size:13px;">📋 打卡计划</strong>' + planItemsHtml + '</div>' +
+                '<div><strong style="font-size:13px;">✅ 打卡明细</strong>' + actualItemsHtml + '</div>' +
+            '</div>' +
+            '</div>';
+    }
+
+    container.innerHTML = html || '<p style="color:var(--text-light);text-align:center;">当前周期无对比数据</p>';
+};
+
 </script>
 </body>
 </html>
