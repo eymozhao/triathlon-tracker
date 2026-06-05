@@ -1948,7 +1948,7 @@ const GROUP_CONFIG = {
 };
 
 // 请假配额（按性别）
-const LEAVE_QUOTA = { male: 1, female: 2 }; // 次/月
+const LEAVE_QUOTA = { male: 4, female: 8 }; // 月累计上限（男每周1次×4周，女每周2次×4周），月底清零
 
 // ========== 铁三&马拉松训练周计划模板 ==========
 const TRAINING_PLANS = {
@@ -3016,7 +3016,7 @@ const App = {
                 <div class="group-info-text">
                     <div class="group-name">${groupCfg.name}</div>
                     <div class="group-desc">${groupCfg.desc}</div>
-                    <div class="group-meta">性别: ${gender === 'male' ? '👨 男' : '👩 女'} · 请假配额: <strong>${LEAVE_QUOTA[gender]}次/月</strong></div>
+                    <div class="group-meta">性别: ${gender === 'male' ? '👨 男' : '👩 女'} · 请假: 每周${gender === 'male' ? '1' : '2'}次，月累计最多<strong>${LEAVE_QUOTA[gender]}次</strong>，月底清零</div>
                 </div>
             </div>`;
         }
