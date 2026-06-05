@@ -494,6 +494,14 @@ body {
     color: var(--primary);
     margin-top: 4px;
 }
+.photo-expired {
+    background: #f0f0f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #bbb; cursor: default;
+}
+.photo-failed {
+    filter: grayscale(0.8);
+}
 
 .admin-member-label {
     font-size: 13px;
@@ -3765,39 +3773,97 @@ const App = {
     },
     _renderPhotoHtml(checkin) {
         if (!checkin.photos || checkin.photos.length === 0) return '';
+        const photoDate = checkin.date || '';
+        // 超过30天的照片标记为过期
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const expired = photoDate && photoDate < Utils.toLocalDateStr(thirtyDaysAgo);
         return checkin.photos.map((p, i) => {
+            // 过期照片统一显示占位符
+            if (expired) {
+                return `<div class="checkin-photo-thumb photo-expired" title="照片已过期（仅保留近30天打卡照片）">📷</div>`;
+            }
             // 如果是 data URL（本地存储），直接显示
             if (p.startsWith('data:')) {
                 return `<img class="checkin-photo-thumb" src="${this._escapeAttr(p)}" alt="打卡照片" onclick="App._viewPhoto('${this._escapeAttr(p)}')">`;
             }
             // 云存储 fileID，用占位符，后续异步加载
             const id = checkin.id + '_' + i;
-            return `<img class="checkin-photo-thumb photo-cloud" data-checkin-id="${checkin.id}" data-fileid="${this._escapeAttr(p)}" id="photo-${id}" src="" alt="加载中...">`;
+            return `<img class="checkin-photo-thumb photo-cloud" data-fileid="${this._escapeAttr(p)}" id="photo-${id}" src="" alt="加载中...">`;
         }).join('');
     },
     _escapeAttr(str) {
         return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     },
     async _resolveCloudPhotos(checkins) {
-        const fileIDs = [];
-        checkins.forEach(c => {
-            if (c.photos) c.photos.forEach(p => { if (p.startsWith('cloud://')) fileIDs.push(p); });
-        });
-        if (fileIDs.length === 0) return;
-        try {
-            const result = await cloudApp.getTempFileURL({
-                fileList: fileIDs.map(fid => ({ fileID: fid, maxAge: 7200 }))
-            });
-            if (result && result.fileList) {
-                result.fileList.forEach(f => {
-                    if (f.code === 'SUCCESS' && f.tempFileURL) {
-                        const imgs = document.querySelectorAll(`.photo-cloud[data-fileid="${f.fileID.replace(/"/g, '\\"')}"]`);
-                        imgs.forEach(img => { img.src = f.tempFileURL; img.onclick = () => App._viewPhoto(f.tempFileURL); });
-                    }
-                });
+        // 收集所有待加载的云照片 img 元素
+        const allImgs = document.querySelectorAll('.photo-cloud');
+        if (allImgs.length === 0) return;
+
+        // 构建 fileID → img 元素映射（用 dataset 匹配，避免 CSS 选择器特殊字符问题）
+        const fileIDMap = {};
+        allImgs.forEach(img => {
+            const fid = img.dataset.fileid;
+            if (fid) {
+                if (!fileIDMap[fid]) fileIDMap[fid] = [];
+                fileIDMap[fid].push(img);
             }
-        } catch (e) {
-            console.warn('获取照片临时链接失败:', e.message);
+        });
+        const fileIDs = Object.keys(fileIDMap);
+        if (fileIDs.length === 0) return;
+
+        // 分批获取临时链接（每次最多50个，避免请求过大）
+        const BATCH_SIZE = 50;
+        let successCount = 0;
+        let failCount = 0;
+
+        for (let i = 0; i < fileIDs.length; i += BATCH_SIZE) {
+            const batch = fileIDs.slice(i, i + BATCH_SIZE);
+            try {
+                const result = await cloudApp.getTempFileURL({
+                    fileList: batch.map(fid => ({ fileID: fid, maxAge: 7200 }))
+                });
+                if (result && result.fileList) {
+                    result.fileList.forEach(f => {
+                        const imgs = fileIDMap[f.fileID] || [];
+                        if (f.code === 'SUCCESS' && f.tempFileURL) {
+                            imgs.forEach(img => {
+                                img.src = f.tempFileURL;
+                                img.alt = '打卡照片';
+                                img.classList.remove('photo-cloud');
+                                img.classList.add('photo-loaded');
+                                img.onclick = () => App._viewPhoto(f.tempFileURL);
+                            });
+                            successCount++;
+                        } else {
+                            // 单个文件获取失败（可能已被删除）
+                            imgs.forEach(img => {
+                                img.alt = '加载失败';
+                                img.classList.add('photo-failed');
+                                img.style.opacity = '0.4';
+                            });
+                            failCount++;
+                            console.warn('照片获取失败:', f.fileID, f.code);
+                        }
+                    });
+                }
+            } catch (e) {
+                // 整批请求失败
+                batch.forEach(fid => {
+                    const imgs = fileIDMap[fid] || [];
+                    imgs.forEach(img => {
+                        img.alt = '加载失败';
+                        img.classList.add('photo-failed');
+                        img.style.opacity = '0.4';
+                    });
+                });
+                failCount += batch.length;
+                console.warn('获取照片临时链接失败:', e.message);
+            }
+        }
+
+        if (successCount > 0 || failCount > 0) {
+            console.log('📷 照片加载: ' + successCount + ' 成功, ' + failCount + ' 失败');
         }
     },
     _viewPhoto(url) {
