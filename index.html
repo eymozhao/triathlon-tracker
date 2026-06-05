@@ -946,8 +946,8 @@ body {
     .content { padding: 12px; }
 }
 
-/* ========== 训练计划页面 ========== */
-.plan-header-bar {
+/* ========== 训练计划页面（周视图） ========== */
+.plan-week-header {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -956,47 +956,92 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
-.day-nav-btn {
-    width: 36px;
-    height: 36px;
+.week-nav-btn {
+    padding: 6px 12px;
     border: 1px solid var(--border);
-    border-radius: 50%;
+    border-radius: 16px;
     background: var(--card);
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.day-nav-btn:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.plan-date-label {
-    flex: 1;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-}
-
-.btn-add-plan {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 20px;
     font-size: 13px;
     cursor: pointer;
+    transition: all 0.2s;
     white-space: nowrap;
 }
 
-.btn-add-plan:hover { background: var(--primary-dark); }
+.week-nav-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
+.plan-week-label {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* 整周围绕的 plan item 卡片 (在 day-card 内部) */
+.plans-week-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.day-card {
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.day-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.day-card-header.today { background: #e3f2fd; }
+
+.day-card-label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.day-card-date {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.day-card-add {
+    background: none;
+    border: 1.5px dashed #ccc;
+    border-radius: 14px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.day-card-add:hover { border-color: var(--primary); color: var(--primary); }
+
+.day-card-body {
+    padding: 8px 14px 14px;
+}
+
+.day-card-body .plan-item {
+    margin-top: 8px;
+    box-shadow: none;
+    background: var(--bg);
+    border-radius: 8px;
+}
+
+.day-card-empty {
+    color: #aaa;
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+/* 保留原有的 plan-item 样式 */
 .plans-list {
     display: flex;
     flex-direction: column;
@@ -1441,43 +1486,43 @@ body {
             </header>
 
             <nav class="tab-nav">
-                <button class="nav-tab active" data-page="checkin">
-                    <span class="nav-icon">✅</span>
-                    <span class="nav-label">打卡</span>
+                <button class="nav-tab active" data-page="goals">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-label">目标</span>
                 </button>
                 <button class="nav-tab" data-page="plan">
                     <span class="nav-icon">📋</span>
                     <span class="nav-label">计划</span>
                 </button>
-                <button class="nav-tab" data-page="goals">
-                    <span class="nav-icon">🎯</span>
-                    <span class="nav-label">目标</span>
+                <button class="nav-tab" data-page="checkin">
+                    <span class="nav-icon">✅</span>
+                    <span class="nav-label">打卡</span>
                 </button>
                 <button class="nav-tab" data-page="stats">
                     <span class="nav-icon">📊</span>
                     <span class="nav-label">统计</span>
                 </button>
-                <button class="nav-tab" data-page="feed">
-                    <span class="nav-icon">👀</span>
-                    <span class="nav-label">动态</span>
-                </button>
                 <button class="nav-tab" data-page="rank">
                     <span class="nav-icon">🏆</span>
                     <span class="nav-label">排行</span>
                 </button>
-                <button class="nav-tab admin-only" data-page="users" id="nav-users">
-                    <span class="nav-icon">👥</span>
-                    <span class="nav-label">用户</span>
+                <button class="nav-tab" data-page="feed">
+                    <span class="nav-icon">👀</span>
+                    <span class="nav-label">动态</span>
                 </button>
                 <button class="nav-tab" data-page="training">
                     <span class="nav-icon">📚</span>
                     <span class="nav-label">训练库</span>
                 </button>
+                <button class="nav-tab admin-only" data-page="users" id="nav-users">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">用户</span>
+                </button>
             </nav>
 
             <main class="content">
                 <!-- 打卡页面 -->
-                <section id="checkin-section" class="section active">
+                <section id="checkin-section" class="section">
                     <h2 class="section-title">今日打卡</h2>
                     <form id="checkin-form" autocomplete="off">
                         <div class="form-group">
@@ -1544,19 +1589,18 @@ body {
                     </div>
                 </section>
 
-                <!-- 训练计划页面 -->
+                <!-- 训练计划页面（周视图） -->
                 <section id="plan-section" class="section">
-                    <div class="plan-header-bar">
-                        <button class="day-nav-btn" id="plan-prev-day">‹</button>
-                        <span class="plan-date-label" id="plan-date-label" title="点击回到今天">今天</span>
-                        <button class="day-nav-btn" id="plan-next-day">›</button>
-                        <button class="btn-add-plan" id="add-plan-btn">+ 添加计划</button>
+                    <div class="plan-week-header">
+                        <button class="week-nav-btn" id="plan-prev-week">‹ 上一周</button>
+                        <span class="plan-week-label" id="plan-week-label"></span>
+                        <button class="week-nav-btn" id="plan-next-week">下一周 ›</button>
                     </div>
-                    <div id="plans-list" class="plans-list"></div>
+                    <div id="plans-week-list" class="plans-week-list"></div>
                 </section>
 
                 <!-- 目标页面 -->
-                <section id="goals-section" class="section">
+                <section id="goals-section" class="section active">
                     <h2 class="section-title">我的目标</h2>
 
                     <!-- 分组信息卡片 -->
@@ -1801,6 +1845,10 @@ body {
             </div>
             <div class="modal-body">
                 <input type="hidden" id="plan-id">
+                <div class="form-group">
+                    <label>计划日期</label>
+                    <input type="date" id="plan-date" class="form-input">
+                </div>
                 <div class="form-group">
                     <label>训练项目</label>
                     <div class="sport-selector">
@@ -2557,13 +2605,13 @@ const App = {
     currentRankPeriod: 'weekly',
     currentRankSport: 'total',
     feedFilter: 'all',
-    planViewDate: null,
+    planWeekStart: null,
     _allCheckins: [], // 内存缓存
 
     async init() {
         // 先初始化云开发（含匿名登录）
         await initCloud();
-        this.planViewDate = Utils.toLocalDateStr(new Date());
+        this.planWeekStart = this._getMonday(Utils.toLocalDateStr(new Date()));
 
         // 从本地缓存快速恢复登录态（让页面立即可用，不要让用户等待）
         const cachedUser = DB.getCurrentUser();
@@ -2696,18 +2744,16 @@ const App = {
                 this.renderRank();
             });
         });
-        document.getElementById('plan-prev-day').addEventListener('click', () => {
-            const d = new Date(this.planViewDate); d.setDate(d.getDate() - 1);
-            this.planViewDate = Utils.toLocalDateStr(d); this.renderPlans();
+        document.getElementById('plan-prev-week').addEventListener('click', () => {
+            const d = new Date(this.planWeekStart + 'T00:00:00');
+            d.setDate(d.getDate() - 7);
+            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans();
         });
-        document.getElementById('plan-next-day').addEventListener('click', () => {
-            const d = new Date(this.planViewDate); d.setDate(d.getDate() + 1);
-            this.planViewDate = Utils.toLocalDateStr(d); this.renderPlans();
+        document.getElementById('plan-next-week').addEventListener('click', () => {
+            const d = new Date(this.planWeekStart + 'T00:00:00');
+            d.setDate(d.getDate() + 7);
+            this.planWeekStart = Utils.toLocalDateStr(d); this.renderPlans();
         });
-        document.getElementById('plan-date-label').addEventListener('click', () => {
-            this.planViewDate = Utils.toLocalDateStr(new Date()); this.renderPlans();
-        });
-        document.getElementById('add-plan-btn').addEventListener('click', () => this.openPlanModal());
         document.getElementById('plan-modal-close').addEventListener('click', () => this.closePlanModal());
         document.getElementById('plan-modal-overlay').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) this.closePlanModal();
@@ -3385,35 +3431,62 @@ const App = {
             </div>`;
         }).join('');
     },
+    _getMonday(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day; // Monday=1
+        d.setDate(d.getDate() + diff);
+        return Utils.toLocalDateStr(d);
+    },
     renderPlans() {
-        const container = document.getElementById('plans-list');
-        const dateLabel = document.getElementById('plan-date-label');
-        if (dateLabel) {
-            const d = new Date(this.planViewDate + 'T00:00:00');
-            const weekDay = Utils.weekDayName(this.planViewDate);
-            const today = Utils.toLocalDateStr(new Date());
-            dateLabel.textContent = today === this.planViewDate ? `今天 ${weekDay}` : `${d.getMonth() + 1}月${d.getDate()}日 ${weekDay}`;
+        const container = document.getElementById('plans-week-list');
+        const weekLabel = document.getElementById('plan-week-label');
+        const today = Utils.toLocalDateStr(new Date());
+        const weekEnd = new Date(this.planWeekStart + 'T00:00:00');
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekEndStr = Utils.toLocalDateStr(weekEnd);
+        // 周标签
+        if (weekLabel) {
+            const weekNum = this._getWeekNumber(this.planWeekStart);
+            const sm = new Date(this.planWeekStart + 'T00:00:00');
+            const em = new Date(weekEndStr + 'T00:00:00');
+            weekLabel.textContent = `第${weekNum}周 ${sm.getMonth()+1}/${sm.getDate()} - ${em.getMonth()+1}/${em.getDate()}`;
         }
-        const isAdmin = this.currentUser.isAdmin;
-        const users = DB._getCache('tri_users', []);
-        if (isAdmin) {
-            const allPlans = DB.getAllPlans();
-            const allCheckins = this._allCheckins.filter(c => c.date === this.planViewDate);
-            const tableRows = [];
-            users.forEach(u => {
-                const uPlans = (allPlans[u.id] || []).filter(p => p.date === this.planViewDate);
-                const uCheckins = allCheckins.filter(c => c.userId === u.id);
-                tableRows.push({ user: u, plans: uPlans, checkins: uCheckins });
-            });
-            const hasAny = tableRows.some(r => r.plans.length > 0);
-            if (!hasAny) UI.renderEmptyState(container, '今日无人安排训练计划');
-            else container.innerHTML = this._renderAdminPlanTable(tableRows);
-        } else {
-            const plans = DB.getPlans(this.currentUser.id).filter(p => p.date === this.planViewDate);
-            const checkins = this._allCheckins.filter(c => c.userId === this.currentUser.id && c.date === this.planViewDate);
-            if (plans.length === 0) { UI.renderEmptyState(container, '暂无训练计划，点击右上角添加'); return; }
-            container.innerHTML = plans.map(p => this._renderPlanItem(p, checkins, true)).join('');
+        // 生成7天数据
+        const days = [];
+        const d = new Date(this.planWeekStart + 'T00:00:00');
+        for (let i = 0; i < 7; i++) {
+            const dateStr = Utils.toLocalDateStr(d);
+            days.push({ date: dateStr, label: Utils.weekDayName(dateStr), isToday: dateStr === today,
+                d: d.getDate(), m: d.getMonth() + 1 });
+            d.setDate(d.getDate() + 1);
         }
+        // 获取当前用户的计划
+        const myPlans = DB.getPlans(this.currentUser.id);
+        const myCheckins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        let html = '';
+        days.forEach(day => {
+            const dayPlans = myPlans.filter(p => p.date === day.date);
+            const dayCheckins = myCheckins.filter(c => c.date === day.date);
+            const headerClass = day.isToday ? 'day-card-header today' : 'day-card-header';
+            html += `<div class="day-card"><div class="${headerClass}">
+                <div><span class="day-card-label">${day.label}</span> <span class="day-card-date">${day.m}/${day.d}</span></div>
+                <button class="day-card-add" onclick="App.openPlanModalForDate('${day.date}')">+ 添加</button>
+            </div><div class="day-card-body">`;
+            if (dayPlans.length === 0) {
+                html += '<div class="day-card-empty">休息日</div>';
+            } else {
+                html += dayPlans.map(p => this._renderPlanItem(p, dayCheckins, true)).join('');
+            }
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    },
+    _getWeekNumber(dateStr) {
+        const d = new Date(dateStr + 'T00:00:00');
+        const start = new Date(d.getFullYear(), 0, 1);
+        const days = Math.floor((d - start) / (24 * 60 * 60 * 1000));
+        return Math.ceil((days + start.getDay() + 1) / 7);
     },
     _renderAdminPlanTable(tableRows) {
         const activeRows = tableRows.filter(r => r.plans.length > 0);
@@ -3473,6 +3546,7 @@ const App = {
     },
     openPlanModal(plan = null) {
         document.getElementById('plan-modal-overlay').classList.add('open');
+        const dateEl = document.getElementById('plan-date');
         if (plan) {
             document.getElementById('plan-id').value = plan.id;
             document.querySelectorAll('.plan-sport-btn').forEach(b => b.classList.remove('active'));
@@ -3483,6 +3557,7 @@ const App = {
             document.getElementById('plan-duration').value = plan.plannedDuration || '';
             document.getElementById('plan-intensity').value = plan.intensity || '';
             document.getElementById('plan-note').value = plan.note || '';
+            if (dateEl) dateEl.value = plan.date || '';
             document.getElementById('modal-title').textContent = '编辑训练计划';
         } else {
             document.getElementById('plan-id').value = '';
@@ -3494,8 +3569,14 @@ const App = {
             document.getElementById('plan-duration').value = '';
             document.getElementById('plan-intensity').value = 'moderate';
             document.getElementById('plan-note').value = '';
+            if (dateEl) dateEl.value = Utils.toLocalDateStr(new Date());
             document.getElementById('modal-title').textContent = '添加训练计划';
         }
+    },
+    openPlanModalForDate(dateStr) {
+        this.openPlanModal();
+        const dateEl = document.getElementById('plan-date');
+        if (dateEl) dateEl.value = dateStr;
     },
     _updatePlanModalFields(sport) {
         const distGroup = document.getElementById('plan-distance-group');
@@ -3519,7 +3600,10 @@ const App = {
         if (sport !== 'other' && !distance && !duration) { UI.toast('请输入计划距离或时长', 'error'); return; }
         if (sport === 'other' && !duration) { UI.toast('请输入计划时长', 'error'); return; }
         if (id) { DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note }); UI.toast('计划已更新', 'success'); }
-        else { DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: this.planViewDate }); UI.toast('计划已添加', 'success'); }
+        else {
+            const planDate = document.getElementById('plan-date').value || Utils.toLocalDateStr(new Date());
+            DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate }); UI.toast('计划已添加', 'success');
+        }
         this.closePlanModal(); this.renderPlans();
     },
     editPlan(planId) {
