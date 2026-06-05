@@ -1578,7 +1578,7 @@ body {
                                 <option value="standard">🥉 标铁组（每周4-6小时）</option>
                                 <option value="113">🥈 113组（每周6-8小时）</option>
                                 <option value="226">🥇 226组（每周8-10小时）</option>
-                                <option value="weight">💪 减肥组（每周6小时+）</option>
+                                <option value="weight">💪 其他组（每周6小时+）</option>
                                 <option value="marathon">🏃 马拉松组（每周5-7小时）</option>
                             </select>
                             <div class="group-hint" id="goal-group-hint"></div>
@@ -1638,7 +1638,7 @@ body {
 
                     <!-- 处罚规则提示 -->
                     <div class="penalty-note">
-                        💡 处罚规则：默认采用 🧧 发红包机制（5元/小时欠训），系统根据每周训练数据自动计算罚金。如需调整请联系管理员。
+                        💡 处罚规则：默认采用 🧧 发红包机制（5元/小时欠训），系统根据每周训练数据自动计算罚金。如需调整请联系管理员。实际处罚金额以自己最终决定为准。
                     </div>
                 </section>
 
@@ -1932,7 +1932,7 @@ const GROUP_CONFIG = {
         weeklyTarget: 540            // 默认9小时/周（分钟）
     },
     weight: {
-        name: '减肥组', icon: '💪',
+        name: '其他组', icon: '💪',
         desc: '有氧减脂为主，持续低强度训练',
         weeklyMinutes: [360, 9999],  // 6小时+
         weeklySessions: null,
