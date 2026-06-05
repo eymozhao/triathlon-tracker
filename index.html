@@ -2826,8 +2826,8 @@ const App = {
                 DB.fetchLeavesFromCloud(this.currentUser.id)
             ]);
             this.renderRecentCheckins();
-            this.renderStats();
-            this.renderFeed();
+            await this.renderStats();
+            await this.renderFeed();
             this.renderRank();
             await this.renderGoals();
         } catch(e) { console.warn('刷新云端数据失败', e); }
@@ -2880,11 +2880,11 @@ const App = {
             });
         });
         document.getElementById('save-goals-btn').addEventListener('click', () => this.saveGoals());
-        document.getElementById('stats-period-select').addEventListener('change', (e) => {
-            this.currentStatsPeriod = e.target.value; this.renderStats();
+        document.getElementById('stats-period-select').addEventListener('change', async (e) => {
+            this.currentStatsPeriod = e.target.value; await this.renderStats();
         });
-        document.getElementById('feed-sport-filter').addEventListener('change', (e) => {
-            this.feedFilter = e.target.value; this.renderFeed();
+        document.getElementById('feed-sport-filter').addEventListener('change', async (e) => {
+            this.feedFilter = e.target.value; await this.renderFeed();
         });
         document.querySelectorAll('.rank-period-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -2968,8 +2968,8 @@ const App = {
         this._allCheckins = DB._getCache('tri_checkins', []);
         this.renderRecentCheckins();
         this.renderGoals();
-        this.renderStats();
-        this.renderFeed();
+        this.renderStats().catch(e => console.warn('renderStats failed', e));
+        this.renderFeed().catch(e => console.warn('renderFeed failed', e));
         this.renderRank();
         this.renderPlans();
     },
@@ -3480,7 +3480,7 @@ const App = {
         });
         UI.toast('目标已保存！', 'success'); this.renderGoals();
     },
-    renderStats() {
+    async renderStats() {
         const user = this.currentUser;
         const group = user.group || 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
@@ -3875,14 +3875,14 @@ const App = {
         if (idx !== -1) this._allCheckins[idx] = { ...this._allCheckins[idx], sport, distance, content, duration, date, note: noteVal };
         UI.toast('打卡记录已更新 ✅', 'success');
         this.closeCheckinEditModal();
-        this.renderRecentCheckins(); this.renderStats(); this.renderGoals(); this.renderPlans(); this.renderFeed(); this.renderRank();
+        this.renderRecentCheckins(); await this.renderStats(); this.renderGoals(); this.renderPlans(); await this.renderFeed(); this.renderRank();
     },
     async deleteCheckinConfirm(checkinId) {
         if (confirm('确定删除这条打卡记录？删除后无法恢复。')) {
             await DB.deleteCheckin(checkinId);
             this._allCheckins = this._allCheckins.filter(c => c.id !== checkinId);
             UI.toast('打卡记录已删除', 'success');
-            this.renderRecentCheckins(); this.renderStats(); this.renderGoals(); this.renderPlans(); this.renderFeed(); this.renderRank();
+            this.renderRecentCheckins(); await this.renderStats(); this.renderGoals(); this.renderPlans(); await this.renderFeed(); this.renderRank();
         }
     },
 
