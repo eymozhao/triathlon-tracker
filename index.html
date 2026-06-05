@@ -101,6 +101,10 @@ body {
     font-size: 14px;
 }
 
+.cloud-status-msg { font-size: 12px; margin-top: 6px; padding: 6px 12px; border-radius: 16px; display: inline-block; }
+.cloud-status-msg.online { background: #e8f5e9; color: #2e7d32; }
+.cloud-status-msg.offline { background: #fff3e0; color: #e65100; }
+
 .auth-tabs {
     display: flex;
     margin-bottom: 20px;
@@ -212,6 +216,10 @@ body {
     font-size: 14px;
     cursor: pointer;
 }
+
+.cloud-status { font-size: 18px; cursor: pointer; margin-right: 8px; opacity: 0.5; transition: opacity 0.3s; }
+.cloud-status.online { opacity: 1; }
+.cloud-status.offline { opacity: 0.3; }
 
 /* ========== 主页面 ========== */
 #main-page {
@@ -1436,6 +1444,7 @@ body {
                     <span class="logo-icon">🏊🚴🏃</span>
                     <h1>铁人三项训练打卡</h1>
                     <p class="subtitle">记录每一次突破</p>
+                    <p class="cloud-status-msg" id="auth-cloud-status">☁️ 正在连接云端...</p>
                 </div>
                 
                 <div class="auth-tabs">
@@ -1493,6 +1502,7 @@ body {
                     <span id="current-user"></span>
                 </div>
                 <div class="header-right">
+                    <span id="cloud-status" class="cloud-status" title="云端连接状态">☁️</span>
                     <button id="logout-btn" class="btn-text">退出</button>
                 </div>
             </header>
@@ -2270,29 +2280,65 @@ async function initCloud() {
     if (!SDK) {
         console.warn('CloudBase SDK 未加载，使用本地模式');
         cloudDB = null;
+        _updateCloudStatus(false, 'SDK未加载');
         return false;
     }
     
     try {
+        console.log('🔄 正在连接云开发环境:', CLOUD_ENV_ID);
         cloudApp = SDK.init({ env: CLOUD_ENV_ID });
         cloudAuth = cloudApp.auth({ persistence: 'local' });
 
         // 尝试匿名登录（让 Web SDK 有权限访问数据库）
         const loginState = await cloudAuth.getLoginState();
         if (!loginState) {
+            console.log('🔑 执行匿名登录...');
             await cloudAuth.anonymousAuthProvider().signIn();
-            console.log('云开发匿名登录成功');
+            console.log('✅ 云开发匿名登录成功');
         } else {
-            console.log('云开发已登录，loginType:', loginState.loginType);
+            console.log('✅ 云开发已登录，loginType:', loginState.loginType);
         }
 
         cloudDB = cloudApp.database();
-        console.log('云开发初始化成功 ENV:', CLOUD_ENV_ID);
+        
+        // 快速验证数据库连接
+        try {
+            const testRes = await cloudDB.collection('tri_users').limit(1).get();
+            console.log('✅ 数据库连接正常，tri_users 记录数:', testRes.data ? testRes.data.length : 0);
+        } catch(dbErr) {
+            console.warn('⚠️ 数据库访问失败:', dbErr.message || dbErr);
+            _updateCloudStatus(false, '数据库无权限');
+            // cloudDB 仍然保留，让后续操作尝试
+        }
+        
+        console.log('✅ 云开发初始化成功 ENV:', CLOUD_ENV_ID);
+        _updateCloudStatus(true, '云端已连接');
         return true;
     } catch(e) {
-        console.warn('云开发初始化失败，使用本地模式', e);
+        console.warn('❌ 云开发初始化失败，使用本地模式:', e.message || e);
         cloudDB = null;
+        _updateCloudStatus(false, '初始化失败');
         return false;
+    }
+}
+
+function _updateCloudStatus(online, msg) {
+    const el = document.getElementById('cloud-status');
+    if (el) {
+        el.className = 'cloud-status ' + (online ? 'online' : 'offline');
+        el.title = online ? '云端已连接' : ('离线模式: ' + (msg || ''));
+        el.textContent = online ? '☁️' : '💾';
+    }
+    // 同时更新登录页的状态提示
+    const authEl = document.getElementById('auth-cloud-status');
+    if (authEl) {
+        if (online) {
+            authEl.className = 'cloud-status-msg online';
+            authEl.textContent = '☁️ 云端已连接，数据将自动同步';
+        } else {
+            authEl.className = 'cloud-status-msg offline';
+            authEl.textContent = '💾 离线模式，数据仅存本地';
+        }
     }
 }
 
@@ -2482,26 +2528,43 @@ const DB = {
 
     // ------- 目标管理 -------
     getGoals(userId) {
-        const goals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
-        return goals[userId] || { weekly: { swim: 0, bike: 0, run: 0 }, monthly: { swim: 0, bike: 0, run: 0 } };
+        const allGoals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
+        const localGoals = allGoals[userId] || { weekly: { swim: 0, bike: 0, run: 0 }, monthly: { swim: 0, bike: 0, run: 0 } };
+        // 异步从云端拉取并合并
+        if (cloudDB) {
+            cloudDB.collection('tri_goals').where({ userId }).get().then(res => {
+                if (res.data.length > 0 && res.data[0].goals) {
+                    const cloudGoals = res.data[0].goals;
+                    // 云端数据覆盖本地（云端是权威源）
+                    allGoals[userId] = cloudGoals;
+                    localStorage.setItem('tri_goals', JSON.stringify(allGoals));
+                    console.log('📥 目标数据已从云端同步');
+                }
+            }).catch(e => console.warn('拉取云端目标失败', e));
+        }
+        return localGoals;
     },
     saveGoals(userId, goals) {
         const allGoals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
         allGoals[userId] = goals;
         localStorage.setItem('tri_goals', JSON.stringify(allGoals));
-        // 异步同步到云端
+        // 同步到云端
         if (cloudDB) {
             cloudDB.collection('tri_goals').where({ userId }).get().then(res => {
-                if (res.data.length > 0) cloudDB.collection('tri_goals').where({ userId }).update({ goals });
-                else cloudDB.collection('tri_goals').add({ userId, goals });
-            }).catch(e => console.warn('同步目标失败', e));
+                const doc = { userId, goals, updatedAt: new Date().toISOString() };
+                if (res.data.length > 0) {
+                    cloudDB.collection('tri_goals').doc(res.data[0]._id).update(doc);
+                } else {
+                    cloudDB.collection('tri_goals').add(doc);
+                }
+            }).catch(e => console.warn('同步目标到云端失败', e));
         }
     },
 
-    // ------- 训练计划管理 -------
+    // ------- 训练计划管理（云端同步）-------
     getPlans(userId) {
-        const plans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
-        return plans[userId] || [];
+        const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
+        return allPlans[userId] || [];
     },
     savePlans(userId, plans) {
         const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
@@ -2511,17 +2574,26 @@ const DB = {
     addPlan(userId, plan) {
         const plans = this.getPlans(userId);
         plan.id = 'plan_' + Date.now();
+        plan.userId = userId;
         plan.createdAt = new Date().toISOString();
         plans.push(plan);
         this.savePlans(userId, plans);
+        // 同步到云端
+        if (cloudDB) {
+            cloudDB.collection('tri_plans').add(plan).catch(e => console.warn('添加计划云端同步失败', e));
+        }
         return plan;
     },
     updatePlan(userId, planId, updates) {
         const plans = this.getPlans(userId);
         const index = plans.findIndex(p => p.id === planId);
         if (index !== -1) {
-            plans[index] = { ...plans[index], ...updates };
+            plans[index] = { ...plans[index], ...updates, updatedAt: new Date().toISOString() };
             this.savePlans(userId, plans);
+            // 同步到云端
+            if (cloudDB) {
+                cloudDB.collection('tri_plans').where({ id: planId }).update(updates).catch(e => console.warn('更新计划云端同步失败', e));
+            }
             return plans[index];
         }
         return null;
@@ -2529,8 +2601,27 @@ const DB = {
     deletePlan(userId, planId) {
         const plans = this.getPlans(userId);
         this.savePlans(userId, plans.filter(p => p.id !== planId));
+        // 同步删除到云端
+        if (cloudDB) {
+            cloudDB.collection('tri_plans').where({ id: planId }).remove().catch(e => console.warn('删除计划云端同步失败', e));
+        }
     },
     getAllPlans() { return JSON.parse(localStorage.getItem('tri_plans') || '{}'); },
+    // 从云端拉取计划数据
+    async fetchPlansFromCloud(userId) {
+        if (!cloudDB) return [];
+        try {
+            const res = await cloudDB.collection('tri_plans').where({ userId }).limit(500).get();
+            const cloudPlans = res.data || [];
+            if (cloudPlans.length > 0) {
+                const allPlans = JSON.parse(localStorage.getItem('tri_plans') || '{}');
+                allPlans[userId] = cloudPlans;
+                localStorage.setItem('tri_plans', JSON.stringify(allPlans));
+                console.log('📥 计划数据已从云端同步，共', cloudPlans.length, '条');
+            }
+            return cloudPlans;
+        } catch(e) { console.warn('拉取云端计划失败', e); return []; }
+    },
 };
 
 // ========== 工具函数 ==========
@@ -2700,10 +2791,12 @@ const App = {
     async refreshFromCloud() {
         try {
             this._allCheckins = await DB.getCheckins();
+            await DB.fetchPlansFromCloud(this.currentUser.id);
             this.renderRecentCheckins();
             this.renderStats();
             this.renderFeed();
             this.renderRank();
+            this.renderGoals();
         } catch(e) { console.warn('刷新云端数据失败', e); }
     },
 
