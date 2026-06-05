@@ -4715,8 +4715,8 @@ App._switchPcType = function(type) {
     App._updatePcLabel();
 };
 
-// 获取周一
-App._getMonday = function(d) {
+// 获取周一（返回Date对象，仅给计划对比用）
+App._getMondayDate = function(d) {
     const dt = new Date(d);
     const day = dt.getDay();
     const diff = day === 0 ? -6 : 1 - day;
@@ -4732,7 +4732,7 @@ App._updatePcLabel = function() {
     if (!label) return;
     const now = new Date();
     if (App._pcType === 'week') {
-        const mon = App._getMonday(now);
+        const mon = App._getMondayDate(now);
         mon.setDate(mon.getDate() + App._pcOffset * 7);
         const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
         const wkNum = Math.ceil((mon.getDate() + 6 - mon.getDay()) / 7) || 1;
@@ -4771,7 +4771,7 @@ App._getPcDateRange = function() {
     const now = new Date();
     let start, end;
     if (App._pcType === 'week') {
-        const mon = App._getMonday(now);
+        const mon = App._getMondayDate(now);
         mon.setDate(mon.getDate() + App._pcOffset * 7);
         start = new Date(mon);
         end = new Date(mon); end.setDate(end.getDate() + 7); end.setMilliseconds(-1);
