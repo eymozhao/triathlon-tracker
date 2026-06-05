@@ -421,6 +421,80 @@ body {
     font-size: 15px;
 }
 
+/* ========== 打卡照片 ========== */
+.photo-upload-area {
+    margin-top: 4px;
+}
+.photo-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.photo-upload-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.photo-preview-wrap {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.photo-preview-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.photo-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.photo-preview-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+}
+.checkin-photo-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.checkin-photo-thumb:hover {
+    transform: scale(1.05);
+    transition: transform 0.15s;
+}
+.photo-upload-status {
+    font-size: 12px;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
 .admin-member-label {
     font-size: 13px;
     font-weight: 600;
@@ -1597,6 +1671,14 @@ body {
                         <div class="form-group">
                             <label>备注（可选）</label>
                             <input type="text" id="checkin-note" placeholder="如：状态不错，配速稳定">
+                        </div>
+
+                        <div class="form-group photo-upload-area">
+                            <label>打卡照片（可选，最多3张）</label>
+                            <input type="file" id="checkin-photo-input" accept="image/*" multiple style="display:none;">
+                            <button type="button" class="photo-upload-btn" id="photo-upload-trigger">📷 添加照片</button>
+                            <div class="photo-preview-wrap" id="photo-preview-wrap"></div>
+                            <div class="photo-upload-status" id="photo-upload-status"></div>
                         </div>
                         
                         <button type="submit" class="btn-primary btn-block">✅ 提交打卡</button>
@@ -2914,6 +2996,15 @@ const App = {
         const checkinDateEl = document.getElementById('checkin-date');
         if (checkinDateEl) checkinDateEl.value = Utils.toLocalDateStr(new Date());
         document.getElementById('checkin-form').addEventListener('submit', (e) => { e.preventDefault(); this.handleCheckin(); });
+        // 打卡照片上传
+        this._pendingPhotos = [];
+        document.getElementById('photo-upload-trigger').addEventListener('click', () => {
+            document.getElementById('checkin-photo-input').click();
+        });
+        document.getElementById('checkin-photo-input').addEventListener('change', (e) => {
+            this._handlePhotoSelect(e.target.files);
+            e.target.value = ''; // 允许重复选择同一文件
+        });
         // 快捷时长按钮
         document.querySelectorAll('.quick-dur-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -3182,6 +3273,97 @@ const App = {
         // 切换到需要最新数据的页面时，拉取云端
         if (['feed', 'rank', 'stats'].includes(page)) { this.refreshFromCloud(); }
     },
+    // ── 打卡照片处理 ──
+    _handlePhotoSelect(fileList) {
+        const maxPhotos = 3;
+        const current = this._pendingPhotos.length;
+        const remaining = maxPhotos - current;
+        const files = Array.from(fileList).slice(0, remaining);
+        if (files.length === 0) {
+            UI.toast(`最多${maxPhotos}张照片，当前已有${current}张`, 'warn');
+            return;
+        }
+        files.forEach(file => {
+            if (!file.type.match(/^image\//)) { UI.toast('请选择图片文件', 'warn'); return; }
+            if (file.size > 10 * 1024 * 1024) { UI.toast('图片大小不能超过10MB', 'warn'); return; }
+            this._pendingPhotos.push(file);
+            this._renderPhotoPreviews();
+        });
+        this._updatePhotoUploadStatus();
+    },
+    _removePhoto(idx) {
+        this._pendingPhotos.splice(idx, 1);
+        this._renderPhotoPreviews();
+        this._updatePhotoUploadStatus();
+    },
+    _renderPhotoPreviews() {
+        const wrap = document.getElementById('photo-preview-wrap');
+        if (!wrap) return;
+        wrap.innerHTML = this._pendingPhotos.map((file, i) => {
+            const url = URL.createObjectURL(file);
+            return `<div class="photo-preview-item">
+                <img src="${url}" alt="预览">
+                <button type="button" class="photo-preview-remove" data-idx="${i}">×</button>
+            </div>`;
+        }).join('');
+        // 删除按钮事件
+        wrap.querySelectorAll('.photo-preview-remove').forEach(btn => {
+            btn.onclick = () => this._removePhoto(parseInt(btn.dataset.idx));
+        });
+    },
+    _updatePhotoUploadStatus() {
+        const el = document.getElementById('photo-upload-status');
+        if (el) {
+            const n = this._pendingPhotos.length;
+            el.textContent = n > 0 ? `已选择 ${n} 张照片` : '';
+        }
+    },
+    _clearPhotos() {
+        this._pendingPhotos = [];
+        this._renderPhotoPreviews();
+        this._updatePhotoUploadStatus();
+    },
+    async _compressImage(file, maxWidth = 800) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                if (img.width <= maxWidth) { resolve(file); return; }
+                const ratio = maxWidth / img.width;
+                const canvas = document.createElement('canvas');
+                canvas.width = maxWidth;
+                canvas.height = Math.round(img.height * ratio);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    if (!blob) { reject(new Error('压缩失败')); return; }
+                    const compressed = new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+                    resolve(compressed);
+                }, 'image/jpeg', 0.8);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片加载失败')); };
+            img.src = url;
+        });
+    },
+    async _uploadPhoto(file, checkinId) {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const cloudPath = `checkin-photos/${this.currentUser.id}/${checkinId}_${Date.now()}.${ext}`;
+        try {
+            const result = await cloudApp.uploadFile({ cloudPath, filePath: file });
+            console.log('📤 照片上传成功:', result.fileID);
+            return result.fileID;
+        } catch (e) {
+            console.warn('照片上传失败，使用本地数据:', e.message);
+            // 降级：转 base64 存本地
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(file);
+            });
+        }
+    },
     async handleCheckin() {
         const durationStr = document.getElementById('checkin-duration').value;
         const dateEl = document.getElementById('checkin-date');
@@ -3199,14 +3381,34 @@ const App = {
             if (!distanceStr || isNaN(distance) || distance <= 0) { UI.toast('请输入有效距离', 'error'); return; }
         }
         const note = document.getElementById('checkin-note').value.trim();
+
+        // 上传照片
+        const photos = [];
+        if (this._pendingPhotos.length > 0) {
+            document.getElementById('photo-upload-status').textContent = '正在上传照片...';
+            const checkinId = 'ck_' + Date.now();
+            for (let i = 0; i < this._pendingPhotos.length; i++) {
+                document.getElementById('photo-upload-status').textContent = `正在上传照片 ${i + 1}/${this._pendingPhotos.length}...`;
+                try {
+                    const compressed = await this._compressImage(this._pendingPhotos[i]);
+                    const fileID = await this._uploadPhoto(compressed, checkinId);
+                    if (fileID) photos.push(fileID);
+                } catch (e) {
+                    console.warn('照片处理失败:', e.message);
+                }
+            }
+            document.getElementById('photo-upload-status').textContent = photos.length > 0 ? `照片上传完成 (${photos.length}张)` : '';
+        }
+
         UI.toast('提交中...', 'info');
-        const checkin = await DB.addCheckin({ userId: this.currentUser.id, nickname: this.currentUser.nickname, sport: this.currentSport, distance, content, duration, date, note });
+        const checkin = await DB.addCheckin({ userId: this.currentUser.id, nickname: this.currentUser.nickname, sport: this.currentSport, distance, content, duration, date, note, photos });
         this._allCheckins.unshift(checkin);
         UI.toast('打卡成功！🎉', 'success');
         document.getElementById('checkin-distance').value = '';
         document.getElementById('checkin-content').value = '';
         document.getElementById('checkin-duration').value = '';
         document.getElementById('checkin-note').value = '';
+        this._clearPhotos();
         document.querySelectorAll('.quick-dur-btn').forEach(b => b.classList.remove('active'));
         if (dateEl) dateEl.value = Utils.toLocalDateStr(new Date());
         this.renderRecentCheckins(); this.renderPlans().catch(e=>{});
@@ -3254,11 +3456,62 @@ const App = {
                     <div class="checkin-distance">${Utils.checkinSummary(c)}</div>
                     <div class="checkin-meta">${Utils.sportNames[c.sport]} · ${Utils.formatDate(c.date)}${c.note ? ' · <em>' + c.note + '</em>' : ''}</div>
                 </div>
+                ${this._renderPhotoHtml(c)}
                 <div class="checkin-item-actions">
                     <button class="btn-icon" title="修改" onclick="App.openCheckinEditModal('${c.id}')">✏️</button>
                     <button class="btn-icon" title="删除" onclick="App.deleteCheckinConfirm('${c.id}')">🗑️</button>
                 </div>
             </div>`).join('');
+        // 异步加载云存储照片的临时链接
+        this._resolveCloudPhotos(checkins);
+    },
+    _renderPhotoHtml(checkin) {
+        if (!checkin.photos || checkin.photos.length === 0) return '';
+        return checkin.photos.map((p, i) => {
+            // 如果是 data URL（本地存储），直接显示
+            if (p.startsWith('data:')) {
+                return `<img class="checkin-photo-thumb" src="${this._escapeAttr(p)}" alt="打卡照片" onclick="App._viewPhoto('${this._escapeAttr(p)}')">`;
+            }
+            // 云存储 fileID，用占位符，后续异步加载
+            const id = checkin.id + '_' + i;
+            return `<img class="checkin-photo-thumb photo-cloud" data-checkin-id="${checkin.id}" data-fileid="${this._escapeAttr(p)}" id="photo-${id}" src="" alt="加载中...">`;
+        }).join('');
+    },
+    _escapeAttr(str) {
+        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    },
+    async _resolveCloudPhotos(checkins) {
+        const fileIDs = [];
+        checkins.forEach(c => {
+            if (c.photos) c.photos.forEach(p => { if (p.startsWith('cloud://')) fileIDs.push(p); });
+        });
+        if (fileIDs.length === 0) return;
+        try {
+            const result = await cloudApp.getTempFileURL({
+                fileList: fileIDs.map(fid => ({ fileID: fid, maxAge: 7200 }))
+            });
+            if (result && result.fileList) {
+                result.fileList.forEach(f => {
+                    if (f.code === 'SUCCESS' && f.tempFileURL) {
+                        const imgs = document.querySelectorAll(`.photo-cloud[data-fileid="${f.fileID.replace(/"/g, '\\"')}"]`);
+                        imgs.forEach(img => { img.src = f.tempFileURL; img.onclick = () => App._viewPhoto(f.tempFileURL); });
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('获取照片临时链接失败:', e.message);
+        }
+    },
+    _viewPhoto(url) {
+        // 简单图片查看器
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+        overlay.onclick = () => overlay.remove();
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:8px;';
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
     },
     async _getWeekPlanTotal() {
         const plans = await DB.getPlans(this.currentUser.id);
@@ -3651,10 +3904,13 @@ const App = {
                     <span class="feed-sport">${Utils.sportIcons[c.sport]}</span>
                     <div class="feed-details">
                         <div class="feed-distance">${c.sport === 'other' ? (c.content || '其他训练') : Utils.formatDistance(c.sport, c.distance)}</div>
-                        <div class="feed-duration">${Utils.formatDuration(c.duration)} · ${Utils.sportNames[c.sport]}</div>
+                        <div class="feed-duration">${Utils.formatDuration(c.duration)} · ${Utils.sportNames[c.sport]}${c.note ? ' · ' + c.note : ''}</div>
                     </div>
                 </div>
+                ${this._renderPhotoHtml(c)}
             </div>`).join('');
+        // 异步加载云存储照片
+        this._resolveCloudPhotos(checkins);
     },
     renderRank() {
         const checkins = this._allCheckins;
