@@ -2438,7 +2438,34 @@ const DB = {
     setAdmin(userId) { this.updateUser(userId, { isAdmin: true }); },
 
     // ------- 请假管理 -------
-    getLeaves(userId) {
+    // 从云端拉取请假数据
+    async fetchLeavesFromCloud(userId) {
+        if (!cloudDB) return [];
+        try {
+            const res = await cloudDB.collection('tri_leaves').where({ userId }).limit(100).get();
+            const cloudLeaves = res.data || [];
+            if (cloudLeaves.length > 0) {
+                console.log('📥 请假数据已从云端同步，共', cloudLeaves.length, '条');
+            }
+            return cloudLeaves;
+        } catch(e) { console.warn('拉取云端请假失败', e); return []; }
+    },
+    async getLeaves(userId) {
+        // 优先从云端拉取，云端是权威源
+        if (cloudDB) {
+            try {
+                const cloudLeaves = await this.fetchLeavesFromCloud(userId);
+                // 合并到本地缓存：以云端为主，加上本地独有的
+                const localLeaves = this._getCache('tri_leaves', []);
+                const cloudIds = new Set(cloudLeaves.map(l => l.id));
+                const merged = [...cloudLeaves];
+                for (const l of localLeaves) {
+                    if (!cloudIds.has(l.id)) merged.push(l);
+                }
+                this._setCache('tri_leaves', merged);
+                return merged.filter(l => l.userId === userId);
+            } catch(e) { console.warn('获取云端请假失败，使用本地缓存', e); }
+        }
         const all = this._getCache('tri_leaves', []);
         return all.filter(l => l.userId === userId);
     },
@@ -2460,10 +2487,10 @@ const DB = {
         if (cloudDB) cloudDB.collection('tri_leaves').where({ id: leaveId }).remove().catch(e => {});
     },
     // 获取本月已用请假次数
-    getMonthLeaveCount(userId) {
+    async getMonthLeaveCount(userId) {
         const now = new Date();
         const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const leaves = this.getLeaves(userId);
+        const leaves = await this.getLeaves(userId);
         return leaves.filter(l => (l.date || l.createdAt || '').startsWith(yearMonth)).length;
     },
     async getCheckins() {
@@ -2527,20 +2554,21 @@ const DB = {
     },
 
     // ------- 目标管理 -------
-    getGoals(userId) {
+    async getGoals(userId) {
+        // 先读本地缓存
         const allGoals = JSON.parse(localStorage.getItem('tri_goals') || '{}');
-        const localGoals = allGoals[userId] || { weekly: { swim: 0, bike: 0, run: 0 }, monthly: { swim: 0, bike: 0, run: 0 } };
-        // 异步从云端拉取并合并
+        let localGoals = allGoals[userId] || { weekly: { swim: 0, bike: 0, run: 0 }, monthly: { swim: 0, bike: 0, run: 0 } };
+        // 有云端时，强制等待云端数据（云端是权威源）
         if (cloudDB) {
-            cloudDB.collection('tri_goals').where({ userId }).get().then(res => {
+            try {
+                const res = await cloudDB.collection('tri_goals').where({ userId }).get();
                 if (res.data.length > 0 && res.data[0].goals) {
-                    const cloudGoals = res.data[0].goals;
-                    // 云端数据覆盖本地（云端是权威源）
-                    allGoals[userId] = cloudGoals;
+                    localGoals = res.data[0].goals;
+                    allGoals[userId] = localGoals;
                     localStorage.setItem('tri_goals', JSON.stringify(allGoals));
                     console.log('📥 目标数据已从云端同步');
                 }
-            }).catch(e => console.warn('拉取云端目标失败', e));
+            } catch(e) { console.warn('拉取云端目标失败，使用本地缓存', e); }
         }
         return localGoals;
     },
@@ -2790,13 +2818,18 @@ const App = {
 
     async refreshFromCloud() {
         try {
-            this._allCheckins = await DB.getCheckins();
-            await DB.fetchPlansFromCloud(this.currentUser.id);
+            // 并行拉取所有云端数据
+            await Promise.all([
+                DB.getCheckins().then(data => { this._allCheckins = data; }),
+                DB.fetchPlansFromCloud(this.currentUser.id),
+                DB.getUsers(),
+                DB.fetchLeavesFromCloud(this.currentUser.id)
+            ]);
             this.renderRecentCheckins();
             this.renderStats();
             this.renderFeed();
             this.renderRank();
-            this.renderGoals();
+            await this.renderGoals();
         } catch(e) { console.warn('刷新云端数据失败', e); }
     },
 
@@ -2992,7 +3025,7 @@ const App = {
             const pwdMatch = (user.passwordHash && user.passwordHash === pwdHash)
                           || (user.password && user.password === password);
 
-            if (pwdMatch) {
+                if (pwdMatch) {
                 // 如果是旧账户（明文），自动升级为哈希
                 if (user.password && !user.passwordHash) {
                     await DB.updateUser(user.id, { passwordHash: pwdHash, password: null });
@@ -3003,9 +3036,26 @@ const App = {
                     await DB.updateUser(user.id, { isAdmin: true });
                     user.isAdmin = true;
                 }
-                this._completeLogin(user);
+                // 先在内存和localStorage中设置用户
+                this.currentUser = user;
+                DB.setCurrentUser(user);
+                const users = DB._getCache('tri_users', []);
+                if (!users.find(u => u.id === user.id)) { users.push(user); DB._setCache('tri_users', users); }
+                // 预加载所有云端数据到本地缓存，确保跨设备数据完整
+                UI.toast('正在同步云端数据...', 'info');
+                try {
+                    await Promise.all([
+                        DB.getCheckins().then(data => { this._allCheckins = data; }),
+                        DB.fetchPlansFromCloud(user.id),
+                        DB.getUsers(),
+                        DB.fetchLeavesFromCloud(user.id),
+                        DB.getGoals(user.id) // 这会更新localStorage
+                    ]);
+                    console.log('✅ 云端数据预加载完成');
+                } catch(syncErr) { console.warn('预加载云端数据失败，使用已有数据', syncErr); }
+                // 数据就绪后再显示主页面
+                this.showMainPage();
                 UI.toast('登录成功！', 'success');
-                await this.refreshFromCloud();
             } else {
                 this._showLoginError('密码错误，请重试');
             }
@@ -3176,13 +3226,13 @@ const App = {
             return d >= monday && d <= sunday;
         }).reduce((sum, p) => sum + (p.plannedDuration || 0), 0);
     },
-    renderGoals() {
+    async renderGoals() {
         const user = this.currentUser;
         const group = user.group || 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
         const gender = user.gender || 'male';
-        const goals = DB.getGoals(user.id);
-        const currentGoals = goals[this.currentGoalPeriod];
+        const goals = await DB.getGoals(user.id);
+        const currentGoals = goals[this.currentGoalPeriod] || { swim: 0, bike: 0, run: 0 };
         const checkins = this._allCheckins.filter(c => c.userId === user.id);
         const period = this.currentGoalPeriod === 'weekly' ? 'week' : 'month';
         const progress = { swim: 0, bike: 0, run: 0, totalMins: 0 };
@@ -3230,7 +3280,7 @@ const App = {
         let penaltyMsg = '';
         if (weekGap > 0) {
             // 检查本周是否有请假
-            const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+            const weekLeaves = (await DB.getLeaves(user.id)).filter(l => Utils.isInPeriod(l.date || '', 'week'));
             if (weekLeaves.length > 0) {
                 penaltyMsg = `<span class="penalty-exempt">🏖️ 本周已请假，免处罚</span>`;
             } else if (penaltyType === 'redpacket') {
@@ -3310,10 +3360,10 @@ const App = {
         // 请假记录
         this._renderLeaveHistory();
     },
-    _renderLeaveHistory() {
+    async _renderLeaveHistory() {
         const el = document.getElementById('leave-history');
         if (!el || !this.currentUser) return;
-        const leaves = DB.getLeaves(this.currentUser.id);
+        const leaves = await DB.getLeaves(this.currentUser.id);
         if (leaves.length === 0) { el.innerHTML = '<div class="empty-state" style="padding:10px 0;"><span style="color:#aaa">暂无请假记录</span></div>'; return; }
         el.innerHTML = leaves.slice(-10).reverse().map(l => `
             <div class="leave-item">
@@ -3322,21 +3372,21 @@ const App = {
                 <button class="btn-delete-leave" onclick="App.deleteLeave('${l.id}')">✕</button>
             </div>`).join('');
     },
-    applyLeave() {
+    async applyLeave() {
         const date = document.getElementById('leave-date').value;
         const reason = document.getElementById('leave-reason').value.trim();
         if (!date) { UI.toast('请选择请假日期', 'error'); return; }
         const user = this.currentUser;
         const gender = user.gender || 'male';
         const quota = LEAVE_QUOTA[gender];
-        const used = DB.getMonthLeaveCount(user.id);
+        const used = await DB.getMonthLeaveCount(user.id);
         // 检查是本月的请假
         const yearMonth = date.substring(0, 7);
         const nowYM = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
         let usedThisMonth = used;
         if (yearMonth !== nowYM) {
             // 如果请假日期不在本月，统计那个月的
-            usedThisMonth = DB.getLeaves(user.id).filter(l => (l.date || '').startsWith(yearMonth)).length;
+            usedThisMonth = (await DB.getLeaves(user.id)).filter(l => (l.date || '').startsWith(yearMonth)).length;
         }
         if (usedThisMonth >= quota) {
             UI.toast(`本月请假次数已用完（${quota}次/${gender === 'male' ? '男' : '女'}）`, 'error'); return;
@@ -3448,7 +3498,7 @@ const App = {
             const weekGap = Math.max(0, weeklyTarget - weekMins);
             const penaltyType = user.penaltyType || 'redpacket';
             const penaltyAmount = user.penaltyAmount || 5;
-            const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+            const weekLeaves = (await DB.getLeaves(user.id)).filter(l => Utils.isInPeriod(l.date || '', 'week'));
             let statusMsg = '';
             if (weekGap <= 0) statusMsg = `<span class="done-green">✅ 已达标</span>`;
             else if (weekLeaves.length > 0) statusMsg = `<span class="penalty-exempt">🏖️ 本周请假免处罚</span>`;
@@ -3539,7 +3589,7 @@ const App = {
             }).join('')}
         </tbody></table></div>`;
     },
-    renderFeed() {
+    async renderFeed() {
         let checkins = [...this._allCheckins].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         if (this.feedFilter !== 'all') checkins = checkins.filter(c => c.sport === this.feedFilter);
         const container = document.getElementById('feed-list');
