@@ -1297,9 +1297,14 @@ body {
 .gender-btn.active, .penalty-btn.active { border-color: #1976d2; background: #e3f2fd; color: #1976d2; font-weight: 600; }
 .form-select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fff; }
 .group-hint { font-size: 12px; color: #888; margin-top: 5px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; }
+.reg-hint { font-size: 13px; color: #888; text-align: center; margin: 0 0 10px; }
 
 /* 分组信息卡 */
 .group-info-card { background: linear-gradient(135deg, #1565c0, #1976d2); color: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+
+/* 个人设置卡 */
+.profile-settings-card { background: #fff; border: 1.5px solid #e3f2fd; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(25,118,210,0.07); }
+.profile-settings-card h3 { margin: 0 0 10px; font-size: 15px; color: #1565c0; }
 .group-badge-row { display: flex; align-items: center; gap: 12px; }
 .group-icon-big { font-size: 32px; }
 .group-info-text .group-name { font-size: 18px; font-weight: 700; }
@@ -1411,38 +1416,10 @@ body {
                         <input type="text" id="reg-nickname" placeholder="请输入昵称（显示给队友看）" required>
                     </div>
                     <div class="form-group">
-                        <label>性别</label>
-                        <div class="gender-selector">
-                            <button type="button" class="gender-btn active" data-gender="male">👨 男</button>
-                            <button type="button" class="gender-btn" data-gender="female">👩 女</button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>训练组别</label>
-                        <select id="reg-group" class="form-select">
-                            <option value="standard">🥉 标铁组（每周4-6小时）</option>
-                            <option value="113">🥈 113组（每周6-8小时）</option>
-                            <option value="226">🥇 226组（每周8-10小时）</option>
-                            <option value="weight">💪 减肥组（每周6小时+）</option>
-                            <option value="marathon">🏃 马拉松组（每周5-7小时）</option>
-                        </select>
-                        <div class="group-hint" id="reg-group-hint">标铁：750m游泳 + 20km骑行 + 5km跑步</div>
-                    </div>
-                    <div class="form-group">
-                        <label>处罚方式</label>
-                        <div class="penalty-selector">
-                            <button type="button" class="penalty-btn active" data-penalty="redpacket">🧧 发红包</button>
-                            <button type="button" class="penalty-btn" data-penalty="doubletime">⏰ 双倍补时</button>
-                        </div>
-                    </div>
-                    <div class="form-group" id="penalty-amount-group">
-                        <label>红包金额（元/小时欠训）</label>
-                        <input type="number" id="reg-penalty-amount" placeholder="5" min="1" max="100" value="5">
-                    </div>
-                    <div class="form-group">
                         <label>密码</label>
                         <input type="password" id="reg-password" placeholder="请输入密码（至少4个字符）" required>
                     </div>
+                    <p class="reg-hint">💡 注册后登录即可设置训练组别、处罚方式等</p>
                     <button type="submit" class="btn-primary">注册</button>
                 </form>
             </div>
@@ -1583,6 +1560,30 @@ body {
 
                     <!-- 分组信息卡片 -->
                     <div id="my-group-card" class="group-info-card"></div>
+
+                    <!-- 个人设置（性别+训练组别） -->
+                    <div id="profile-settings" class="profile-settings-card">
+                        <h3>⚙️ 个人设置</h3>
+                        <div class="form-group">
+                            <label>性别</label>
+                            <div class="gender-selector">
+                                <button type="button" class="gender-btn" id="gender-btn-male" onclick="App.setGender('male')">👨 男</button>
+                                <button type="button" class="gender-btn" id="gender-btn-female" onclick="App.setGender('female')">👩 女</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>训练组别</label>
+                            <select id="goal-group" class="form-select" onchange="App.onGroupChange()">
+                                <option value="standard">🥉 标铁组（每周4-6小时）</option>
+                                <option value="113">🥈 113组（每周6-8小时）</option>
+                                <option value="226">🥇 226组（每周8-10小时）</option>
+                                <option value="weight">💪 减肥组（每周6小时+）</option>
+                                <option value="marathon">🏃 马拉松组（每周5-7小时）</option>
+                            </select>
+                            <div class="group-hint" id="goal-group-hint"></div>
+                        </div>
+                        <button class="btn-secondary btn-block" onclick="App.saveProfileSettings()">💾 保存个人设置</button>
+                    </div>
 
                     <!-- 本周完成情况 -->
                     <div id="week-progress-card" class="week-progress-card"></div>
@@ -2755,41 +2756,6 @@ const App = {
         const refreshBtn = document.getElementById('refresh-users-btn');
         if (refreshBtn) refreshBtn.addEventListener('click', () => this.renderUserManagement());
 
-        // 注册页：性别按钮
-        document.querySelectorAll('.gender-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
-
-        // 注册页：处罚类型按钮
-        document.querySelectorAll('.penalty-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // 只影响同一容器内的按钮
-                btn.closest('.penalty-selector').querySelectorAll('.penalty-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                // 显示/隐藏红包金额输入框（注册页）
-                const amtGroup = document.getElementById('penalty-amount-group');
-                if (amtGroup) amtGroup.style.display = btn.dataset.penalty === 'redpacket' ? 'block' : 'none';
-            });
-        });
-
-        // 注册页：训练组别提示
-        const regGroupSel = document.getElementById('reg-group');
-        const groupHints = {
-            standard: '标铁：750m游泳 + 20km骑行 + 5km跑步',
-            '113': '半铁：1.9km游 + 90km骑 + 21.1km跑（推荐每周6-8小时）',
-            '226': '全铁：3.8km游 + 180km骑 + 42.2km跑（推荐每周8-10小时）',
-            weight: '有氧减脂为主，每周持续6小时+训练量',
-            marathon: '马拉松专项：跑步为主+交叉训练（推荐每周5-7小时）'
-        };
-        if (regGroupSel) {
-            regGroupSel.addEventListener('change', () => {
-                const hint = document.getElementById('reg-group-hint');
-                if (hint) hint.textContent = groupHints[regGroupSel.value] || '';
-            });
-        }
     },
 
     showAuthPage() {
@@ -2918,13 +2884,9 @@ const App = {
         const username = document.getElementById('reg-username').value.trim();
         const nickname = document.getElementById('reg-nickname').value.trim();
         const password = document.getElementById('reg-password').value;
-        const genderBtn = document.querySelector('.gender-btn.active');
-        const gender = genderBtn ? genderBtn.dataset.gender : 'male';
-        const group = document.getElementById('reg-group') ? document.getElementById('reg-group').value : 'standard';
-        const penaltyBtn = document.querySelector('.penalty-btn.active');
-        const penaltyType = penaltyBtn ? penaltyBtn.dataset.penalty : 'redpacket';
-        const penaltyAmount = parseInt(document.getElementById('reg-penalty-amount') ? document.getElementById('reg-penalty-amount').value : 5) || 5;
-        const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
+        // 注册时不选组别/处罚，统一给默认值，登录后自行修改
+        const gender = 'male', group = 'standard', penaltyType = 'redpacket', penaltyAmount = 5;
+        const groupCfg = GROUP_CONFIG[group];
         const weeklyTarget = groupCfg.weeklyTarget;
 
         if (username.length < 2) { UI.toast('用户名至少2个字符', 'error'); return; }
@@ -2945,7 +2907,7 @@ const App = {
             gender, group, penaltyType, penaltyAmount, weeklyTarget
         });
         this.currentUser = newUser; DB.setCurrentUser(newUser);
-        UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : '') + ` [${groupCfg.name}]`, 'success');
+        UI.toast('注册成功！' + (isAdmin ? ' 👑 管理员' : ''), 'success');
         this.showMainPage();
         await this.refreshFromCloud();
     },
@@ -3070,6 +3032,16 @@ const App = {
                 </div>
             </div>`;
         }
+
+        // 个人设置初始化（性别按钮 + 组别下拉）
+        const maleBtn = document.getElementById('gender-btn-male');
+        const femaleBtn = document.getElementById('gender-btn-female');
+        if (maleBtn) maleBtn.classList.toggle('active', gender === 'male');
+        if (femaleBtn) femaleBtn.classList.toggle('active', gender === 'female');
+        const groupSel = document.getElementById('goal-group');
+        if (groupSel) groupSel.value = group;
+        const goalGroupHint = document.getElementById('goal-group-hint');
+        if (goalGroupHint) goalGroupHint.textContent = groupCfg.desc;
 
         // 本周完成情况卡
         const weeklyTarget = user.weeklyTarget || groupCfg.weeklyTarget;
@@ -3222,6 +3194,40 @@ const App = {
             UI.toast('请假已撤销', 'info');
             this.renderGoals();
         }
+    },
+    setGender(gender) {
+        this.currentUser.gender = gender;
+        const maleBtn = document.getElementById('gender-btn-male');
+        const femaleBtn = document.getElementById('gender-btn-female');
+        if (maleBtn) maleBtn.classList.toggle('active', gender === 'male');
+        if (femaleBtn) femaleBtn.classList.toggle('active', gender === 'female');
+    },
+    onGroupChange() {
+        const sel = document.getElementById('goal-group');
+        if (!sel) return;
+        const group = sel.value;
+        const cfg = GROUP_CONFIG[group];
+        const hint = document.getElementById('goal-group-hint');
+        if (hint) hint.textContent = cfg ? cfg.desc : '';
+        // 自动推荐周时长
+        const durEl = document.getElementById('goal-weekly-duration');
+        if (durEl && cfg) durEl.value = cfg.weeklyTarget;
+    },
+    saveProfileSettings() {
+        const gender = this.currentUser.gender || 'male';
+        const group = document.getElementById('goal-group') ? document.getElementById('goal-group').value : 'standard';
+        const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
+        const weeklyTarget = groupCfg.weeklyTarget;
+        const updates = { gender, group, weeklyTarget };
+        Object.assign(this.currentUser, updates);
+        DB.setCurrentUser(this.currentUser);
+        DB.updateUser(this.currentUser.id, updates).catch(() => {
+            const users = DB._getCache('tri_users', []);
+            const idx = users.findIndex(u => u.id === this.currentUser.id);
+            if (idx !== -1) { users[idx] = { ...users[idx], ...updates }; DB._setCache('tri_users', users); }
+        });
+        UI.toast(`✅ 已更新为 ${groupCfg.name}！`, 'success');
+        this.renderGoals();
     },
     setPenaltyType(type) {
         this.currentUser.penaltyType = type;
