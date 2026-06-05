@@ -1291,10 +1291,10 @@ body {
 .nav-tab.admin-only.visible { display: flex; }
 
 /* ===== 新增组件样式 ===== */
-/* 注册页性别/处罚选择 */
-.gender-selector, .penalty-selector { display: flex; gap: 8px; }
-.gender-btn, .penalty-btn { flex: 1; padding: 10px 6px; border: 2px solid #e0e0e0; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
-.gender-btn.active, .penalty-btn.active { border-color: #1976d2; background: #e3f2fd; color: #1976d2; font-weight: 600; }
+/* 性别选择 */
+.gender-selector { display: flex; gap: 8px; }
+.gender-btn { flex: 1; padding: 10px 6px; border: 2px solid #e0e0e0; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: all 0.2s; text-align: center; }
+.gender-btn.active { border-color: #1976d2; background: #e3f2fd; color: #1976d2; font-weight: 600; }
 .form-select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fff; }
 .group-hint { font-size: 12px; color: #888; margin-top: 5px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; }
 .reg-hint { font-size: 13px; color: #888; text-align: center; margin: 0 0 10px; }
@@ -1344,12 +1344,13 @@ body {
 .btn-delete-leave { background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; padding: 2px 4px; }
 .btn-delete-leave:hover { color: #f44336; }
 
-/* 处罚设置区域 */
-.penalty-settings-section { background: #fce4ec; border: 1.5px solid #f48fb1; border-radius: 14px; padding: 14px 16px; margin-top: 20px; }
-.penalty-settings-section h3 { margin: 0 0 10px; font-size: 15px; color: #c62828; }
-.penalty-status-card { padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; font-size: 14px; font-weight: 500; }
-.penalty-ok { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 8px; }
-.penalty-due { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 8px; }
+/* 处罚规则提示 */
+.penalty-note { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 12px; padding: 12px 16px; margin-top: 20px; font-size: 13px; color: #795548; line-height: 1.7; }
+
+/* 处罚状态（本周进度卡内） */
+.penalty-ok { color: #2e7d32; }
+.penalty-due { color: #e65100; }
+.penalty-exempt { color: #388e3c; }
 
 /* 训练库 */
 .training-tabs { display: flex; gap: 4px; overflow-x: auto; padding: 0 0 8px; margin-bottom: 12px; }
@@ -1635,22 +1636,9 @@ body {
                         <div id="leave-history" class="leave-history"></div>
                     </div>
 
-                    <!-- 处罚设置 -->
-                    <div class="penalty-settings-section">
-                        <h3>⚠️ 处罚设置</h3>
-                        <div id="penalty-status-card" class="penalty-status-card"></div>
-                        <div class="form-group">
-                            <label>处罚方式</label>
-                            <div class="penalty-selector">
-                                <button type="button" class="penalty-btn active" id="penalty-type-redpacket" onclick="App.setPenaltyType('redpacket')">🧧 发红包</button>
-                                <button type="button" class="penalty-btn" id="penalty-type-doubletime" onclick="App.setPenaltyType('doubletime')">⏰ 双倍补时</button>
-                            </div>
-                        </div>
-                        <div class="form-group" id="penalty-amount-settings-group">
-                            <label>红包金额（元/小时欠训）</label>
-                            <input type="number" id="penalty-amount-settings" placeholder="5" min="1" max="100">
-                        </div>
-                        <button class="btn-secondary btn-block" onclick="App.savePenaltySettings()">💾 保存处罚设置</button>
+                    <!-- 处罚规则提示 -->
+                    <div class="penalty-note">
+                        💡 处罚规则：默认采用 🧧 发红包机制（5元/小时欠训），系统根据每周训练数据自动计算罚金。如需调整请联系管理员。
                     </div>
                 </section>
 
@@ -1924,7 +1912,7 @@ const ADMIN_USERNAMES = ['eymozhao'];
 const GROUP_CONFIG = {
     standard: {
         name: '标铁组', icon: '🥉',
-        desc: '标铁：750m游泳 + 20km骑行 + 5km跑步',
+        desc: '标铁：1500m游泳 + 40km骑行 + 10km跑步',
         weeklyMinutes: [240, 360],   // 4-6小时
         weeklySessions: 4,
         weeklyTarget: 300            // 默认5小时/周（分钟）
@@ -3123,33 +3111,6 @@ const App = {
 
         // 请假记录
         this._renderLeaveHistory();
-
-        // 处罚设置
-        const penaltyTypeRedBtn = document.getElementById('penalty-type-redpacket');
-        const penaltyTypeDblBtn = document.getElementById('penalty-type-doubletime');
-        if (penaltyTypeRedBtn) penaltyTypeRedBtn.classList.toggle('active', penaltyType === 'redpacket');
-        if (penaltyTypeDblBtn) penaltyTypeDblBtn.classList.toggle('active', penaltyType === 'doubletime');
-        const penaltyAmtGroup = document.getElementById('penalty-amount-settings-group');
-        if (penaltyAmtGroup) penaltyAmtGroup.style.display = penaltyType === 'redpacket' ? 'block' : 'none';
-        const penaltyAmtEl = document.getElementById('penalty-amount-settings');
-        if (penaltyAmtEl) penaltyAmtEl.value = penaltyAmount;
-
-        // 本周处罚状态卡
-        const penaltyStatusEl = document.getElementById('penalty-status-card');
-        if (penaltyStatusEl) {
-            if (weekGap <= 0) {
-                penaltyStatusEl.innerHTML = `<div class="penalty-ok">✅ 本周已达标，无需处罚！</div>`;
-            } else {
-                const weekLeaves = DB.getLeaves(user.id).filter(l => Utils.isInPeriod(l.date || '', 'week'));
-                if (weekLeaves.length > 0) {
-                    penaltyStatusEl.innerHTML = `<div class="penalty-exempt">🏖️ 本周已请假（${weekLeaves[0].reason || '已申请'}），免处罚</div>`;
-                } else {
-                    penaltyStatusEl.innerHTML = penaltyType === 'redpacket'
-                        ? `<div class="penalty-due">🧧 本周欠训 ${Utils.formatDuration(weekGap)}，应发红包 ¥${(weekGap / 60 * penaltyAmount).toFixed(1)} 元</div>`
-                        : `<div class="penalty-due">⏰ 本周欠训 ${Utils.formatDuration(weekGap)}，下周须补 ${Utils.formatDuration(weekGap * 2)}</div>`;
-                }
-            }
-        }
     },
     _renderLeaveHistory() {
         const el = document.getElementById('leave-history');
@@ -3231,20 +3192,14 @@ const App = {
     },
     setPenaltyType(type) {
         this.currentUser.penaltyType = type;
-        const penaltyAmtGroup = document.getElementById('penalty-amount-settings-group');
-        if (penaltyAmtGroup) penaltyAmtGroup.style.display = type === 'redpacket' ? 'block' : 'none';
-        document.getElementById('penalty-type-redpacket').classList.toggle('active', type === 'redpacket');
-        document.getElementById('penalty-type-doubletime').classList.toggle('active', type === 'doubletime');
     },
     savePenaltySettings() {
         const penaltyType = this.currentUser.penaltyType || 'redpacket';
-        const penaltyAmount = parseInt(document.getElementById('penalty-amount-settings').value) || 5;
-        const weeklyTarget = parseInt(document.getElementById('goal-weekly-duration').value) || null;
-        const updates = { penaltyType, penaltyAmount, weeklyTarget };
+        const penaltyAmount = this.currentUser.penaltyAmount || 5;
+        const updates = { penaltyType, penaltyAmount };
         Object.assign(this.currentUser, updates);
         DB.setCurrentUser(this.currentUser);
         DB.updateUser(this.currentUser.id, updates).catch(() => {
-            // 本地降级：更新缓存
             const users = DB._getCache('tri_users', []);
             const idx = users.findIndex(u => u.id === this.currentUser.id);
             if (idx !== -1) { users[idx] = { ...users[idx], ...updates }; DB._setCache('tri_users', users); }
