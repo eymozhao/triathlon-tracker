@@ -1887,8 +1887,10 @@ body {
                         <button class="train-tab-btn active" data-group="standard">🥉 标铁</button>
                         <button class="train-tab-btn" data-group="113">🥈 113</button>
                         <button class="train-tab-btn" data-group="226">🥇 226</button>
-                        <button class="train-tab-btn" data-group="weight">💪 其他</button>
                         <button class="train-tab-btn" data-group="marathon">🏃 马拉松</button>
+                        <button class="train-tab-btn" data-group="trail">⛰️ 越野跑</button>
+                        <button class="train-tab-btn" data-group="hyrox">🏋️ HYROX</button>
+                        <button class="train-tab-btn" data-group="weight">💪 其他</button>
                     </div>
                     <div id="training-plan-content" class="training-plan-content"></div>
                 </section>
@@ -2326,6 +2328,107 @@ const TRAINING_PLANS = {
                     { day: '周日', content: '🏆 比赛日！目标330完赛！', duration: 0 }
                 ],
                 totalMins: 95, tip: '🍝 赛前一晚：大量碳水（意面/米饭）；比赛日起跑前2-3h吃早餐'
+            }
+        ]
+    },
+    trail: {
+        title: '越野跑训练计划（12周·50km入门）',
+        phases: [
+            {
+                phase: '第1-4周 · 基础适应期',
+                weeks: [
+                    { day: '周一', content: '休息或拉伸瑜伽 30min', duration: 30 },
+                    { day: '周二', content: '公路跑 8km（轻松有氧）', duration: 50 },
+                    { day: '周三', content: '力量训练（下肢+核心 45min）', duration: 45 },
+                    { day: '周四', content: '爬坡训练 6km（累计爬升200m）', duration: 50 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: '越野跑 12km（配速轻松，累计爬升400m）', duration: 90 },
+                    { day: '周日', content: '公路跑 10km 恢复跑', duration: 65 }
+                ],
+                totalMins: 330, tip: '🏔️ 越野跑核心：适应不规则地形，练习上下坡技巧，注意落脚点'
+            },
+            {
+                phase: '第5-8周 · 爬升强化期',
+                weeks: [
+                    { day: '周一', content: '休息或拉伸', duration: 0 },
+                    { day: '周二', content: '公路跑 10km（含3km节奏跑）', duration: 60 },
+                    { day: '周三', content: '爬坡间歇 8×200m爬坡冲刺', duration: 55 },
+                    { day: '周四', content: '力量训练（下肢+核心+平衡 50min）', duration: 50 },
+                    { day: '周五', content: '轻松公路跑 6km', duration: 40 },
+                    { day: '周六', content: '越野长跑 20km（累计爬升700m）', duration: 140 },
+                    { day: '周日', content: '恢复跑 8km + 拉伸', duration: 55 }
+                ],
+                totalMins: 400, tip: '💪 累计爬升是越野跑的核心指标，每周爬升量递增10%，避免受伤'
+            },
+            {
+                phase: '第9-11周 · 耐力拉练期',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '公路跑 12km（含5km配速跑）', duration: 70 },
+                    { day: '周三', content: '爬坡耐力跑 10km（累计爬升400m）', duration: 75 },
+                    { day: '周四', content: '力量+平衡训练 50min', duration: 50 },
+                    { day: '周五', content: '游泳或骑行交叉训练 40min', duration: 40 },
+                    { day: '周六', content: '越野模拟赛 30km（累计爬升1000m）', duration: 200 },
+                    { day: '周日', content: '恢复跑 6km / 拉伸', duration: 40 }
+                ],
+                totalMins: 475, tip: '🎒 尝试全程携带比赛装备（水袋包、能量胶、登山杖），模拟实战补给节奏'
+            },
+            {
+                phase: '第12周 · 赛前减量周',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '公路跑 6km 轻松', duration: 40 },
+                    { day: '周三', content: '爬坡跑 5km 技术练习', duration: 35 },
+                    { day: '周四', content: '休息或轻松拉伸', duration: 0 },
+                    { day: '周五', content: '赛前激活跑 3km', duration: 20 },
+                    { day: '周六', content: '检查装备、补给、赛道图', duration: 0 },
+                    { day: '周日', content: '🏔️ 比赛日！享受山野！', duration: 0 }
+                ],
+                totalMins: 95, tip: '😴 减量60%，保持激活感。赛前检查：GPS手表、水袋、头灯、冲锋衣、盐丸能量胶'
+            }
+        ]
+    },
+    hyrox: {
+        title: 'HYROX训练计划（8周·公开组备赛）',
+        phases: [
+            {
+                phase: '第1-3周 · 基础体能期',
+                weeks: [
+                    { day: '周一', content: '跑步 5km（轻松配速）+ 核心训练20min', duration: 50 },
+                    { day: '周二', content: '滑雪机(SkiErg) 1000m + 推雪橇(Push) 4×20m（轻重量）', duration: 40 },
+                    { day: '周三', content: '跑步间歇 8×400m（90sec rest）', duration: 50 },
+                    { day: '周四', content: '划船机 2000m + 农夫行走(Farmer Carry) 4×40m', duration: 45 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: '跑步 8km + 波比跳 3×15', duration: 60 },
+                    { day: '周日', content: '完整HYROX模拟（轻量版）：每站间跑800m', duration: 60 }
+                ],
+                totalMins: 305, tip: '🏋️ HYROX=8×1km跑 + 8个功能站。先适应跑步+力量切换的节奏，重量以50%比赛重量为主'
+            },
+            {
+                phase: '第4-6周 · 专项强化期',
+                weeks: [
+                    { day: '周一', content: '跑步 6km（配速跑 5:00/km）', duration: 40 },
+                    { day: '周二', content: '滑雪机 1500m + 推雪橇(Push) 4×30m（比赛重量）', duration: 50 },
+                    { day: '周三', content: '划船机 2000m + 拉雪橇(Pull) 4×30m', duration: 50 },
+                    { day: '周四', content: '跑步间歇 6×500m + 跳箱 4×10', duration: 55 },
+                    { day: '周五', content: '农夫行走 4×50m + 沙袋弓步(Sandbag Lunges) 4×20m', duration: 40 },
+                    { day: '周六', content: '完整HYROX模拟：1km跑+站 循环4轮', duration: 75 },
+                    { day: '周日', content: '轻松跑 5km + 拉伸', duration: 35 }
+                ],
+                totalMins: 345, tip: '🔥 本周起用比赛重量训练各站，注意跑步→力量站过渡时的呼吸调整，跑姿不能塌'
+            },
+            {
+                phase: '第7-8周 · 冲刺+减量',
+                weeks: [
+                    { day: '周一', content: '跑步 5km + 轻松拉伸', duration: 35 },
+                    { day: '周二', content: '滑雪机 1000m + 推雪橇 4×20m（比赛重量）', duration: 40 },
+                    { day: '周三', content: '完整HYROX模拟：1km跑+站 循环6轮', duration: 80 },
+                    { day: '周四', content: '划船机 + 农夫行走 组合训练', duration: 40 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: '轻松跑 4km 激活 + 各站轻量复习', duration: 40 },
+                    { day: '周日', content: '🏆 比赛日！突破自我！', duration: 0 }
+                ],
+                totalMins: 235, tip: '⚡ 赛前3天减量，保持激活。比赛日策略：跑步段稳住配速，不追第一组；力量站保持动作标准防罚时'
             }
         ]
     }
