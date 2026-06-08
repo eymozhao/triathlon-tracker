@@ -5012,7 +5012,16 @@ App.renderPlanCompare = async function() {
 
     // 获取所有打卡数据和训练计划数据
     const allCheckins = App._allCheckins.filter(c => c.date >= startStr && c.date <= endStr);
-    const allPlans = await DB.getAllPlans();
+    // 管理员用 getAllPlans（拉取全队），普通用户用 fetchPlansFromCloud（精准按 userId 查）
+    let allPlans;
+    if (isAdmin) {
+        allPlans = await DB.getAllPlans();
+    } else {
+        allPlans = {};
+        for (const u of targetUsers) {
+            allPlans[u.id] = await DB.fetchPlansFromCloud(u.id);
+        }
+    }
 
     let html = '';
 
