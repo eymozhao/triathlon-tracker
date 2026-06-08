@@ -616,6 +616,36 @@ body {
     color: #f57f17;
 }
 
+.plan-badge.partial {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.mini-bar-wrap {
+    width: 80px;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.mini-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+.section-subtitle {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+}
+
 .plan-note-sm {
     color: var(--text-light);
     font-size: 11px;
@@ -1811,6 +1841,11 @@ body {
                         <button class="week-nav-btn" id="plan-next-week">下一周 ›</button>
                     </div>
                     <div id="plans-week-list" class="plans-week-list"></div>
+                    <!-- 管理员：全队本周计划 -->
+                    <div id="admin-team-plans-section" style="display:none;margin-top:20px;">
+                        <h3 class="section-subtitle">👥 全队本周计划</h3>
+                        <div id="admin-team-plans-table"></div>
+                    </div>
                 </section>
 
                 <!-- 目标页面 -->
@@ -3933,20 +3968,19 @@ const App = {
         const goalGroupHint = document.getElementById('goal-group-hint');
         if (goalGroupHint) goalGroupHint.textContent = groupCfg.desc;
 
-        // 本周完成情况卡 —— 以计划总时长 + 额外增量为目标
+        // 本周完成情况卡 —— 以本周 tri_plans 计划总时长为目标
         const planTotal = await this._getWeekPlanTotal();
-        const extraDuration = parseInt(document.getElementById('goal-extra-duration')?.value) || 0;
-        const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (user.extraDuration ? extraDuration : groupCfg.weeklyMin);
         const weekProgress = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'))
             .reduce((s, c) => s + c.duration, 0);
-        const weekPercent = weeklyTarget > 0 ? Math.min(100, Math.round(weekProgress / weeklyTarget * 100)) : 0;
-        const weekGap = Math.max(0, weeklyTarget - weekProgress);
+        const weekPercent = planTotal > 0 ? Math.min(100, Math.round(weekProgress / planTotal * 100)) : 0;
+        const weekGap = planTotal > 0 ? Math.max(0, planTotal - weekProgress) : 0;
         const penaltyType = user.penaltyType || 'redpacket';
         const penaltyAmount = user.penaltyAmount || 5;
 
         let penaltyMsg = '';
-        if (weekGap > 0) {
-            // 检查本周是否有请假
+        if (planTotal <= 0) {
+            penaltyMsg = `<span class="penalty-exempt">📋 本周暂无训练计划，请前往「打卡计划」添加</span>`;
+        } else if (weekGap > 0) {
             const weekLeaves = (await DB.getLeaves(user.id)).filter(l => Utils.isInPeriod(l.date || '', 'week'));
             if (weekLeaves.length > 0) {
                 penaltyMsg = `<span class="penalty-exempt">🏖️ 本周已请假，免处罚</span>`;
@@ -3964,15 +3998,15 @@ const App = {
             weekCard.style.display = 'block';
             weekCard.innerHTML = `<div class="week-progress-inner">
                 <div class="week-progress-header">
-                    <span>本周训练完成率</span>
-                    <strong>${weekPercent}%</strong>
+                    <span>本周计划完成率</span>
+                    <strong>${planTotal > 0 ? weekPercent + '%' : '-'}</strong>
                 </div>
                 <div class="week-progress-bar-wrap">
                     <div class="week-progress-bar-fill" style="width:${weekPercent}%;background:${weekPercent >= 100 ? '#4caf50' : weekPercent >= 60 ? '#ff9800' : '#f44336'}"></div>
                 </div>
                 <div class="week-progress-info">
-                    已训练 <strong>${Utils.formatDuration(weekProgress)}</strong> / 目标 <strong>${Utils.formatDuration(weeklyTarget)}</strong>
-                    ${weekGap > 0 ? `· 还差 <span class="gap-red">${Utils.formatDuration(weekGap)}</span>` : ' · <span class="done-green">✅ 本周达标！</span>'}
+                    已打卡 <strong>${Utils.formatDuration(weekProgress)}</strong> / 计划 <strong>${planTotal > 0 ? Utils.formatDuration(planTotal) : '暂无计划'}</strong>
+                    ${planTotal > 0 && weekGap === 0 ? ' · <span class="done-green">✅ 本周达标！</span>' : planTotal > 0 ? `· 还差 <span class="gap-red">${Utils.formatDuration(weekGap)}</span>` : ''}
                 </div>
                 ${penaltyMsg ? `<div class="penalty-msg">${penaltyMsg}</div>` : ''}
             </div>`;
@@ -4151,31 +4185,37 @@ const App = {
         const user = this.currentUser;
         const group = user.group || 'standard';
         const groupCfg = GROUP_CONFIG[group] || GROUP_CONFIG.standard;
-        // 以计划总时长 + 额外增量为目标
+        // 统计页：目标来自本周 tri_plans 计划总时长
         const planTotal = await this._getWeekPlanTotal();
-        const extraDuration = user.extraDuration || 0;
-        const weeklyTarget = planTotal > 0 ? (planTotal + extraDuration) : (extraDuration > 0 ? extraDuration : groupCfg.weeklyMin);
 
-        // 本周完成率面板（统计页顶部）
+        // 本周完成率面板（统计页顶部）—— 计划 vs 打卡对比
         const compPanel = document.getElementById('week-compliance-panel');
         if (compPanel) {
             const weekCheckins = this._allCheckins.filter(c => c.userId === user.id && Utils.isInPeriod(c.date, 'week'));
             const weekMins = weekCheckins.reduce((s, c) => s + c.duration, 0);
-            const weekPct = weeklyTarget > 0 ? Math.min(100, Math.round(weekMins / weeklyTarget * 100)) : 0;
-            const weekGap = Math.max(0, weeklyTarget - weekMins);
-            const penaltyType = user.penaltyType || 'redpacket';
-            const penaltyAmount = user.penaltyAmount || 5;
-            const weekLeaves = (await DB.getLeaves(user.id)).filter(l => Utils.isInPeriod(l.date || '', 'week'));
-            let statusMsg = '';
-            if (weekGap <= 0) statusMsg = `<span class="done-green">✅ 已达标</span>`;
-            else if (weekLeaves.length > 0) statusMsg = `<span class="penalty-exempt">🏖️ 本周请假免处罚</span>`;
-            else if (penaltyType === 'redpacket') statusMsg = `<span class="penalty-owed">🧧 欠罚款 ¥${(weekGap/60*penaltyAmount).toFixed(1)}</span>`;
-            else statusMsg = `<span class="penalty-owed">⏰ 补训 ${Utils.formatDuration(weekGap*2)}</span>`;
-            compPanel.innerHTML = `<div class="compliance-inner">
-                <div class="compliance-row"><span>${groupCfg.icon} 本周训练</span>${statusMsg}</div>
-                <div class="compliance-bar"><div class="compliance-fill" style="width:${weekPct}%;background:${weekPct>=100?'#4caf50':weekPct>=60?'#ff9800':'#f44336'}"></div></div>
-                <div class="compliance-nums">${Utils.formatDuration(weekMins)} / ${Utils.formatDuration(weeklyTarget)} · ${weekPct}%</div>
-            </div>`;
+            if (planTotal <= 0) {
+                // 本周没有计划：只显示已打卡时长，不计算达标
+                compPanel.innerHTML = `<div class="compliance-inner">
+                    <div class="compliance-row"><span>${groupCfg.icon} 本周训练</span><span class="penalty-exempt">📋 本周暂无计划</span></div>
+                    <div class="compliance-nums">已训练 ${Utils.formatDuration(weekMins)}，去「打卡计划」页面添加本周训练计划</div>
+                </div>`;
+            } else {
+                const weekPct = Math.min(100, Math.round(weekMins / planTotal * 100));
+                const weekGap = Math.max(0, planTotal - weekMins);
+                const penaltyType = user.penaltyType || 'redpacket';
+                const penaltyAmount = user.penaltyAmount || 5;
+                const weekLeaves = (await DB.getLeaves(user.id)).filter(l => Utils.isInPeriod(l.date || '', 'week'));
+                let statusMsg = '';
+                if (weekGap <= 0) statusMsg = `<span class="done-green">✅ 已达标</span>`;
+                else if (weekLeaves.length > 0) statusMsg = `<span class="penalty-exempt">🏖️ 本周请假免处罚</span>`;
+                else if (penaltyType === 'redpacket') statusMsg = `<span class="penalty-owed">🧧 欠罚款 ¥${(weekGap/60*penaltyAmount).toFixed(1)}</span>`;
+                else statusMsg = `<span class="penalty-owed">⏰ 补训 ${Utils.formatDuration(weekGap*2)}</span>`;
+                compPanel.innerHTML = `<div class="compliance-inner">
+                    <div class="compliance-row"><span>${groupCfg.icon} 本周训练（计划 vs 打卡）</span>${statusMsg}</div>
+                    <div class="compliance-bar"><div class="compliance-fill" style="width:${weekPct}%;background:${weekPct>=100?'#4caf50':weekPct>=60?'#ff9800':'#f44336'}"></div></div>
+                    <div class="compliance-nums">已打卡 ${Utils.formatDuration(weekMins)} / 计划 ${Utils.formatDuration(planTotal)} · ${weekPct}%</div>
+                </div>`;
+            }
         }
 
         const checkins = this._allCheckins.filter(c => c.userId === user.id);
@@ -4362,6 +4402,60 @@ const App = {
             html += '</div></div>';
         });
         container.innerHTML = html;
+
+        // 管理员：拉取全队本周计划
+        const adminSection = document.getElementById('admin-team-plans-section');
+        if (this.currentUser.isAdmin && adminSection) {
+            adminSection.style.display = 'block';
+            const adminTableEl = document.getElementById('admin-team-plans-table');
+            adminTableEl.innerHTML = '<div class="loading-text">加载中…</div>';
+            try {
+                const allPlans = await DB.getAllPlans();
+                const users = DB._getCache('tri_users', []);
+                const weekStart = this.planWeekStart;
+                const weekEndD = new Date(weekStart + 'T00:00:00');
+                weekEndD.setDate(weekEndD.getDate() + 6);
+                const weekEndStr = Utils.toLocalDateStr(weekEndD);
+                const tableRows = users.map(u => {
+                    const uPlans = (allPlans[u.id] || []).filter(p => p.date >= weekStart && p.date <= weekEndStr);
+                    const uCheckins = this._allCheckins.filter(c => c.userId === u.id && c.date >= weekStart && c.date <= weekEndStr);
+                    return { user: u, plans: uPlans, checkins: uCheckins };
+                });
+                const activeRows = tableRows.filter(r => r.plans.length > 0);
+                if (activeRows.length === 0) {
+                    adminTableEl.innerHTML = '<div class="empty-state">本周暂无成员有训练计划</div>';
+                } else {
+                    // 汇总每人的计划时长 vs 打卡时长
+                    let tHtml = `<div class="team-table-wrap"><table class="team-table"><thead><tr>
+                        <th>成员</th><th>本周计划总时长</th><th>已打卡时长</th><th>完成率</th><th>状态</th>
+                    </tr></thead><tbody>`;
+                    activeRows.forEach(({ user: u, plans, checkins }) => {
+                        const planMins = plans.reduce((s, p) => s + (p.plannedDuration || 0), 0);
+                        const checkinMins = checkins.reduce((s, c) => s + (c.duration || 0), 0);
+                        const pct = planMins > 0 ? Math.min(100, Math.round(checkinMins / planMins * 100)) : 0;
+                        const done = pct >= 100;
+                        const statusBadge = done
+                            ? '<span class="plan-badge done">✅ 已达标</span>'
+                            : pct >= 60
+                                ? `<span class="plan-badge partial">⏳ ${pct}%</span>`
+                                : `<span class="plan-badge pending">⚠️ ${pct}%</span>`;
+                        tHtml += `<tr class="${done ? 'plan-row-done' : ''}">
+                            <td class="team-name">${u.nickname}</td>
+                            <td>${Utils.formatDuration(planMins)}</td>
+                            <td>${Utils.formatDuration(checkinMins)}</td>
+                            <td><div class="mini-bar-wrap"><div class="mini-bar-fill" style="width:${pct}%;background:${pct>=100?'#4caf50':pct>=60?'#ff9800':'#f44336'}"></div></div></td>
+                            <td>${statusBadge}</td>
+                        </tr>`;
+                    });
+                    tHtml += '</tbody></table></div>';
+                    adminTableEl.innerHTML = tHtml;
+                }
+            } catch(e) {
+                adminTableEl.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+            }
+        } else if (adminSection) {
+            adminSection.style.display = 'none';
+        }
     },
     _getWeekNumber(dateStr) {
         const d = new Date(dateStr + 'T00:00:00');
