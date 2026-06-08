@@ -4966,8 +4966,9 @@ App.renderPlanCompare = async function() {
     const startStr = Utils.toLocalDateStr(start);
     const endStr = Utils.toLocalDateStr(end);
 
-    // 获取所有打卡数据
+    // 获取所有打卡数据和训练计划数据
     const allCheckins = App._allCheckins.filter(c => c.date >= startStr && c.date <= endStr);
+    const allPlans = await DB.getAllPlans();
 
     let html = '';
 
@@ -4975,13 +4976,12 @@ App.renderPlanCompare = async function() {
         const nickname = user.nickname || user.username;
         const userCheckins = allCheckins.filter(c => c.userId === user.id);
 
-        // 从 tri_goals 读取用户自己设定的目标
-        const goals = await DB.getGoals(user.id);
-        const key = App._pcType === 'week' ? 'weekly' : 'monthly';
-        const g = goals[key] || {};
-        const planSwim = g.swim || 0;
-        const planBike = g.bike || 0;
-        const planRun  = g.run  || 0;
+        // 从 tri_plans 读取用户本周/月训练计划，按运动类型汇总距离和时长
+        const userPlans = (allPlans[user.id] || []).filter(p => p.date >= startStr && p.date <= endStr);
+        const planSwim = userPlans.filter(p => p.sport === 'swim').reduce((s, p) => s + (p.plannedDistance || 0), 0);
+        const planBike = userPlans.filter(p => p.sport === 'bike').reduce((s, p) => s + (p.plannedDistance || 0), 0);
+        const planRun  = userPlans.filter(p => p.sport === 'run').reduce((s, p) => s + (p.plannedDistance || 0), 0);
+        const planDur  = userPlans.reduce((s, p) => s + (p.plannedDuration || 0), 0);
 
         // 计算该用户在本周期的实际训练量
         let actualSwim = 0, actualBike = 0, actualRun = 0, actualOther = 0, actualDur = 0;
@@ -5002,15 +5002,21 @@ App.renderPlanCompare = async function() {
             actualDetailItems.push(detail);
         });
 
-        // 计划明细：显示用户自己设定的目标
+        // 计划明细：显示 tri_plans 中的训练项目
         const planItems = [];
-        if (planSwim) planItems.push('🏊 游泳 ' + planSwim + 'm');
-        if (planBike) planItems.push('🚴 骑行 ' + planBike.toFixed(1) + 'km');
-        if (planRun)  planItems.push('🏃 跑步 ' + planRun.toFixed(1) + 'km');
+        userPlans.forEach(p => {
+            const icon = Utils.sportIcons[p.sport] || '💪';
+            const name = Utils.sportNames[p.sport] || '其他';
+            let desc = icon + ' ' + name;
+            if (p.plannedDistance) desc += ' ' + p.plannedDistance + (p.sport === 'swim' ? 'm' : 'km');
+            if (p.plannedDuration) desc += ' ' + Utils.formatDuration(p.plannedDuration);
+            if (p.title) desc += ' (' + p.title.substring(0,15) + ')';
+            planItems.push('<li>' + Utils.escHtml(desc) + '</li>');
+        });
 
         const planItemsHtml = planItems.length
-            ? '<ul style="margin:4px 0;padding-left:16px;font-size:12px;color:#666;">' + planItems.map(i => '<li>' + i + '</li>').join('') + '</ul>'
-            : '<span style="color:#999;">未设定目标</span>';
+            ? '<ul style="margin:4px 0;padding-left:16px;font-size:12px;color:#666;">' + planItems.join('') + '</ul>'
+            : '<span style="color:#999;">本周暂无训练计划</span>';
         const actualItemsHtml = actualDetailItems.length
             ? '<ul style="margin:4px 0;padding-left:16px;font-size:12px;color:#666;">' + actualDetailItems.map(i => '<li>' + i + '</li>').join('') + '</ul>'
             : '<span style="color:#999;">无打卡记录</span>';
@@ -5031,28 +5037,28 @@ App.renderPlanCompare = async function() {
         html += '<div class="pc-user-section">' +
             '<div class="pc-user-header">' +
                 '<span>' + Utils.escHtml(nickname) + '</span>' +
-                '<span style="font-size:12px;color:var(--text-light);">（' + (App._pcType==='week'?'本周目标':'本月目标') + '）</span>' +
+                '<span style="font-size:12px;color:var(--text-light);">（' + (App._pcType==='week'?'本周计划':'本月计划') + '）</span>' +
             '</div>' +
             '<div class="plan-compare-table-wrap"><table class="plan-compare-table">' +
-            '<thead><tr><th>项目</th><th>训练目标</th><th>实际完成</th><th>差值</th><th>状态</th></tr></thead>' +
+            '<thead><tr><th>项目</th><th>训练计划</th><th>实际完成</th><th>差值</th><th>状态</th></tr></thead>' +
             '<tbody>' +
             '<tr>' +
                 '<td style="font-weight:600;">🏊 游泳</td>' +
-                '<td>' + (planSwim ? planSwim + 'm' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (planSwim ? planSwim + 'm' : '<span style="color:#999;">未制定</span>') + '</td>' +
                 '<td>' + (actualSwim ? actualSwim + 'm' : '-') + '</td>' +
                 '<td class="' + (planSwim ? sCmp.cls : '') + '">' + (planSwim ? sCmp.gap + (planSwim&&Math.abs(actualSwim-planSwim)<planSwim*0.05?'✅':'') : '-') + '</td>' +
                 '<td><span class="pc-status-' + (planSwim&&(actualSwim>=planSwim||Math.abs(actualSwim-planSwim)<planSwim*0.05) ? 'done' : 'miss') + '">' + (planSwim ? (actualSwim>=planSwim||Math.abs(actualSwim-planSwim)<planSwim*0.05?'达标':'不足') : '-') + '</span></td>' +
             '</tr>' +
             '<tr>' +
                 '<td style="font-weight:600;">🚴 骑行</td>' +
-                '<td>' + (planBike ? planBike.toFixed(1) + 'km' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (planBike ? planBike.toFixed(1) + 'km' : '<span style="color:#999;">未制定</span>') + '</td>' +
                 '<td>' + (actualBike ? actualBike.toFixed(1) + 'km' : '-') + '</td>' +
                 '<td class="' + (planBike ? bCmp.cls : '') + '">' + (planBike ? bCmp.gap : '-') + '</td>' +
                 '<td><span class="pc-status-' + (planBike&&(actualBike>=planBike||Math.abs(actualBike-planBike)<planBike*0.05) ? 'done' : 'miss') + '">' + (planBike ? (actualBike>=planBike||Math.abs(actualBike-planBike)<planBike*0.05?'达标':'不足') : '-') + '</span></td>' +
             '</tr>' +
             '<tr>' +
                 '<td style="font-weight:600;">🏃 跑步</td>' +
-                '<td>' + (planRun ? planRun.toFixed(1) + 'km' : '<span style="color:#999;">未设定</span>') + '</td>' +
+                '<td>' + (planRun ? planRun.toFixed(1) + 'km' : '<span style="color:#999;">未制定</span>') + '</td>' +
                 '<td>' + (actualRun ? actualRun.toFixed(1) + 'km' : '-') + '</td>' +
                 '<td class="' + (planRun ? rCmp.cls : '') + '">' + (planRun ? rCmp.gap : '-') + '</td>' +
                 '<td><span class="pc-status-' + (planRun&&(actualRun>=planRun||Math.abs(actualRun-planRun)<planRun*0.05) ? 'done' : 'miss') + '">' + (planRun ? (actualRun>=planRun||Math.abs(actualRun-planRun)<planRun*0.05?'达标':'不足') : '-') + '</span></td>' +
@@ -5063,8 +5069,11 @@ App.renderPlanCompare = async function() {
                 '<td colspan="3" style="font-size:13px;color:#666;">打卡中「其他」类型次数</td>' +
             '</tr>' +
             '<tr style="border-top:2px solid #e0e0e0;">' +
-                '<td style="font-weight:700;">训练时长</td>' +
-                '<td colspan="4" style="font-size:13px;color:#666;">实际总时长：' + (actualDur ? Utils.formatDuration(actualDur) : '-') + '</td>' +
+                '<td style="font-weight:700;">⏱ 训练时长</td>' +
+                '<td>' + (planDur ? Utils.formatDuration(planDur) : '<span style="color:#999;">未制定</span>') + '</td>' +
+                '<td>' + (actualDur ? Utils.formatDuration(actualDur) : '-') + '</td>' +
+                '<td class="' + (planDur ? (actualDur >= planDur ? 'pc-gap-neg' : 'pc-gap-pos') : '') + '">' + (planDur ? ((actualDur >= planDur ? '+' : '') + (actualDur - planDur).toFixed(0) + 'min') : '-') + '</td>' +
+                '<td><span class="pc-status-' + (planDur && actualDur >= planDur ? 'done' : 'miss') + '">' + (planDur ? (actualDur >= planDur ? '达标' : '不足') : '-') + '</span></td>' +
             '</tr>' +
             '<tr>' +
                 '<td style="font-weight:600;">打卡次数</td>' +
@@ -5073,7 +5082,7 @@ App.renderPlanCompare = async function() {
             '</tbody></table></div>' +
             // 详细列表
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">' +
-                '<div><strong style="font-size:13px;">📋 打卡计划</strong>' + planItemsHtml + '</div>' +
+                '<div><strong style="font-size:13px;">📋 训练计划</strong>' + planItemsHtml + '</div>' +
                 '<div><strong style="font-size:13px;">✅ 打卡明细</strong>' + actualItemsHtml + '</div>' +
             '</div>' +
             '</div>';
