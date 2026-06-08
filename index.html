@@ -3011,20 +3011,26 @@ const DB = {
         allPlans[userId] = plans;
         localStorage.setItem('tri_plans', JSON.stringify(allPlans));
     },
-    addPlan(userId, plan) {
+    async addPlan(userId, plan) {
         const plans = this.getPlans(userId);
         plan.id = 'plan_' + Date.now();
         plan.userId = userId;
         plan.createdAt = new Date().toISOString();
         plans.push(plan);
         this.savePlans(userId, plans);
-        // 同步到云端
+        // 同步到云端，await 确保写入完成
         if (cloudDB) {
-            cloudDB.collection('tri_plans').add(plan).catch(e => console.warn('添加计划云端同步失败', e));
+            try {
+                await cloudDB.collection('tri_plans').add(plan);
+                console.log('✅ 计划已同步到云端', plan.id);
+            } catch(e) {
+                console.error('❌ 计划云端同步失败', e);
+                UI.toast('云端同步失败，将仅保存在本地', 'warn');
+            }
         }
         return plan;
     },
-    updatePlan(userId, planId, updates) {
+    async updatePlan(userId, planId, updates) {
         const plans = this.getPlans(userId);
         const index = plans.findIndex(p => p.id === planId);
         if (index !== -1) {
@@ -3032,18 +3038,30 @@ const DB = {
             this.savePlans(userId, plans);
             // 同步到云端
             if (cloudDB) {
-                cloudDB.collection('tri_plans').where({ id: planId }).update(updates).catch(e => console.warn('更新计划云端同步失败', e));
+                try {
+                    await cloudDB.collection('tri_plans').where({ id: planId }).update(updates);
+                    console.log('✅ 计划已同步更新到云端', planId);
+                } catch(e) {
+                    console.error('❌ 计划云端更新失败', e);
+                    UI.toast('云端同步失败，将仅保存在本地', 'warn');
+                }
             }
             return plans[index];
         }
         return null;
     },
-    deletePlan(userId, planId) {
+    async deletePlan(userId, planId) {
         const plans = this.getPlans(userId);
         this.savePlans(userId, plans.filter(p => p.id !== planId));
         // 同步删除到云端
         if (cloudDB) {
-            cloudDB.collection('tri_plans').where({ id: planId }).remove().catch(e => console.warn('删除计划云端同步失败', e));
+            try {
+                await cloudDB.collection('tri_plans').where({ id: planId }).remove();
+                console.log('✅ 计划已同步删除到云端', planId);
+            } catch(e) {
+                console.error('❌ 计划云端删除失败', e);
+                UI.toast('云端删除失败', 'warn');
+            }
         }
     },
     async getAllPlans() {
@@ -4563,7 +4581,7 @@ const App = {
         }
     },
     closePlanModal() { document.getElementById('plan-modal-overlay').classList.remove('open'); },
-    savePlan() {
+    async savePlan() {
         const id = document.getElementById('plan-id').value;
         const sportBtn = document.querySelector('.plan-sport-btn.active');
         const sport = sportBtn ? sportBtn.dataset.sport : 'swim';
@@ -4574,19 +4592,29 @@ const App = {
         const note = document.getElementById('plan-note').value.trim();
         if (sport !== 'other' && !distance && !duration) { UI.toast('请输入计划距离或时长', 'error'); return; }
         if (sport === 'other' && !duration) { UI.toast('请输入计划时长', 'error'); return; }
-        if (id) { DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note }); UI.toast('计划已更新', 'success'); }
-        else {
+        if (id) {
+            await DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note });
+            UI.toast('计划已更新 ✅', 'success');
+            this.closePlanModal();
+            await this.renderPlans();
+        } else {
             const planDate = document.getElementById('plan-date').value || Utils.toLocalDateStr(new Date());
-            DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate }); UI.toast('计划已添加', 'success');
+            await DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate });
+            UI.toast('计划已添加 ✅', 'success');
+            this.closePlanModal();
+            await this.renderPlans();
         }
-        this.closePlanModal(); this.renderPlans().catch(e=>{});
     },
     editPlan(planId) {
         const plan = DB.getPlans(this.currentUser.id).find(p => p.id === planId);
         if (plan) this.openPlanModal(plan);
     },
-    deletePlanConfirm(planId) {
-        if (confirm('确定删除这条训练计划？')) { DB.deletePlan(this.currentUser.id, planId); UI.toast('已删除', 'success'); this.renderPlans().catch(e=>{}); }
+    async deletePlanConfirm(planId) {
+        if (confirm('确定删除这条训练计划？')) {
+            await DB.deletePlan(this.currentUser.id, planId);
+            UI.toast('已删除', 'success');
+            await this.renderPlans();
+        }
     },
     openCheckinEditModal(checkinId) {
         const c = this._allCheckins.find(item => item.id === checkinId);
