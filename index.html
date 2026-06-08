@@ -3062,8 +3062,19 @@ const DB = {
         if (cloudDB) {
             try {
                 const res = await cloudDB.collection('tri_plans').limit(500).get();
+                const cloudPlans = res.data || [];
+                const localAll = JSON.parse(localStorage.getItem('tri_plans') || '{}');
                 const all = {};
-                (res.data || []).forEach(p => { if (!all[p.userId]) all[p.userId] = []; all[p.userId].push(p); });
+                const cloudIds = new Set();
+                // 先加入云端数据
+                cloudPlans.forEach(p => { if (!all[p.userId]) all[p.userId] = []; all[p.userId].push(p); cloudIds.add(p.id); });
+                // 合并本地独有的数据（云端尚未同步的新增计划）
+                for (const [uid, plans] of Object.entries(localAll)) {
+                    if (!all[uid]) all[uid] = [];
+                    for (const p of plans) {
+                        if (!cloudIds.has(p.id)) { all[uid].push(p); }
+                    }
+                }
                 localStorage.setItem('tri_plans', JSON.stringify(all));
                 return all;
             } catch(e) { console.warn('拉取全部计划失败', e); }
@@ -4466,103 +4477,13 @@ const App = {
         }
     },
     async renderPlans() {
-        await DB.fetchPlansFromCloud(this.currentUser.id);
-        const container = document.getElementById('plans-week-list');
-        const weekLabel = document.getElementById('plan-week-label');
-        const today = Utils.toLocalDateStr(new Date());
-        const weekEnd = new Date(this.planWeekStart + 'T00:00:00');
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        const weekEndStr = Utils.toLocalDateStr(weekEnd);
-        // 周标签
-        if (weekLabel) {
-            const weekNum = this._getWeekNumber(this.planWeekStart);
-            const sm = new Date(this.planWeekStart + 'T00:00:00');
-            const em = new Date(weekEndStr + 'T00:00:00');
-            weekLabel.textContent = `第${weekNum}周 ${sm.getMonth()+1}/${sm.getDate()} - ${em.getMonth()+1}/${em.getDate()}`;
-        }
-        // 生成7天数据
-        const days = [];
-        const d = new Date(this.planWeekStart + 'T00:00:00');
-        for (let i = 0; i < 7; i++) {
-            const dateStr = Utils.toLocalDateStr(d);
-            days.push({ date: dateStr, label: Utils.weekDayName(dateStr), isToday: dateStr === today,
-                d: d.getDate(), m: d.getMonth() + 1 });
-            d.setDate(d.getDate() + 1);
-        }
-        // 获取当前用户的计划
-        const myPlans = DB.getPlans(this.currentUser.id);
-        const myCheckins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
-        let html = '';
-        days.forEach(day => {
-            const dayPlans = myPlans.filter(p => p.date === day.date);
-            const dayCheckins = myCheckins.filter(c => c.date === day.date);
-            const headerClass = day.isToday ? 'day-card-header today' : 'day-card-header';
-            html += `<div class="day-card"><div class="${headerClass}">
-                <div><span class="day-card-label">${day.label}</span> <span class="day-card-date">${day.m}/${day.d}</span></div>
-                <button class="day-card-add" onclick="App.openPlanModalForDate('${day.date}')">+ 添加</button>
-            </div><div class="day-card-body">`;
-            if (dayPlans.length === 0) {
-                html += '<div class="day-card-empty">休息日</div>';
-            } else {
-                html += dayPlans.map(p => this._renderPlanItem(p, dayCheckins, true)).join('');
-            }
-            html += '</div></div>';
-        });
-        container.innerHTML = html;
-
-        // 管理员：拉取全队本周计划
-        const adminSection = document.getElementById('admin-team-plans-section');
-        if (this.currentUser.isAdmin && adminSection) {
-            adminSection.style.display = 'block';
-            const adminTableEl = document.getElementById('admin-team-plans-table');
-            adminTableEl.innerHTML = '<div class="loading-text">加载中…</div>';
-            try {
-                const allPlans = await DB.getAllPlans();
-                const users = DB._getCache('tri_users', []);
-                const weekStart = this.planWeekStart;
-                const weekEndD = new Date(weekStart + 'T00:00:00');
-                weekEndD.setDate(weekEndD.getDate() + 6);
-                const weekEndStr = Utils.toLocalDateStr(weekEndD);
-                const tableRows = users.map(u => {
-                    const uPlans = (allPlans[u.id] || []).filter(p => p.date >= weekStart && p.date <= weekEndStr);
-                    const uCheckins = this._allCheckins.filter(c => c.userId === u.id && c.date >= weekStart && c.date <= weekEndStr);
-                    return { user: u, plans: uPlans, checkins: uCheckins };
-                });
-                const activeRows = tableRows.filter(r => r.plans.length > 0);
-                if (activeRows.length === 0) {
-                    adminTableEl.innerHTML = '<div class="empty-state">本周暂无成员有训练计划</div>';
-                } else {
-                    // 汇总每人的计划时长 vs 打卡时长
-                    let tHtml = `<div class="team-table-wrap"><table class="team-table"><thead><tr>
-                        <th>成员</th><th>本周计划总时长</th><th>已打卡时长</th><th>完成率</th><th>状态</th>
-                    </tr></thead><tbody>`;
-                    activeRows.forEach(({ user: u, plans, checkins }) => {
-                        const planMins = plans.reduce((s, p) => s + (p.plannedDuration || 0), 0);
-                        const checkinMins = checkins.reduce((s, c) => s + (c.duration || 0), 0);
-                        const pct = planMins > 0 ? Math.min(100, Math.round(checkinMins / planMins * 100)) : 0;
-                        const done = pct >= 100;
-                        const statusBadge = done
-                            ? '<span class="plan-badge done">✅ 已达标</span>'
-                            : pct >= 60
-                                ? `<span class="plan-badge partial">⏳ ${pct}%</span>`
-                                : `<span class="plan-badge pending">⚠️ ${pct}%</span>`;
-                        tHtml += `<tr class="${done ? 'plan-row-done' : ''}">
-                            <td class="team-name">${u.nickname}</td>
-                            <td>${Utils.formatDuration(planMins)}</td>
-                            <td>${Utils.formatDuration(checkinMins)}</td>
-                            <td><div class="mini-bar-wrap"><div class="mini-bar-fill" style="width:${pct}%;background:${pct>=100?'#4caf50':pct>=60?'#ff9800':'#f44336'}"></div></div></td>
-                            <td>${statusBadge}</td>
-                        </tr>`;
-                    });
-                    tHtml += '</tbody></table></div>';
-                    adminTableEl.innerHTML = tHtml;
-                }
-            } catch(e) {
-                adminTableEl.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
-            }
-        } else if (adminSection) {
-            adminSection.style.display = 'none';
-        }
+        // 先渲染本地数据（保证即时响应，不会因云端同步覆盖本地新增数据）
+        this.renderPlansLocal();
+        // 后台异步同步云端数据
+        try {
+            await DB.fetchPlansFromCloud(this.currentUser.id);
+            this.renderPlansLocal();
+        } catch(e) { console.warn('计划云端同步失败', e); }
     },
     _getWeekNumber(dateStr) {
         const d = new Date(dateStr + 'T00:00:00');
