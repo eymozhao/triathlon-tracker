@@ -2056,13 +2056,15 @@ body {
                 <section id="training-section" class="section">
                     <h2 class="section-title">📚 训练计划库</h2>
                     <div class="training-tabs">
-                        <button class="train-tab-btn active" data-group="standard">🥉 标铁</button>
+                        <button class="train-tab-btn active" data-group="beginner">🌱 入门</button>
+                        <button class="train-tab-btn" data-group="sprint">🏅 冲刺</button>
+                        <button class="train-tab-btn" data-group="standard">🥉 标铁</button>
                         <button class="train-tab-btn" data-group="113">🥈 113</button>
                         <button class="train-tab-btn" data-group="226">🥇 226</button>
                         <button class="train-tab-btn" data-group="marathon">🏃 马拉松</button>
                         <button class="train-tab-btn" data-group="trail">⛰️ 越野跑</button>
                         <button class="train-tab-btn" data-group="hyrox">🏋️ HYROX</button>
-                        <button class="train-tab-btn" data-group="weight">💪 其他</button>
+                        <button class="train-tab-btn" data-group="weight">💪 减脂</button>
                     </div>
                     <div id="training-plan-content" class="training-plan-content"></div>
                 </section>
@@ -2370,17 +2372,43 @@ const TRAINING_PLANS = {
                 totalMins: 505, tip: '建立大量有氧基础，骑行比例60%'
             },
             {
+                phase: '第5-8周 · 强度提升期',
+                weeks: [
+                    { day: '周一', content: '游泳 2000m（含6×150m间歇 70%+强度）', duration: 65 },
+                    { day: '周二', content: '跑步 12km（含5km阈值跑 Zone3）', duration: 65 },
+                    { day: '周三', content: '骑行 70km（含爬坡间歇 3×10min 85%FTP）', duration: 130 },
+                    { day: '周四', content: '游泳 2200m（连续长游 + 8×50m打腿）', duration: 65 },
+                    { day: '周五', content: '力量训练（下肢+核心 50min）', duration: 50 },
+                    { day: '周六', content: '长骑 90km（Zone2）+ 换项跑 5km', duration: 195 },
+                    { day: '周日', content: '长跑 15km（Zone2 轻松配速）', duration: 90 }
+                ],
+                totalMins: 660, tip: '加入FTP功率/心率阈值训练，骑行踏频维持85-95rpm，长距离日记得测试补给方案'
+            },
+            {
                 phase: '第9-12周 · 专项能力期',
                 weeks: [
-                    { day: '周一', content: '游泳间歇 8×200m（90sec rest）', duration: 65 },
-                    { day: '周二', content: '跑步 15km（含8km马配速）', duration: 80 },
-                    { day: '周三', content: '骑行 80km（含20km TT）', duration: 160 },
-                    { day: '周四', content: '游泳 2500m（连续）', duration: 70 },
-                    { day: '周五', content: '跑步节奏跑 12km', duration: 65 },
-                    { day: '周六', content: '砖训 骑90km+跑10km', duration: 220 },
-                    { day: '周日', content: '恢复游泳 1200m', duration: 40 }
+                    { day: '周一', content: '游泳间歇 8×200m（90sec rest, Zone4）', duration: 65 },
+                    { day: '周二', content: '跑步 15km（含8km比赛配速 M-pace）', duration: 80 },
+                    { day: '周三', content: '骑行 80km（含20km TT计时 Zone4）', duration: 160 },
+                    { day: '周四', content: '游泳 2500m（连续 + 开放水域模拟）', duration: 70 },
+                    { day: '周五', content: '跑步节奏跑 12km + 核心力量', duration: 80 },
+                    { day: '周六', content: '超级砖训 骑90km（Zone2-3）+ 跑15km', duration: 240 },
+                    { day: '周日', content: '恢复游泳 1500m 轻松', duration: 45 }
                 ],
-                totalMins: 700, tip: '周六砖训是核心课，骑行后腿部疲劳跑步体验是关键'
+                totalMins: 740, tip: '周六砖训是核心课，骑行后腿软跑15km是比赛模拟。每45min补一次能量胶，提前测试比赛日补给方案'
+            },
+            {
+                phase: '第13-16周 · 赛前冲刺+减量',
+                weeks: [
+                    { day: '周一', content: '游泳 1800m（含5×200m比赛配速）', duration: 55 },
+                    { day: '周二', content: '跑步 10km（含5km M配速 + 3km轻松）', duration: 55 },
+                    { day: '周三', content: '骑行 60km（含3×10min FTP 95%）', duration: 115 },
+                    { day: '周四', content: '游泳 2000m 技术+放松', duration: 55 },
+                    { day: '周五', content: '轻松激活跑 5km + 拉伸', duration: 35 },
+                    { day: '周六', content: '砖训减量 骑40km+跑5km（比赛配速）', duration: 100 },
+                    { day: '周日', content: '第14/15周轻松骑30km，第16周：🏆 比赛日！游泳1.9km+骑90km+跑21.1km', duration: 60 }
+                ],
+                totalMins: 475, tip: '第16周减量50%：赛前3天碳水量加大（8-10g/kg体重），比赛日早餐赛前2.5h吃完。装备清单：防寒泳衣、锁鞋、号码带、能量胶6-8条、盐丸'
             }
         ]
     },
@@ -2401,17 +2429,43 @@ const TRAINING_PLANS = {
                 totalMins: 810, tip: '关注营养补给：长骑每45min补一次碳水'
             },
             {
-                phase: '第12-16周 · 专项冲刺期',
+                phase: '第6-12周 · 耐力积累期',
                 weeks: [
-                    { day: '周一', content: '游泳 4000m（含模拟开放水域）', duration: 90 },
-                    { day: '周二', content: '跑步 20km（含10km马配速）', duration: 110 },
-                    { day: '周三', content: '骑行 120km（含30km TT）', duration: 230 },
-                    { day: '周四', content: '游泳 3500m（连续长游）', duration: 85 },
-                    { day: '周五', content: '轻松跑 10km + 激活', duration: 60 },
-                    { day: '周六', content: '超级砖训 160km骑+20km跑', duration: 360 },
-                    { day: '周日', content: '恢复游泳 1500m + 按摩', duration: 50 }
+                    { day: '周一', content: '游泳 2800m（技术+耐力，含10×100m间歇）', duration: 80 },
+                    { day: '周二', content: '跑步 15km（Zone2）+ 力量训练30min', duration: 115 },
+                    { day: '周三', content: '骑行 100km（含4×15min Zone3 FTP）', duration: 190 },
+                    { day: '周四', content: '游泳 3500m（连续长游 Zone2）', duration: 85 },
+                    { day: '周五', content: '跑步 12km（含6km阈值 Zone3-4）', duration: 70 },
+                    { day: '周六', content: '长骑 150km（Zone2，每45min补能量胶）', duration: 300 },
+                    { day: '周日', content: '长跑 22km（Zone2 轻松配速）', duration: 130 }
                 ],
-                totalMins: 985, tip: '⚠️ 训练量最高峰，需极度重视恢复：睡眠9h+，蛋白质补充'
+                totalMins: 970, tip: '第9周为恢复周（训练量减30%）。骑行时练习比赛补给：每小时60-90g碳水，钠500-700mg。长跑后冰敷/冷水浴加速恢复'
+            },
+            {
+                phase: '第13-17周 · 专项冲刺期',
+                weeks: [
+                    { day: '周一', content: '游泳 4000m（含模拟开放水域，跟游训练）', duration: 95 },
+                    { day: '周二', content: '跑步 20km（含12km M配速）', duration: 110 },
+                    { day: '周三', content: '骑行 130km（含40km TT计时 Zone4）', duration: 250 },
+                    { day: '周四', content: '游泳 4000m（连续长游 + 10×50m冲刺）', duration: 90 },
+                    { day: '周五', content: '轻松跑 10km + 核心激活', duration: 60 },
+                    { day: '周六', content: '超级砖训 骑180km（Zone2-3）+ 跑15km', duration: 390 },
+                    { day: '周日', content: '恢复游泳 2000m + 按摩拉伸', duration: 60 }
+                ],
+                totalMins: 1055, tip: '⚠️ 训练量最高峰！睡眠≥9h/天，蛋白质1.8-2g/kg体重。第15周安排一次减量恢复周。砖训后30min内补充碳水+蛋白质（4:1比例）'
+            },
+            {
+                phase: '第18-20周 · 减量恢复+赛周',
+                weeks: [
+                    { day: '周一', content: '游泳 2000m（技术+轻松）', duration: 55 },
+                    { day: '周二', content: '跑步 10km（含5km M配速保持感）', duration: 55 },
+                    { day: '周三', content: '骑行 60km（含2×10min FTP激活）', duration: 110 },
+                    { day: '周四', content: '游泳 1500m 轻松 + 拉伸', duration: 45 },
+                    { day: '周五', content: '轻松激活跑 4km + 装备检查', duration: 25 },
+                    { day: '周六', content: '轻松骑 20km + 赛前准备', duration: 45 },
+                    { day: '周日', content: '第18-19周：减量长骑80km+轻松跑8km；第20周：🏆 比赛日！游泳3.8km+骑180km+跑42.2km', duration: 50 }
+                ],
+                totalMins: 385, tip: '💤 减量期核心：训练量降50-60%，保持激活感。赛前3天碳水负荷（10g/kg/天）。比赛策略：游泳保守（跟游群体），骑行Zone2稳定功率不要贪快，跑步稳住配速不让崩。能量计划：骑行每30min补一次，跑步每站都补水'
             }
         ]
     },
@@ -2601,6 +2655,107 @@ const TRAINING_PLANS = {
                     { day: '周日', content: '🏆 比赛日！突破自我！', duration: 0 }
                 ],
                 totalMins: 235, tip: '⚡ 赛前3天减量，保持激活。比赛日策略：跑步段稳住配速，不追第一组；力量站保持动作标准防罚时'
+            }
+        ]
+    },
+    sprint: {
+        title: '短距离冲刺铁三训练计划（8周·新手友好）',
+        phases: [
+            {
+                phase: '第1-2周 · 适应期（建立习惯，跑走结合）',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '游泳 16×25m（组间休息30秒，Zone1轻松）', duration: 30 },
+                    { day: '周三', content: '跑步 5×（步行2min + 跑步3min）Zone1', duration: 25 },
+                    { day: '周四', content: '骑行 30min（Zone1，踏频80-90rpm）', duration: 30 },
+                    { day: '周五', content: '休息或拉伸瑜伽', duration: 0 },
+                    { day: '周六', content: '游泳 10×50m（组间休息45秒，Zone1）', duration: 35 },
+                    { day: '周日', content: '跑步 6×（步行1.5min + 跑步3.5min）Zone1', duration: 30 }
+                ],
+                totalMins: 150, tip: '🏊 距离短=750m游泳+20km骑行+5km跑步。保守完成比速度快更重要，先建立训练习惯和身体感知'
+            },
+            {
+                phase: '第3-4周 · 基础建设期（增加持续运动时间）',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '游泳 8×75m（组间休息40秒，Zone2）', duration: 35 },
+                    { day: '周三', content: '跑步 20min（前10min Zone1，后10min Zone2）', duration: 20 },
+                    { day: '周四', content: '骑行 40min（Zone2，踏频85-95rpm）', duration: 40 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: '游泳 4×100m（Zone2）+ 6×50m（Zone3）', duration: 45 },
+                    { day: '周日', content: '砖训入门：骑20min（Zone1）+ 换项（<5min）+ 跑10min（Zone1）', duration: 35 }
+                ],
+                totalMins: 175, tip: '🔄 第4周加入首次砖训（Brick），体验骑行→跑步的腿部转换感。换项练习：提前摆好跑鞋袜子，模拟比赛T2'
+            },
+            {
+                phase: '第5-6周 · 强度提升期（加入Zone3-4训练）',
+                weeks: [
+                    { day: '周一', content: '休息或核心训练20min', duration: 20 },
+                    { day: '周二', content: '游泳 10×100m（组间休息25秒，Zone2+3）', duration: 45 },
+                    { day: '周三', content: '跑步 30min（前15min Zone1，后15min Zone3节奏）', duration: 30 },
+                    { day: '周四', content: '骑行 50min（Zone2+3交替，踏频90-100rpm）', duration: 50 },
+                    { day: '周五', content: '休息', duration: 0 },
+                    { day: '周六', content: '游泳 500m连续（Zone2）+ 5×100m（Zone4快游）', duration: 50 },
+                    { day: '周日', content: '砖训升级：骑30min（前15 Z2+后15 Z3）+ 跑15min（Z2）', duration: 50 }
+                ],
+                totalMins: 245, tip: '💪 心率分区：Zone1=轻松闲聊，Zone2=勉强对话，Zone3=只能说短句，Zone4=呼吸急促。80%训练在Zone1-2'
+            },
+            {
+                phase: '第7-8周 · 赛前减量+比赛周',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '游泳 8×50m（激活，每组25m快+25m慢）', duration: 25 },
+                    { day: '周三', content: '跑步 20min（Zone1轻松 + 3min Zone3激活）', duration: 20 },
+                    { day: '周四', content: '骑行 25min（Zone1轻松 + 2×2min Zone3激活）', duration: 25 },
+                    { day: '周五', content: '休息 + 装备检查 + 看赛道图', duration: 0 },
+                    { day: '周六', content: '轻松骑行15min 激活 + 赛前准备', duration: 15 },
+                    { day: '周日', content: '🏆 比赛日！游泳750m+骑行20km+跑步5km，享受你的第一场铁三！', duration: 0 }
+                ],
+                totalMins: 85, tip: '🎯 比赛策略：游泳别冲第一波，找自己节奏；T1换项慢一点没关系；骑行稳住功率别爆缸；跑步配速轻松巡航。记住完赛就是胜利！'
+            }
+        ]
+    },
+    beginner: {
+        title: '铁三入门12周计划（零基础→完赛标铁）',
+        phases: [
+            {
+                phase: '第1-4周 · 基础适应期（激活肌群，建立有氧基础）',
+                weeks: [
+                    { day: '周一', content: '休息或轻松散步30min', duration: 30 },
+                    { day: '周二', content: '游泳技术训练 30min（打腿、呼吸、平衡）+ 核心力量15min', duration: 45 },
+                    { day: '周三', content: '跑步基础有氧 40min（心率Zone1-2，跑走结合）', duration: 40 },
+                    { day: '周四', content: '骑行技术训练 45min（高踏频90+rpm，低阻力）', duration: 45 },
+                    { day: '周五', content: '游泳耐力训练 40min（长距离慢游，关注呼吸节奏）', duration: 40 },
+                    { day: '周六', content: '骑行有氧基础 60min（心率Zone2，平路巡航）', duration: 60 },
+                    { day: '周日', content: '跑步长距离慢跑 60min（鼻呼吸练习，能聊天的速度）', duration: 60 }
+                ],
+                totalMins: 320, tip: '🌟 80/20法则：80%训练在低心率Zone1-2（能聊天），20%技术/力量。周六日可互换。游泳用划水板辅助，重点纠正呼吸节奏而非距离'
+            },
+            {
+                phase: '第5-8周 · 能力巩固期（提升输出耐力，加入专项训练）',
+                weeks: [
+                    { day: '周一', content: '休息或拉伸瑜伽30min', duration: 30 },
+                    { day: '周二', content: '游泳 1500m（含6×100m间歇 Zone3，组间30秒）', duration: 55 },
+                    { day: '周三', content: '跑步 8km（含3km阈值跑 Zone3-4）', duration: 50 },
+                    { day: '周四', content: '骑行 50km（含爬坡间歇或3×10min FTP 85%）', duration: 100 },
+                    { day: '周五', content: '游泳技术+力量训练（核心+下肢 45min）', duration: 50 },
+                    { day: '周六', content: '砖训入门：骑40km（Zone2）+ 换项跑 5km（Zone2）', duration: 110 },
+                    { day: '周日', content: '长跑 12km（Zone2 轻松配速）+ 拉伸', duration: 80 }
+                ],
+                totalMins: 475, tip: '🔄 本阶段重点是砖训适应。骑行后腿软跑步是正常现象——前1-2km腿部转换适应后会缓解。开始练习比赛日补给：训练中测试能量胶/电解质'
+            },
+            {
+                phase: '第9-12周 · 赛前整合期（模拟比赛节奏，适应转换+减量）',
+                weeks: [
+                    { day: '周一', content: '休息', duration: 0 },
+                    { day: '周二', content: '游泳 1500m 比赛配速模拟（连续不停）', duration: 45 },
+                    { day: '周三', content: '跑步 10km（含5km M配速 + 3km轻松）', duration: 58 },
+                    { day: '周四', content: '骑行 40km（含10km TT计时 Zone4）+ 换项跑3km', duration: 95 },
+                    { day: '周五', content: '休息或轻松游泳600m放松', duration: 25 },
+                    { day: '周六', content: '全程模拟（可选）：游泳750m+骑20km+跑5km，或只做砖训减量', duration: 90 },
+                    { day: '周日', content: '第10-11周：轻松长跑8km；第12周：🏆 比赛日！标铁=游泳1.5km+骑40km+跑10km', duration: 50 }
+                ],
+                totalMins: 363, tip: '🎯 第12周赛前3天：训练量降60%，碳水量逐步加大（米饭/面条/面包）。比赛日：早餐赛前2-2.5h吃，赛中每30-40min补能量胶。T1/T2换项区提前30min到场熟悉。首次参赛目标：安全完赛>追求速度'
             }
         ]
     }
