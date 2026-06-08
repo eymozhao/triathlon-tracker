@@ -3011,57 +3011,51 @@ const DB = {
         allPlans[userId] = plans;
         localStorage.setItem('tri_plans', JSON.stringify(allPlans));
     },
-    async addPlan(userId, plan) {
+    addPlan(userId, plan) {
         const plans = this.getPlans(userId);
         plan.id = 'plan_' + Date.now();
         plan.userId = userId;
         plan.createdAt = new Date().toISOString();
         plans.push(plan);
         this.savePlans(userId, plans);
-        // 同步到云端，await 确保写入完成
+        // 云端异步同步（不阻塞本地渲染）
         if (cloudDB) {
-            try {
-                await cloudDB.collection('tri_plans').add(plan);
+            cloudDB.collection('tri_plans').add(plan).then(() => {
                 console.log('✅ 计划已同步到云端', plan.id);
-            } catch(e) {
-                console.error('❌ 计划云端同步失败', e);
-                UI.toast('云端同步失败，将仅保存在本地', 'warn');
-            }
+            }).catch(e => {
+                console.warn('⚠️ 计划云端同步失败，已保存在本地', e);
+            });
         }
         return plan;
     },
-    async updatePlan(userId, planId, updates) {
+    updatePlan(userId, planId, updates) {
         const plans = this.getPlans(userId);
         const index = plans.findIndex(p => p.id === planId);
         if (index !== -1) {
             plans[index] = { ...plans[index], ...updates, updatedAt: new Date().toISOString() };
             this.savePlans(userId, plans);
-            // 同步到云端
+            // 云端异步同步
             if (cloudDB) {
-                try {
-                    await cloudDB.collection('tri_plans').where({ id: planId }).update(updates);
+                cloudDB.collection('tri_plans').where({ id: planId }).update(updates).then(() => {
                     console.log('✅ 计划已同步更新到云端', planId);
-                } catch(e) {
-                    console.error('❌ 计划云端更新失败', e);
-                    UI.toast('云端同步失败，将仅保存在本地', 'warn');
-                }
+                }).catch(e => {
+                    console.warn('⚠️ 计划云端更新失败，已保存在本地', e);
+                });
             }
             return plans[index];
         }
         return null;
     },
-    async deletePlan(userId, planId) {
+    deletePlan(userId, planId) {
         const plans = this.getPlans(userId);
         this.savePlans(userId, plans.filter(p => p.id !== planId));
-        // 同步删除到云端
+        // 云端异步同步
         if (cloudDB) {
-            try {
-                await cloudDB.collection('tri_plans').where({ id: planId }).remove();
+            cloudDB.collection('tri_plans').where({ id: planId }).remove().then(() => {
                 console.log('✅ 计划已同步删除到云端', planId);
-            } catch(e) {
-                console.error('❌ 计划云端删除失败', e);
-                UI.toast('云端删除失败', 'warn');
-            }
+            }).catch(e => {
+                console.warn('⚠️ 计划云端删除失败，已保存在本地', e);
+            });
         }
     },
     async getAllPlans() {
@@ -4376,6 +4370,101 @@ const App = {
         d.setDate(d.getDate() + diff);
         return Utils.toLocalDateStr(d);
     },
+    // 纯本地渲染（不拉云端，避免覆盖刚写入的数据）
+    renderPlansLocal() {
+        const container = document.getElementById('plans-week-list');
+        if (!container) return;
+        const weekLabel = document.getElementById('plan-week-label');
+        const today = Utils.toLocalDateStr(new Date());
+        const weekEnd = new Date(this.planWeekStart + 'T00:00:00');
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekEndStr = Utils.toLocalDateStr(weekEnd);
+        if (weekLabel) {
+            const weekNum = this._getWeekNumber(this.planWeekStart);
+            const sm = new Date(this.planWeekStart + 'T00:00:00');
+            const em = new Date(weekEndStr + 'T00:00:00');
+            weekLabel.textContent = `第${weekNum}周 ${sm.getMonth()+1}/${sm.getDate()} - ${em.getMonth()+1}/${em.getDate()}`;
+        }
+        const days = [];
+        const d = new Date(this.planWeekStart + 'T00:00:00');
+        for (let i = 0; i < 7; i++) {
+            const dateStr = Utils.toLocalDateStr(d);
+            days.push({ date: dateStr, label: Utils.weekDayName(dateStr), isToday: dateStr === today,
+                d: d.getDate(), m: d.getMonth() + 1 });
+            d.setDate(d.getDate() + 1);
+        }
+        const myPlans = DB.getPlans(this.currentUser.id);
+        const myCheckins = this._allCheckins.filter(c => c.userId === this.currentUser.id);
+        let html = '';
+        days.forEach(day => {
+            const dayPlans = myPlans.filter(p => p.date === day.date);
+            const dayCheckins = myCheckins.filter(c => c.date === day.date);
+            const headerClass = day.isToday ? 'day-card-header today' : 'day-card-header';
+            html += `<div class="day-card"><div class="${headerClass}">
+                <div><span class="day-card-label">${day.label}</span> <span class="day-card-date">${day.m}/${day.d}</span></div>
+                <button class="day-card-add" onclick="App.openPlanModalForDate('${day.date}')">+ 添加</button>
+            </div><div class="day-card-body">`;
+            if (dayPlans.length === 0) {
+                html += '<div class="day-card-empty">休息日</div>';
+            } else {
+                html += dayPlans.map(p => this._renderPlanItem(p, dayCheckins, true)).join('');
+            }
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+        // 管理员全队计划异步拉取（不阻塞）
+        this._renderAdminTeamPlans();
+    },
+    async _renderAdminTeamPlans() {
+        const adminSection = document.getElementById('admin-team-plans-section');
+        if (!this.currentUser.isAdmin || !adminSection) return;
+        adminSection.style.display = 'block';
+        const adminTableEl = document.getElementById('admin-team-plans-table');
+        adminTableEl.innerHTML = '<div class="loading-text">加载中…</div>';
+        try {
+            const allPlans = await DB.getAllPlans();
+            const users = DB._getCache('tri_users', []);
+            const weekStart = this.planWeekStart;
+            const weekEndD = new Date(weekStart + 'T00:00:00');
+            weekEndD.setDate(weekEndD.getDate() + 6);
+            const weekEndStr = Utils.toLocalDateStr(weekEndD);
+            const tableRows = users.map(u => {
+                const uPlans = (allPlans[u.id] || []).filter(p => p.date >= weekStart && p.date <= weekEndStr);
+                const uCheckins = this._allCheckins.filter(c => c.userId === u.id && c.date >= weekStart && c.date <= weekEndStr);
+                return { user: u, plans: uPlans, checkins: uCheckins };
+            });
+            const activeRows = tableRows.filter(r => r.plans.length > 0);
+            if (activeRows.length === 0) {
+                adminTableEl.innerHTML = '<div class="empty-state">本周暂无成员有训练计划</div>';
+            } else {
+                let tHtml = `<div class="team-table-wrap"><table class="team-table"><thead><tr>
+                    <th>成员</th><th>本周计划总时长</th><th>已打卡时长</th><th>完成率</th><th>状态</th>
+                </tr></thead><tbody>`;
+                activeRows.forEach(({ user: u, plans, checkins }) => {
+                    const planMins = plans.reduce((s, p) => s + (p.plannedDuration || 0), 0);
+                    const checkinMins = checkins.reduce((s, c) => s + (c.duration || 0), 0);
+                    const pct = planMins > 0 ? Math.min(100, Math.round(checkinMins / planMins * 100)) : 0;
+                    const done = pct >= 100;
+                    const statusBadge = done
+                        ? '<span class="plan-badge done">✅ 已达标</span>'
+                        : pct >= 60
+                            ? `<span class="plan-badge partial">⏳ ${pct}%</span>`
+                            : `<span class="plan-badge pending">⚠️ ${pct}%</span>`;
+                    tHtml += `<tr class="${done ? 'plan-row-done' : ''}">
+                        <td class="team-name">${u.nickname}</td>
+                        <td>${Utils.formatDuration(planMins)}</td>
+                        <td>${Utils.formatDuration(checkinMins)}</td>
+                        <td><div class="mini-bar-wrap"><div class="mini-bar-fill" style="width:${pct}%;background:${pct>=100?'#4caf50':pct>=60?'#ff9800':'#f44336'}"></div></div></td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                });
+                tHtml += '</tbody></table></div>';
+                adminTableEl.innerHTML = tHtml;
+            }
+        } catch(e) {
+            adminTableEl.innerHTML = '<div class="empty-state">加载失败，请重试</div>';
+        }
+    },
     async renderPlans() {
         await DB.fetchPlansFromCloud(this.currentUser.id);
         const container = document.getElementById('plans-week-list');
@@ -4581,7 +4670,7 @@ const App = {
         }
     },
     closePlanModal() { document.getElementById('plan-modal-overlay').classList.remove('open'); },
-    async savePlan() {
+    savePlan() {
         const id = document.getElementById('plan-id').value;
         const sportBtn = document.querySelector('.plan-sport-btn.active');
         const sport = sportBtn ? sportBtn.dataset.sport : 'swim';
@@ -4593,27 +4682,26 @@ const App = {
         if (sport !== 'other' && !distance && !duration) { UI.toast('请输入计划距离或时长', 'error'); return; }
         if (sport === 'other' && !duration) { UI.toast('请输入计划时长', 'error'); return; }
         if (id) {
-            await DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note });
+            DB.updatePlan(this.currentUser.id, id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note });
             UI.toast('计划已更新 ✅', 'success');
-            this.closePlanModal();
-            await this.renderPlans();
         } else {
             const planDate = document.getElementById('plan-date').value || Utils.toLocalDateStr(new Date());
-            await DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate });
+            DB.addPlan(this.currentUser.id, { sport, title, plannedDistance: distance, plannedDuration: duration, intensity, note, date: planDate });
             UI.toast('计划已添加 ✅', 'success');
-            this.closePlanModal();
-            await this.renderPlans();
         }
+        this.closePlanModal();
+        // 直接从 localStorage 渲染，不等待云端同步
+        this.renderPlansLocal();
     },
     editPlan(planId) {
         const plan = DB.getPlans(this.currentUser.id).find(p => p.id === planId);
         if (plan) this.openPlanModal(plan);
     },
-    async deletePlanConfirm(planId) {
+    deletePlanConfirm(planId) {
         if (confirm('确定删除这条训练计划？')) {
-            await DB.deletePlan(this.currentUser.id, planId);
+            DB.deletePlan(this.currentUser.id, planId);
             UI.toast('已删除', 'success');
-            await this.renderPlans();
+            this.renderPlansLocal();
         }
     },
     openCheckinEditModal(checkinId) {
