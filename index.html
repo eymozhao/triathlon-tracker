@@ -3602,6 +3602,10 @@ const App = {
                 const row = document.getElementById('pc-user-select-row');
                 const isAdmin = App.currentUser && App.currentUser.isAdmin;
                 if (row) row.style.display = isAdmin ? 'block' : 'none';
+                // 非管理员自动显示自己的计划对比数据
+                if (!isAdmin) {
+                    setTimeout(() => App.renderPlanCompare(), 300);
+                }
             });
         }
     },
@@ -4985,10 +4989,11 @@ App._getPcDateRange = function() {
 App.renderPlanCompare = async function() {
     const container = document.getElementById('plan-compare-result');
     if (!container) return;
+    const isAdmin = App.currentUser && App.currentUser.isAdmin;
     container.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:20px;">正在生成对比...</div>';
 
+    try {
     // 确定要对比的用户
-    const isAdmin = App.currentUser && App.currentUser.isAdmin;
     let targetUsers;
     const selUserId = document.getElementById('pc-user-select')?.value;
     if (isAdmin && selUserId === '_all_') {
@@ -5128,6 +5133,10 @@ App.renderPlanCompare = async function() {
     }
 
     container.innerHTML = html || '<p style="color:var(--text-light);text-align:center;">当前周期无对比数据</p>';
+    } catch(e) {
+        console.error('生成对比失败:', e.message || e);
+        container.innerHTML = '<p style="color:var(--text-light);text-align:center;">⚠️ 加载失败，请刷新页面后重试</p>';
+    }
 };
 
 </script>
