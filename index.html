@@ -1595,6 +1595,22 @@ body {
 .train-dur { white-space: nowrap; color: #888; font-size: 12px; width: 50px; }
 .rest-row td { color: #bbb; }
 .train-tip { font-size: 12px; color: #777; background: #fffde7; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 10px; line-height: 1.6; }
+/* 知识库样式 */
+.train-kb-section { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #e0e0e0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.train-kb-header { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.train-kb-icon { font-size: 20px; }
+.train-kb-item { display: flex; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f5f5f5; gap: 10px; line-height: 1.6; }
+.train-kb-item:last-child { border-bottom: none; }
+.train-kb-label { font-weight: 600; color: #1976d2; min-width: 80px; font-size: 13px; flex-shrink: 0; }
+.train-kb-text { color: #333; font-size: 13px; flex: 1; }
+.train-kb-highlight { background: #e3f2fd; border-left: 3px solid #1976d2; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-top: 12px; font-size: 13px; color: #1565c0; line-height: 1.6; }
+.train-kb-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.train-kb-table th { background: #f5f5f5; padding: 6px 10px; text-align: left; font-weight: 600; color: #555; }
+.train-kb-table td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.train-kb-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.train-kb-badge.green { background: #e8f5e9; color: #2e7d32; }
+.train-kb-badge.orange { background: #fff3e0; color: #e65100; }
+.train-kb-badge.red { background: #fce4ec; color: #c62828; }
         /* 计划对比表格 */
         .plan-compare-table-wrap { overflow-x:auto; margin:12px 0; }
         .plan-compare-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -2065,6 +2081,10 @@ body {
                         <button class="train-tab-btn" data-group="trail">⛰️ 越野跑</button>
                         <button class="train-tab-btn" data-group="hyrox">🏋️ HYROX</button>
                         <button class="train-tab-btn" data-group="weight">💪 减脂</button>
+                        <button class="train-tab-btn" data-group="nutrition">🍎 补给</button>
+                        <button class="train-tab-btn" data-group="openwater">🌊 公开水域</button>
+                        <button class="train-tab-btn" data-group="recovery">💤 恢复</button>
+                        <button class="train-tab-btn" data-group="strength">🏋️ 力量</button>
                     </div>
                     <div id="training-plan-content" class="training-plan-content"></div>
                 </section>
@@ -2312,7 +2332,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '骑行+跑步 砖训（20km骑+3km跑）', duration: 75 },
                     { day: '周日', content: '休息 / 轻松游泳放松', duration: 30 }
                 ],
-                totalMins: 300, tip: '⚠️ 建立有氧基础，配速宜轻松，不追求速度'
+                totalMins: 300, tip: '⚠️ 建立有氧基础，配速宜轻松，不追求速度。遵循80/20法则：80%训练在Zone1-2低心率，20%在Zone4-5高强度——灰色地带（Zone3中等强度）是慢性疲劳的元凶'
             },
             {
                 phase: '第5-8周 · 强度提升期',
@@ -2325,7 +2345,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '砖训 骑35km+跑5km', duration: 100 },
                     { day: '周日', content: '轻松跑 6km', duration: 40 }
                 ],
-                totalMins: 435, tip: '💪 可开始加入心率区间训练，控制在Zone2-3'
+                totalMins: 435, tip: '💪 可开始加入心率区间训练，控制在Zone2-3。砖训中开始测试比赛补给：每30min补能量胶(20-30g碳水)+每15min喝水——比赛日用同样方案，不换新品'
             },
             {
                 phase: '第9-11周 · 赛前冲刺期',
@@ -2338,7 +2358,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '模拟赛 全程砖训', duration: 120 },
                     { day: '周日', content: '恢复游泳 600m 放松', duration: 25 }
                 ],
-                totalMins: 415, tip: '🔥 最高峰值训练周，注意恢复睡眠'
+                totalMins: 415, tip: '🔥 最高峰值训练周，注意恢复睡眠≥8h。赛前3天碳水加载8g/kg体重，比赛日起跑前2.5h吃早餐。赛中补给策略：骑车段每30min补能量胶+盐丸，不试新补给'
             },
             {
                 phase: '第12周 · 减量恢复期（赛前）',
@@ -2382,7 +2402,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '长骑 90km（Zone2）+ 换项跑 5km', duration: 195 },
                     { day: '周日', content: '长跑 15km（Zone2 轻松配速）', duration: 90 }
                 ],
-                totalMins: 660, tip: '加入FTP功率/心率阈值训练，骑行踏频维持85-95rpm，长距离日记得测试补给方案'
+                totalMins: 660, tip: '加入FTP功率/心率阈值训练，骑行踏频维持85-95rpm。长距离日测试比赛补给方案：每30min补能量胶(30-40g碳水)+每15min喝运动饮料(150-200ml)——赛前需在3次以上长训练中验证'
             },
             {
                 phase: '第9-12周 · 专项能力期',
@@ -2395,7 +2415,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '超级砖训 骑90km（Zone2-3）+ 跑15km', duration: 240 },
                     { day: '周日', content: '恢复游泳 1500m 轻松', duration: 45 }
                 ],
-                totalMins: 740, tip: '周六砖训是核心课，骑行后腿软跑15km是比赛模拟。每45min补一次能量胶，提前测试比赛日补给方案'
+                totalMins: 740, tip: '周六砖训是核心课，骑行后腿软跑15km是比赛模拟。每30-45min补一次能量胶(30-40g碳水)+盐丸(300-500mg钠)，提前测试比赛日补给方案。骑行踏频90-100rpm最高效'
             },
             {
                 phase: '第13-16周 · 赛前冲刺+减量',
@@ -2408,7 +2428,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '砖训减量 骑40km+跑5km（比赛配速）', duration: 100 },
                     { day: '周日', content: '第14/15周轻松骑30km，第16周：🏆 比赛日！游泳1.9km+骑90km+跑21.1km', duration: 60 }
                 ],
-                totalMins: 475, tip: '第16周减量50%：赛前3天碳水量加大（8-10g/kg体重），比赛日早餐赛前2.5h吃完。装备清单：防寒泳衣、锁鞋、号码带、能量胶6-8条、盐丸'
+                totalMins: 475, tip: '第16周减量50%：赛前3天碳水8-10g/kg体重，比赛日早餐赛前2.5h吃完。骑车段每30min补能量胶(30-40g碳水)+盐丸(300-500mg钠)，赛事饮料每15min小口喝。装备清单：防寒泳衣、锁鞋、号码带、能量胶6-8条、盐丸'
             }
         ]
     },
@@ -2452,7 +2472,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '超级砖训 骑180km（Zone2-3）+ 跑15km', duration: 390 },
                     { day: '周日', content: '恢复游泳 2000m + 按摩拉伸', duration: 60 }
                 ],
-                totalMins: 1055, tip: '⚠️ 训练量最高峰！睡眠≥9h/天，蛋白质1.8-2g/kg体重。第15周安排一次减量恢复周。砖训后30min内补充碳水+蛋白质（4:1比例）'
+                totalMins: 1055, tip: '⚠️ 训练量最高峰！睡眠≥9h/天（恢复第一优先），蛋白质1.8-2g/kg体重。第15周安排一次减量恢复周。砖训后30min内补碳水+蛋白质（4:1）。冰浴用于长课后，力量训练后避免'
             },
             {
                 phase: '第18-20周 · 减量恢复+赛周',
@@ -2465,7 +2485,7 @@ const TRAINING_PLANS = {
                     { day: '周六', content: '轻松骑 20km + 赛前准备', duration: 45 },
                     { day: '周日', content: '第18-19周：减量长骑80km+轻松跑8km；第20周：🏆 比赛日！游泳3.8km+骑180km+跑42.2km', duration: 50 }
                 ],
-                totalMins: 385, tip: '💤 减量期核心：训练量降50-60%，保持激活感。赛前3天碳水负荷（10g/kg/天）。比赛策略：游泳保守（跟游群体），骑行Zone2稳定功率不要贪快，跑步稳住配速不让崩。能量计划：骑行每30min补一次，跑步每站都补水'
+                totalMins: 385, tip: '💤 减量期核心：训练量降50-60%，保持激活感。赛前3天碳水负荷(10g/kg/天)。比赛策略：游泳保守(跟游群体)，骑行Zone2稳定功率不要贪快，跑步稳住配速不让崩。能量计划：骑车每30min补能量胶+盐丸，每小时60-90g碳水'
             }
         ]
     },
@@ -2756,6 +2776,188 @@ const TRAINING_PLANS = {
                     { day: '周日', content: '第10-11周：轻松长跑8km；第12周：🏆 比赛日！标铁=游泳1.5km+骑40km+跑10km', duration: 50 }
                 ],
                 totalMins: 363, tip: '🎯 第12周赛前3天：训练量降60%，碳水量逐步加大（米饭/面条/面包）。比赛日：早餐赛前2-2.5h吃，赛中每30-40min补能量胶。T1/T2换项区提前30min到场熟悉。首次参赛目标：安全完赛>追求速度'
+            }
+        ]
+    },
+    nutrition: {
+        type: 'knowledge',
+        title: '铁三补给与营养策略完整指南（参考British Triathlon/Triathlete.com等）',
+        phases: [
+            {
+                phase: '比赛补给核心数据',
+                items: [
+                    { label: '碳水（短距离）', text: '<标铁/冲刺> 每小时30-60g碳水化合物，来源：运动饮料、能量胶、能量咀嚼糖、香蕉' },
+                    { label: '碳水（长距离）', text: '<113/226> 每小时60-90g碳水化合物（混合葡萄糖+果糖吸收更好），每30-45min补一次' },
+                    { label: '钠摄入', text: '每小时500-1000mg，高温大量出汗时增至1500mg+。推荐盐丸或高钠运动饮料' },
+                    { label: '液体', text: '每15-20分钟喝150-250ml运动饮料，脱水2%体重=耐力下降10-20%' },
+                    { label: '热量', text: '226大铁骑行段每小时需400-600kcal，不能只靠能量胶，加入真实食物（三明治/香蕉/能量棒）' }
+                ],
+                totalMins: 0, tip: '核心原则：每小时30-90g碳水（根据比赛距离递增），每15-20min补水，钠500-1000mg/小时。赛前训练中必须完整测试比赛补给方案！'
+            },
+            {
+                phase: '赛前碳水加载（Carb Loading）',
+                items: [
+                    { label: '开始时间', text: '赛前3-4天开始，碳水摄入提升至8-10g/kg体重，同时降低训练量' },
+                    { label: '碳水选择', text: '白米饭、意面、面包、土豆（低纤维、易消化），避免高纤维全谷物（可能肠胃不适）' },
+                    { label: '赛前晚餐', text: '适量、熟悉、易消化（白米饭+鸡肉+简单意面），下午6点前吃完。❌ 不要暴饮暴食' },
+                    { label: '比赛日早餐', text: '赛前3-4h吃：碳水1-2g/kg+少量蛋白（白吐司+蜂蜜+香蕉/米饼+杏仁酱/水煮燕麦），赛前60-90min补一支能量胶' },
+                    { label: '正常现象', text: '碳水量增加后体重上升2-4磅（约1-2kg），这是糖原+水的储存，是好事不是长胖' }
+                ],
+                totalMins: 0, tip: '碳水量：赛前3天起每天8-10g/kg体重（如70kg=560-700g碳水/天）。优选白米饭/意面/面包/土豆，避免高纤维食物。赛前一天晚餐不要"吃到撑"——适量即可'
+            },
+            {
+                phase: '比赛日分段补给策略',
+                items: [
+                    { label: '游泳前', text: '下水前10min：1支能量胶+少量水。游泳中无法有效进食，依赖赛前储备' },
+                    { label: 'T1+骑车初期', text: '前15-20min胃部血液未回流，只小口喝运动饮料，不吃固体食物' },
+                    { label: '骑车段（核心窗口）', text: '每10-15min小口喝运动饮料；每30-45min一支能量胶/能量棒。均匀分散摄入，设闹钟提醒。绝对铁律：比赛日不试新东西' },
+                    { label: 'T2+跑步初期', text: '骑车最后10-15min完成最后补给；下车后第一英里（1.6km）通常腿软，慢速适应不慌' },
+                    { label: '跑步段', text: '减停固体食物，靠运动饮料+能量胶。后半程可用可乐（快速糖+咖啡因）；肠胃敏感者：水+盐片。胃罢工就停止摄入、专注完赛' },
+                    { label: '咖啡因策略', text: '长距离比赛中每隔一定时间摄入100-200mg咖啡因（一支GU约含20-40mg，部分品牌有含咖啡因版本）。提前测试耐受度' }
+                ],
+                totalMins: 0, tip: '比赛日补给铁律：①赛前训练中完整演练（长骑/长砖训时用比赛配速测试补给）②准备B计划（如果主力方案出问题，知道赛道上提供什么产品）③均匀分散摄入，不要一次性大量吃'
+            },
+            {
+                phase: '常见问题排查 + 补给品推荐',
+                items: [
+                    { label: '撞墙（Bonking）', text: '原因=糖原耗尽。预防：充分碳水加载+持续赛中补给。处理：立刻摄入快糖（可乐/能量胶），降低强度' },
+                    { label: '恶心呕吐', text: '原因=摄入过多/过快/脱水/过热。处理：停止进食，小口喝水，降低强度。预防：训练中按比赛强度练习补给方案' },
+                    { label: '抽筋', text: '原因=电解质失衡/脱水/神经肌肉疲劳。处理：减速→轻柔拉伸→补充钠+液体。预防：充足钠摄入（500-1000mg/h）+充分补水' },
+                    { label: '推荐补给品', text: '能量胶：GU Energy Gel、Maurten Gel、SIS Go Gel；电解质：Nuun片、Precision Hydration；盐丸：SaltStick；能量饮料：Gatorade Endurance、Maurten Drink Mix' }
+                ],
+                totalMins: 0, tip: '⚠️ 官方赛事通常提供特定品牌补给（如IRONMAN用Maurten/Gatorade），赛前务必了解并提前在训练中测试该品牌。个人补给随身携带（能量胶6-10条+盐丸），不依赖官方补给站'
+            }
+        ]
+    },
+    openwater: {
+        type: 'knowledge',
+        title: '公开水域游泳技术指南（参考Triathlete.com/BestTriathletes等）',
+        phases: [
+            {
+                phase: '水中定位技术（Sighting）',
+                items: [
+                    { label: '定位频率', text: '每6-8次划水定位一次；开放水域波浪大时每4-6次。不当定位=多游15%距离（1500m可能变1725m）' },
+                    { label: '阴影定位法', text: '强光眩目时看浮标在水面的阴影而非本体。案例：选手Jake McEwan在Ironman NZ利用此法缩短47秒' },
+                    { label: '借力定位', text: '在拥挤水域中，将自己的划水节奏与前方身材较高的选手对齐，借其视野导航' },
+                    { label: '训练方法', text: '泰山训练法（每3次划水抬头）、闭眼游+搭档喊方向、双侧呼吸练习、目标获取训练（搭档举不同颜色划水板）' }
+                ],
+                totalMins: 0, tip: '定位技巧直接决定游泳段成绩。每次定位抬头1秒足够，头抬太高会导致臀下沉增加阻力。建议每次训练课都练习定位技巧，养成肌肉记忆'
+            },
+            {
+                phase: '跟随游（Drafting）与出发策略',
+                items: [
+                    { label: '能量节省', text: '正确跟随游可减少21%能量消耗。脚跟跟随（距前脚0.3米）节省18%；髋部跟随（与领先者髋部平行）节省12%且视野更好' },
+                    { label: '尾流锥区', text: '必须保持在领先者髋部45°角的尾流锥区内才有效果。偏离锥区=失去跟随优势' },
+                    { label: '出发策略', text: '不要站第一排出发！跟住人群中部出发，找同配速群体。前200m保守配速让心率稳定，之后再加速找位置' },
+                    { label: '训练方法', text: '轮盘赌训练：3人一组每100m轮换领游→学会变配速不动动作；模拟出发：5人一组10×100m前75m冲刺突围' },
+                    { label: '冷水适应', text: '冷水（<18°C）会导致血管收缩削弱力量，配速变慢约12%。打腿保持25%强度即可保热，过度打腿浪费体能' }
+                ],
+                totalMins: 0, tip: '跟随游是合法且高效的比赛策略。找到配速相近的选手跟住，但保持45°角位置避免碰撞。出发时跑入水中5-10步再跳入/海豚跳可节省启动体能'
+            },
+            {
+                phase: '防寒胶衣（Wetsuit）使用技巧',
+                items: [
+                    { label: '穿法纠正', text: '约70%年龄组选手穿着错误！胶衣提升臀部但过度转肩会导致肩部下沉。公开水域肩部旋转角50°（泳池30°），用于劈开波浪' },
+                    { label: '合身检查', text: '颈部密封处应能滑入2根手指（防勒脖子窒息感）；腋下不能起皱（涂抹防磨膏）；胸背不能有松弛空腔（增加水阻）' },
+                    { label: '起水脱衣', text: '赛前在山坡上练习边跑边脱10次。技巧：跑到换项区途中先拉开后背拉链→一只手拽出→边跑边褪至腰→到换项区坐下一脚踩脱' },
+                    { label: '训练要领', text: '失重肩膀训练：4×50m专注将胶衣浮力推向臀部；每周至少穿胶衣游1次（提前适应压迫感和浮力改变）' }
+                ],
+                totalMins: 0, tip: '三届世界冠军Emma Snowsill提示："如果脖子磨破了，说明头抬太高了。眼睛应该'扫描海床'而非地平线。"胶衣浮力越大越需要调整身体位置，否则腰臀过高导致打腿无力'
+            },
+            {
+                phase: '克服开放水域焦虑 + 弯道技巧',
+                items: [
+                    { label: '赛前接地法', text: '5-4-3-2-1法：说出5个看到的景象+4个听到的声音+3种身体感觉+2种可闻到的气味+1种可尝到的味道（激活感官而非焦虑大脑）' },
+                    { label: '赛中恐慌应对', text: '10秒冰山技巧：翻仰→仰面呼吸→深呼气10秒（触发哺乳动物潜水反射降低心率）。焦虑高峰仅持续90秒，撑过去后皮质醇降60%' },
+                    { label: '呛水处理', text: '咳嗽划水法：呛水时在划水的腋窝中闷咳，不让竞争对手看到你的慌乱。切换为蛙泳2-3次调整呼吸' },
+                    { label: '弯道技巧', text: '绕过浮标时改用外臂快速划水+内臂小幅推水（划桨式转弯），身体向弯心轻微倾斜。盲转训练：搭档用浮棒轻击改变你的方向' }
+                ],
+                totalMins: 0, tip: '焦虑是公开水域最常见的障碍，不是你的错。每周至少1次开放水域训练（湖/海），熟练后焦虑自然消退。救援式泳姿（抬头蛙/仰漂）是安全底牌——随时随地可切换休息'
+            }
+        ]
+    },
+    recovery: {
+        type: 'knowledge',
+        title: '铁三恢复科学完整方案（参考TriathlonUniverse/TriworldHub等研究）',
+        phases: [
+            {
+                phase: '恢复优先级排序（科学证据强度排名）',
+                items: [
+                    { label: '🥇 第1优先：睡眠', text: '7-9h+/晚，凉爽黑暗房间16-19°C，固定起床时间含周末。连续2周睡6h=损害等同24h完全睡眠剥夺' },
+                    { label: '🥈 第2优先：训练后营养', text: '碳水0.8g/kg+蛋白质0.3-0.4g/kg，训练后30-60min内摄入（4:1比例）。睡前30min补充40g酪蛋白→夜间肌肉蛋白合成提高22%' },
+                    { label: '🥉 第3优先：冷疗（冰浴）', text: '10-15°C冷水浸泡10-15min，长跑/大容量游泳后使用。⚠️ 力量训练后避免（抑制mTOR合成代谢信号，削弱增肌效果！）' },
+                    { label: '4. 压缩装备', text: '梯度压缩袜/裤在长跑后减少自觉酸痛效果好但科学效应为小到中等，最佳使用场景：长途/赛后/飞机旅行' },
+                    { label: '5. 按摩/泡沫轴', text: '运动后按摩减少DOMS约30%，主要靠神经/心理机制。训练前用泡沫轴改善活动度，训练后专业运动按摩>自我按摩' }
+                ],
+                totalMins: 0, tip: '太多人把恢复优先级搞反了——花6000元买压缩靴却只花200元在睡眠上。恢复工具只是最后5%，先睡好+吃好+训练负荷管理，再考虑其他'
+            },
+            {
+                phase: '训练后黄金恢复窗口（30-60分钟）',
+                items: [
+                    { label: '碳水+蛋白配比', text: '碳水:蛋白=3:1至4:1。70kg选手示例：56g碳水(约1根香蕉+半碗米饭)+17-21g蛋白(约250ml牛奶+1个鸡蛋)' },
+                    { label: '肌酸补充', text: '每日3-5g一水肌酸——不仅提升功率输出，还能减少训练引起的肌肉损伤标志物。便宜、安全、研究最充分' },
+                    { label: '夜间恢复', text: '睡前30分钟摄入40g酪蛋白（如慢消化酪蛋白粉或250g希腊酸奶），夜间肌肉蛋白合成率提高约22%' },
+                    { label: '一天两练选手', text: '黄金窗口期更加关键！第一次训练后立即补充→为第二次训练储备糖原。两练间隔<4h时液体碳水源比固体更好吸收' }
+                ],
+                totalMins: 0, tip: '恢复营养不是"吃够热量就行"——时机和比例同样重要。最易被忽视的是训练后第一餐和睡前蛋白，这两者直接决定次日训练质量'
+            },
+            {
+                phase: '睡眠优化实操指南',
+                items: [
+                    { label: '室温管理', text: '卧室保持16-19°C（60-66°F），核心体温需降1-2°C才能启动深度睡眠。夏季睡前30min洗温水澡（身体遇冷后体温降得更快）' },
+                    { label: '时间一致性', text: '固定起床时间（含周末！），调节昼夜节律→影响皮质醇/褪黑素/胰岛素敏感性。周末睡懒觉=每周两次时差反应' },
+                    { label: '光线管理', text: '睡前90min避免屏幕蓝光（戴琥珀色眼镜或手机开启夜间模式）。卧室全黑（遮光窗帘/眼罩），避免任何LED指示灯' },
+                    { label: '运动时间', text: '高强度训练至少在睡前3h结束，否则核心体温过高影响入睡。但低强度恢复训练（如散步/轻松游泳）有助于睡眠' }
+                ],
+                totalMins: 0, tip: '斯坦福研究：篮球运动员将睡眠延长至10h/晚后，冲刺时间、反应时间和投篮准确率均显著改善——无需额外训练。你的身体在睡着时才会真正变强'
+            },
+            {
+                phase: '冰浴/冷疗科学使用指南',
+                items: [
+                    { label: '何时使用', text: '✅ 长跑(>20km)后、大容量游泳课后、比赛周/多日赛期间、高温比赛后。利用其减轻DOMS和疲劳感的效果' },
+                    { label: '何时避免', text: '❌ 力量训练后、功率训练后、增肌期——冷水抑制炎症窗口（炎症=肌肉适应信号），长期使用降低力量和肌肉增长' },
+                    { label: '实操参数', text: '水温10-15°C，浸泡10-15分钟（不超过20分钟）。先淋温水适应→快速全身浸入→头保持在水面上→出水后自然回温不要立即热水澡' },
+                    { label: '替代方案', text: '如果无法冰浴：冷水淋浴（10-15°C，3-5min）、冰袋敷大腿、穿压缩装备+抬高腿20min。效果虽不如冰浴但仍有恢复作用' }
+                ],
+                totalMins: 0, tip: '冰浴是"战略性工具"而非"日常习惯"。赛后恢复用=好；力量训练后用=坏。最简单的规则：有氧训练后可以冰，力量/强度训练后不冰'
+            }
+        ]
+    },
+    strength: {
+        type: 'knowledge',
+        title: '铁三力量训练指南（参考MarathonHandbook/AllTriathlon等）',
+        phases: [
+            {
+                phase: '核心训练动作',
+                items: [
+                    { label: '深蹲 (Squat)', text: '3×8-12次。增强骑行踩踏发力、跑步蹬地力量和游泳出发起跳。保持核心收紧、膝盖不内扣' },
+                    { label: '硬拉 (Deadlift)', text: '3×8-10次。加强后链（腘绳肌+臀肌+下背）——骑行爬坡和跑步驱动力的关键肌群。用壶铃或杠铃' },
+                    { label: '平板支撑 (Plank)', text: '3×45-60秒。稳定核心→游泳划水效率、骑行气动姿势维持、跑步体态防塌。进阶：单腿/单臂支撑' },
+                    { label: '俯卧撑/卧推', text: '3×10-15次。游泳推水力量直接相关，同时稳定上半身在骑行TT姿势中的支撑' },
+                    { label: '单腿蹲 (Bulgarian Split Squat)', text: '3×8次/边。纠正左右肌力不平衡、增强跑步单腿稳定性、模拟骑行单边发力' },
+                    { label: '划船动作 (Rows)', text: '3×10-12次。强化背阔肌和菱形肌——游泳抓水和拉水阶段核心肌群。哑铃/弹力带/TRX均可' }
+                ],
+                totalMins: 0, tip: '基础动作优先于复杂动作。每周选4-5个动作，45-60min完成。训练前动态热身（Jumping Jacks+Leg Swings），训练后静态拉伸'
+            },
+            {
+                phase: '训练周期安排',
+                items: [
+                    { label: '基础期 (Base)', text: '每周2-3次力量训练，重量较大（8-12RM），打好力量基础。此时低强度有氧为主，举重产生的酸痛不影响有氧训练' },
+                    { label: '强化期 (Build)', text: '每周1-2次，转为维持模式。重量递减，更注重爆发力和专项转换（如深蹲跳、药球抛掷）' },
+                    { label: '赛前/减量 (Taper)', text: '每周1次或完全停止，只用轻量激活（50%重量×5-8次），保持神经肌肉连接而不产生疲劳' },
+                    { label: '赛季后 (Off-season)', text: '每周3-4次力量训练，增加重量和训练量，是全年力量增长的黄金窗口期。重点增肌+纠正肌力不平衡' }
+                ],
+                totalMins: 0, tip: '力量训练安排在硬训练日当天（而非恢复日），遵循"硬上硬"原则——让恢复日真正恢复。优先在游泳或跑步训练后做力量，避免影响骑行功率训练'
+            },
+            {
+                phase: '伤病预防专项',
+                items: [
+                    { label: '肩袖训练', text: '弹力带外旋(3×15)、侧平举(3×12)、俯身飞鸟(3×12)。预防游泳肩（肩峰撞击）——铁三最常见的过劳伤' },
+                    { label: '臀中肌激活', text: '蚌式开合(3×15/边)、侧卧抬腿(3×12/边)、弹力带螃蟹步。跑步膝/IT Band综合征的核心预防手段' },
+                    { label: '核心抗旋转', text: 'Pallof Press(3×10/边)、死虫式(3×10/边)、农夫行走(3×40m)。保护在骑行TT姿势下的腰椎稳定性' },
+                    { label: '足踝强化', text: '单腿站平衡(3×30秒/边)、提踵(3×20)、赤脚跑短距。增强跑步落地稳定性和开放性水域起水后的本体感觉' }
+                ],
+                totalMins: 0, tip: '每周至少1次伤病预防训练（15-20min即可）。肩袖+臀中肌+核心抗旋转三项必做——研究显示这3项能降低铁三过劳伤风险约40%'
             }
         ]
     }
@@ -5025,27 +5227,50 @@ const App = {
         document.querySelectorAll('.train-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.group === group));
 
         const content = document.getElementById('training-plan-content');
-        content.innerHTML = `
-            <div class="train-plan-title">${plan.title}</div>
-            ${plan.phases.map(phase => `
-                <div class="train-phase">
-                    <div class="train-phase-header">${phase.phase}
-                        <span class="train-weekly-total">周训练量约 ${Utils.formatDuration(phase.totalMins)}</span>
+        
+        // 知识库类型：用卡片+列表格式渲染
+        if (plan.type === 'knowledge') {
+            content.innerHTML = `
+                <div class="train-plan-title">${plan.title}</div>
+                ${plan.phases.map(phase => `
+                    <div class="train-kb-section">
+                        <div class="train-kb-header">
+                            <span class="train-kb-icon">📌</span>${phase.phase}
+                        </div>
+                        ${(phase.items || []).map(item => `
+                            <div class="train-kb-item">
+                                <span class="train-kb-label">${item.label}</span>
+                                <span class="train-kb-text">${item.text}</span>
+                            </div>
+                        `).join('')}
+                        <div class="train-tip">${phase.tip}</div>
                     </div>
-                    <table class="train-week-table">
-                        <thead><tr><th>训练日</th><th>训练内容</th><th>时长</th></tr></thead>
-                        <tbody>
-                            ${phase.weeks.map(w => `<tr class="${w.duration === 0 ? 'rest-row' : ''}">
-                                <td class="train-day">${w.day}</td>
-                                <td class="train-content">${w.content}</td>
-                                <td class="train-dur">${w.duration > 0 ? Utils.formatDuration(w.duration) : '休息'}</td>
-                            </tr>`).join('')}
-                        </tbody>
-                    </table>
-                    <div class="train-tip">${phase.tip}</div>
-                </div>
-            `).join('')}
-        `;
+                `).join('')}
+            `;
+        } else {
+            // 训练计划类型：用表格格式渲染
+            content.innerHTML = `
+                <div class="train-plan-title">${plan.title}</div>
+                ${plan.phases.map(phase => `
+                    <div class="train-phase">
+                        <div class="train-phase-header">${phase.phase}
+                            <span class="train-weekly-total">周训练量约 ${Utils.formatDuration(phase.totalMins)}</span>
+                        </div>
+                        <table class="train-week-table">
+                            <thead><tr><th>训练日</th><th>训练内容</th><th>时长</th></tr></thead>
+                            <tbody>
+                                ${phase.weeks.map(w => `<tr class="${w.duration === 0 ? 'rest-row' : ''}">
+                                    <td class="train-day">${w.day}</td>
+                                    <td class="train-content">${w.content}</td>
+                                    <td class="train-dur">${w.duration > 0 ? Utils.formatDuration(w.duration) : '休息'}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                        <div class="train-tip">${phase.tip}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
 
         // 绑定Tab切换
         document.querySelectorAll('.train-tab-btn').forEach(btn => {
