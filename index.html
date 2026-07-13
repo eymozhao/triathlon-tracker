@@ -3281,10 +3281,18 @@ const DB = {
             const users = this._getCache('tri_users', []);
             return users.find(u => u.username === username) || null;
         }
-        try {
-            const res = await cloudDB.collection('tri_users').where({ username }).limit(1).get();
-            return res.data[0] || null;
-        } catch(e) { console.warn('查询用户失败', e); return null; }
+        // 带超时的云端查询（8秒超时，避免卡死）
+        const queryPromise = cloudDB.collection('tri_users').where({ username }).limit(1).get();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('查询超时(8s)，请检查网络')), 8000)
+        );
+        const res = await Promise.race([queryPromise, timeoutPromise]);
+        return res.data[0] || null;
+    },
+    // 安全版本：出错时返回 null 而非抛异常（用于注册查重等场景）
+    async findUserSafe(username) {
+        try { return await this.findUser(username); }
+        catch(e) { console.warn('findUserSafe 查询失败:', e.message); return null; }
     },
     async createUser(userData) {
         if (!cloudDB) {
@@ -3994,21 +4002,25 @@ const App = {
         else { localStorage.removeItem('tri_remembered_username'); }
 
         try {
-            // 尝试云端查询，最多重试2次
+            // 尝试云端查询，最多重试3次（含超时保护）
             let user = null;
             let cloudError = null;
-            for (let attempt = 0; attempt < 2; attempt++) {
+            for (let attempt = 0; attempt < 3; attempt++) {
                 try {
                     user = await DB.findUser(username);
-                    if (user) break;
+                    if (user) break; // 查到了就不再重试
+                    if (attempt < 2) { // 没查到但没报错，可能是网络抖动导致的假null，等1秒再试
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
                 } catch(e) {
                     cloudError = e;
-                    if (attempt === 0) await new Promise(r => setTimeout(r, 1000)); // 等1秒再重试
+                    console.warn('登录查询第' + (attempt+1) + '次失败:', e.message);
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 1500)); // 失败后等1.5秒再重试
                 }
             }
             
             if (!user) {
-                // 云端查不到，尝试本地缓存
+                // 云端查不到，尝试本地缓存（离线模式降级）
                 const users = DB._getCache('tri_users', []);
                 user = users.find(u => u.username === username &&
                     ((u.passwordHash && u.passwordHash === pwdHash) || (u.password && u.password === password)));
@@ -4018,7 +4030,10 @@ const App = {
                     return;
                 }
                 if (cloudError) {
-                    this._showLoginError('网络连接失败，请检查网络后重试');
+                    const errMsg = cloudError.message.includes('超时') 
+                        ? '连接超时，请检查网络后重试' 
+                        : '网络连接失败，请检查网络后重试';
+                    this._showLoginError(errMsg);
                 } else {
                     this._showLoginError('用户名不存在，请先注册');
                 }
@@ -4105,7 +4120,7 @@ const App = {
         if (password.length < 4) { UI.toast('密码至少4个字符', 'error'); return; }
         UI.toast('注册中...', 'info');
         try {
-            const existing = await DB.findUser(username);
+            const existing = await DB.findUserSafe(username);
             if (existing) { UI.toast('用户名已存在', 'error'); return; }
         } catch(e) {
             const users = DB._getCache('tri_users', []);
