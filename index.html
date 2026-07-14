@@ -6,7 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#4CAF50">
-    <title>铁人三项训练打卡</title>
+    <meta name="description" content="铁人三项训练打卡系统 - 记录每一次突破，游泳/骑行/跑步训练数据追踪、计划管理、团队排行榜">
+    <meta name="keywords" content="铁人三项,triathlon,训练打卡,游泳,骑行,跑步,训练计划">
+    <link rel="canonical" href="https://triathlontraining.cn/">
+    <title>铁人三项训练打卡 | Triathlon Training</title>
     <!-- 腾讯云开发 Web SDK -->
     <!-- 腾讯云开发 Web SDK v2 (新版) -->
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js" onerror="_sdkLoadFallback()"></script>
@@ -1688,6 +1691,12 @@ body {
 .form-select { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #fff; }
 .group-hint { font-size: 12px; color: #888; margin-top: 5px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; }
 .reg-hint { font-size: 13px; color: #888; text-align: center; margin: 0 0 10px; }
+.domain-badge { font-size: 12px; color: #aaa; text-align: center; margin: 16px 0 0; letter-spacing: 0.5px; }
+.app-footer { text-align: center; padding: 20px 0 10px; margin-top: 20px; border-top: 1px solid #eee; }
+.app-footer p { font-size: 13px; color: #888; margin: 2px 0; }
+.app-footer a { color: #1976d2; text-decoration: none; }
+.app-footer a:hover { text-decoration: underline; }
+.app-footer-sub { font-size: 11px !important; color: #bbb !important; }
 
 /* 分组信息卡 */
 .group-info-card { background: linear-gradient(135deg, #1565c0, #1976d2); color: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
@@ -1862,6 +1871,7 @@ body {
                     <p class="reg-hint">💡 注册后登录即可设置训练组别、处罚方式等</p>
                     <button type="submit" class="btn-primary">注册</button>
                 </form>
+                <p class="domain-badge">🌐 triathlontraining.cn</p>
             </div>
         </div>
 
@@ -2263,6 +2273,10 @@ body {
                         <button class="train-tab-btn" data-group="strength">🏋️ 力量</button>
                     </div>
                     <div id="training-plan-content" class="training-plan-content"></div>
+                    <footer class="app-footer">
+                        <p>🏊🚴🏃 铁人三项训练打卡 · <a href="https://triathlontraining.cn">triathlontraining.cn</a></p>
+                        <p class="app-footer-sub">记录每一次突破 · Powered by Tencent CloudBase</p>
+                    </footer>
                 </section>
             </main>
         </div>
@@ -2448,7 +2462,8 @@ body {
 
 <script>
 // ========== 云开发配置 ==========
-// 环境ID：cloudbase-8g61yvl6a9f6f10d
+// 域名：https://triathlontraining.cn
+// 环境ID：eymozhao-8g63fctk0214beb5
 // ⚠️ 重要：需要在云开发控制台为以下集合设置安全规则（允许匿名用户读写）：
 //   tri_users:    { "read": true, "write": true }
 //   tri_checkins: { "read": true, "write": true }
