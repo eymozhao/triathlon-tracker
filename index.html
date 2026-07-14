@@ -9,7 +9,28 @@
     <title>铁人三项训练打卡</title>
     <!-- 腾讯云开发 Web SDK -->
     <!-- 腾讯云开发 Web SDK v2 (新版) -->
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js"></script>
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js" onerror="_sdkLoadFallback()"></script>
+    <script>
+    // SDK 加载失败回退：尝试备用 CDN 和动态重试
+    let _sdkLoadAttempts = 0;
+    const _sdkFallbackUrls = [
+        'https://unpkg.com/@cloudbase/js-sdk@2.17.3/dist/cloudbase.full.js',
+        'https://cdn.jsdelivr.net/npm/@cloudbase/js-sdk@2.17.3/dist/cloudbase.full.js'
+    ];
+    function _sdkLoadFallback() {
+        if (_sdkLoadAttempts < _sdkFallbackUrls.length) {
+            const url = _sdkFallbackUrls[_sdkLoadAttempts];
+            console.warn('⚠️ CloudBase SDK 主CDN加载失败，尝试备用CDN:', url);
+            const s = document.createElement('script');
+            s.src = url;
+            s.onerror = () => { _sdkLoadAttempts++; _sdkLoadFallback(); };
+            s.onload = () => { console.log('✅ CloudBase SDK 备用CDN加载成功'); };
+            document.head.appendChild(s);
+        } else {
+            console.error('❌ 所有CDN均加载失败，将使用离线模式');
+        }
+    }
+    </script>
 <style>
 * {
     margin: 0;
@@ -3167,62 +3188,84 @@ async function initCloud() {
     }
     cloudDiag.sdk = 'cloudbase.full.js v2.17.3';
     
-    try {
-        cloudDiag.stage = '初始化SDK...';
-        _renderCloudDiag();
-        console.log('🔄 正在连接云开发环境:', CLOUD_ENV_ID);
-        cloudApp = SDK.init({ env: CLOUD_ENV_ID });
-        cloudAuth = cloudApp.auth({ persistence: 'local' });
+    // 带超时和重试的初始化逻辑
+    for (let initAttempt = 0; initAttempt < 3; initAttempt++) {
+        try {
+            cloudDiag.stage = initAttempt > 0 ? `初始化SDK(重试${initAttempt})...` : '初始化SDK...';
+            _renderCloudDiag();
+            console.log('🔄 正在连接云开发环境:', CLOUD_ENV_ID, initAttempt > 0 ? `(第${initAttempt+1}次尝试)` : '');
+            
+            cloudApp = SDK.init({ env: CLOUD_ENV_ID });
+            cloudAuth = cloudApp.auth({ persistence: 'local' });
 
-        // 匿名登录
-        cloudDiag.stage = '匿名登录...';
-        _renderCloudDiag();
-        const loginState = await cloudAuth.getLoginState();
-        if (!loginState) {
-            console.log('🔑 执行匿名登录...');
-            const signInRes = await cloudAuth.signInAnonymously();
-            if (signInRes && signInRes.error) {
-                throw new Error('匿名登录失败: ' + (signInRes.error.message || JSON.stringify(signInRes.error)));
+            // 匿名登录（带超时保护，15秒超时）
+            cloudDiag.stage = '匿名登录...';
+            _renderCloudDiag();
+            const loginStatePromise = cloudAuth.getLoginState();
+            const loginState = await Promise.race([
+                loginStatePromise,
+                new Promise((_, rej) => setTimeout(() => rej(new Error('获取登录态超时(15s)')), 15000))
+            ]);
+            if (!loginState) {
+                console.log('🔑 执行匿名登录...');
+                const signInPromise = cloudAuth.signInAnonymously();
+                const signInRes = await Promise.race([
+                    signInPromise,
+                    new Promise((_, rej) => setTimeout(() => rej(new Error('匿名登录超时(15s)')), 15000))
+                ]);
+                if (signInRes && signInRes.error) {
+                    throw new Error('匿名登录失败: ' + (signInRes.error.message || JSON.stringify(signInRes.error)));
+                }
+                console.log('✅ 云开发匿名登录成功');
+            } else {
+                console.log('✅ 云开发已登录，loginType:', loginState.loginType);
             }
-            console.log('✅ 云开发匿名登录成功');
-        } else {
-            console.log('✅ 云开发已登录，loginType:', loginState.loginType);
+
+            cloudDB = cloudApp.database();
+            cloudDiag.connected = true;
+            cloudDiag.stage = '';
+            
+            // 验证各集合的访问权限和数据量（带超时）
+            cloudDiag.stage = '检查数据库...';
+            _renderCloudDiag();
+            const dbCheckTimeout = (promise, label) => Promise.race([
+                promise,
+                new Promise((_, rej) => setTimeout(() => rej(new Error(label + '超时')), 8000))
+            ]);
+            try {
+                const usersRes = await dbCheckTimeout(cloudDB.collection('tri_users').limit(100).get(), '用户表');
+                cloudDiag.users = usersRes.data ? usersRes.data.length : 0;
+            } catch(e) { cloudDiag.error += ' users表失败:' + (e.message||'').substring(0,30); }
+            try {
+                const ckRes = await dbCheckTimeout(cloudDB.collection('tri_checkins').limit(500).get(), '打卡表');
+                cloudDiag.checkins = ckRes.data ? ckRes.data.length : 0;
+            } catch(e) { cloudDiag.error += ' 打卡表失败:' + (e.message||'').substring(0,30); }
+            try {
+                const plRes = await dbCheckTimeout(cloudDB.collection('tri_plans').limit(500).get(), '计划表');
+                cloudDiag.plans = plRes.data ? plRes.data.length : 0;
+            } catch(e) { cloudDiag.error += ' 计划表失败:' + (e.message||'').substring(0,30); }
+            cloudDiag.stage = '';
+
+            console.log('✅ 云开发初始化成功 | 用户:', cloudDiag.users, '打卡:', cloudDiag.checkins, '计划:', cloudDiag.plans);
+            _updateCloudStatus(true, '云端已连接');
+            _renderCloudDiag();
+            return true;
+        } catch(e) {
+            console.warn('❌ 云开发初始化失败(第' + (initAttempt+1) + '次):', e.message || e);
+            cloudDiag.error = (e.message || '未知错误').substring(0, 100);
+            cloudDiag.stage = '';
+            cloudDB = null;
+            if (initAttempt < 2) {
+                cloudDiag.stage = '3秒后重试...';
+                _renderCloudDiag();
+                await new Promise(r => setTimeout(r, 3000)); // 等3秒再重试
+            }
         }
-
-        cloudDB = cloudApp.database();
-        cloudDiag.connected = true;
-        cloudDiag.stage = '';
-        
-        // 验证各集合的访问权限和数据量
-        cloudDiag.stage = '检查数据库...';
-        _renderCloudDiag();
-        try {
-            const usersRes = await cloudDB.collection('tri_users').limit(100).get();
-            cloudDiag.users = usersRes.data ? usersRes.data.length : 0;
-        } catch(e) { cloudDiag.error += ' users表失败:' + (e.message||'').substring(0,30); }
-        try {
-            const ckRes = await cloudDB.collection('tri_checkins').limit(500).get();
-            cloudDiag.checkins = ckRes.data ? ckRes.data.length : 0;
-        } catch(e) { cloudDiag.error += ' 打卡表失败:' + (e.message||'').substring(0,30); }
-        try {
-            const plRes = await cloudDB.collection('tri_plans').limit(500).get();
-            cloudDiag.plans = plRes.data ? plRes.data.length : 0;
-        } catch(e) { cloudDiag.error += ' 计划表失败:' + (e.message||'').substring(0,30); }
-        cloudDiag.stage = '';
-
-        console.log('✅ 云开发初始化成功 | 用户:', cloudDiag.users, '打卡:', cloudDiag.checkins, '计划:', cloudDiag.plans);
-        _updateCloudStatus(true, '云端已连接');
-        _renderCloudDiag();
-        return true;
-    } catch(e) {
-        console.warn('❌ 云开发初始化失败:', e.message || e);
-        cloudDiag.error = (e.message || '未知错误').substring(0, 100);
-        cloudDiag.stage = '';
-        cloudDB = null;
-        _updateCloudStatus(false, '初始化失败');
-        _renderCloudDiag();
-        return false;
     }
+    // 3次都失败了，进入离线模式
+    _updateCloudStatus(false, '初始化失败(已重试3次)');
+    _renderCloudDiag();
+    return false;
 }
 
 // 渲染登录页的云端诊断面板
