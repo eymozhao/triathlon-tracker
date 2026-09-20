@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#4CAF50">
-    <meta name="description" content="铁人三项训练打卡系统 - 记录每一次突破，游泳/骑行/跑步训练数据追踪、计划管理、团队排行榜">
+    <meta name="theme-color" content="#0D9488">
+    <meta name="description" content="铁三训练营 - 记录每一次训练，游泳/骑行/跑步训练数据追踪、计划管理、团队排行榜">
     <meta name="keywords" content="铁人三项,triathlon,训练打卡,游泳,骑行,跑步,训练计划">
     <link rel="canonical" href="https://triathlontraining.cn/">
-    <title>铁人三项训练打卡 | Triathlon Training</title>
+    <title>铁三训练营 | Triathlon Training</title>
     <!-- 腾讯云开发 Web SDK -->
     <!-- 腾讯云开发 Web SDK v2 (新版) -->
     <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js" onerror="_sdkLoadFallback()"></script>
@@ -42,18 +42,19 @@
 }
 
 :root {
-    --primary: #4CAF50;
-    --primary-dark: #388E3C;
-    --secondary: #FF9800;
+    --primary: #0D9488;
+    --primary-dark: #0F766E;
+    --secondary: #F97316;
     --danger: #f44336;
-    --bg: #f5f5f5;
+    --bg: #F0F2F5;
     --card: #ffffff;
-    --text: #333333;
-    --text-light: #666666;
-    --border: #e0e0e0;
-    --swim-color: #2196F3;
-    --bike-color: #FF9800;
-    --run-color: #E91E63;
+    --text: #0F172A;
+    --text-light: #64748B;
+    --border: #E2E8F0;
+    --swim-color: #3B82F6;
+    --bike-color: #F97316;
+    --run-color: #22C55E;
+    --other-color: #8B5CF6;
 }
 
 body {
@@ -84,7 +85,30 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(170deg, #F0FDFA 0%, #FFFFFF 45%, #EFF6FF 100%);
+}
+
+/* 品牌流动色块 — 与铁三训练营小程序一致的视觉语言 */
+#auth-page::before {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 16% 14%, rgba(13,148,136,.34), transparent 42%),
+        radial-gradient(circle at 86% 16%, rgba(59,130,246,.28), transparent 40%),
+        radial-gradient(circle at 18% 80%, rgba(34,197,94,.26), transparent 42%),
+        radial-gradient(circle at 84% 84%, rgba(249,115,22,.24), transparent 40%),
+        radial-gradient(circle at 52% 50%, rgba(20,184,166,.20), transparent 55%);
+    filter: blur(10px);
+    animation: authBlobFloat 18s cubic-bezier(0.65,0,0.35,1) infinite alternate;
+}
+@keyframes authBlobFloat {
+    from { transform: scale(1) translate(0, 0); }
+    to   { transform: scale(1.12) translate(2%, -2%); }
 }
 
 #auth-page.active {
@@ -92,12 +116,14 @@ body {
 }
 
 .auth-container {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 400px;
     background: var(--card);
     border-radius: 16px;
     padding: 30px 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 40px rgba(15,23,42,0.12);
 }
 
 .logo {
@@ -282,58 +308,58 @@ body {
 }
 /* 选中状态 - 游泳（蓝） */
 .plan-sport-btn.active[data-sport="swim"] {
-    border-color: #1976d2;
-    background: rgba(25,118,210,0.08);
-    box-shadow: 0 0 0 3px rgba(25,118,210,0.18);
+    border-color: #3B82F6;
+    background: rgba(59,130,246,0.08);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
 }
 .plan-sport-btn.active[data-sport="swim"] .psb-icon {
-    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(25,118,210,0.4));
+    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(59,130,246,0.4));
     transform: scale(1.15);
 }
 .plan-sport-btn.active[data-sport="swim"] .psb-name {
-    color: #1565c0;
+    color: #2563EB;
     font-weight: 700;
 }
 /* 选中状态 - 骑行（橙） */
 .plan-sport-btn.active[data-sport="bike"] {
-    border-color: #e65100;
-    background: rgba(230,81,0,0.08);
-    box-shadow: 0 0 0 3px rgba(230,81,0,0.18);
+    border-color: #F97316;
+    background: rgba(249,115,22,0.08);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.18);
 }
 .plan-sport-btn.active[data-sport="bike"] .psb-icon {
-    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(230,81,0,0.4));
+    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(249,115,22,0.4));
     transform: scale(1.15);
 }
 .plan-sport-btn.active[data-sport="bike"] .psb-name {
-    color: #bf360c;
+    color: #C2410C;
     font-weight: 700;
 }
-/* 选中状态 - 跑步（红/粉） */
+/* 选中状态 - 跑步（绿） */
 .plan-sport-btn.active[data-sport="run"] {
-    border-color: #c62828;
-    background: rgba(198,40,40,0.07);
-    box-shadow: 0 0 0 3px rgba(198,40,40,0.18);
+    border-color: #22C55E;
+    background: rgba(34,197,94,0.08);
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
 }
 .plan-sport-btn.active[data-sport="run"] .psb-icon {
-    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(198,40,40,0.4));
+    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(34,197,94,0.4));
     transform: scale(1.15);
 }
 .plan-sport-btn.active[data-sport="run"] .psb-name {
-    color: #b71c1c;
+    color: #15803D;
     font-weight: 700;
 }
-/* 选中状态 - 其他（绿） */
+/* 选中状态 - 其他（紫） */
 .plan-sport-btn.active[data-sport="other"] {
-    border-color: #2e7d32;
-    background: rgba(46,125,50,0.08);
-    box-shadow: 0 0 0 3px rgba(46,125,50,0.18);
+    border-color: #8B5CF6;
+    background: rgba(139,92,246,0.08);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
 }
 .plan-sport-btn.active[data-sport="other"] .psb-icon {
-    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(46,125,50,0.4));
+    filter: grayscale(0%) opacity(1) drop-shadow(0 2px 4px rgba(139,92,246,0.4));
     transform: scale(1.15);
 }
 .plan-sport-btn.active[data-sport="other"] .psb-name {
-    color: #1b5e20;
+    color: #6D28D9;
     font-weight: 700;
 }
 /* Step 2 顶部已选运动确认条 */
@@ -347,10 +373,10 @@ body {
     font-weight: 600;
     font-size: 15px;
 }
-.plan-sport-confirm-bar[data-sport="swim"] { background: rgba(25,118,210,0.1); color: #1565c0; }
-.plan-sport-confirm-bar[data-sport="bike"] { background: rgba(230,81,0,0.1); color: #bf360c; }
-.plan-sport-confirm-bar[data-sport="run"]  { background: rgba(198,40,40,0.08); color: #b71c1c; }
-.plan-sport-confirm-bar[data-sport="other"]{ background: rgba(46,125,50,0.08); color: #1b5e20; }
+.plan-sport-confirm-bar[data-sport="swim"] { background: rgba(59,130,246,0.1); color: #2563EB; }
+.plan-sport-confirm-bar[data-sport="bike"] { background: rgba(249,115,22,0.1); color: #C2410C; }
+.plan-sport-confirm-bar[data-sport="run"]  { background: rgba(34,197,94,0.1); color: #15803D; }
+.plan-sport-confirm-bar[data-sport="other"]{ background: rgba(139,92,246,0.1); color: #6D28D9; }
 .plan-sport-confirm-bar .psb-icon { font-size: 24px; filter: none; }
 /* Step 2 底部操作按钮 */
 .plan-step2-actions {
@@ -364,7 +390,7 @@ body {
 .btn-text {
     background: none;
     border: none;
-    color: var(--text-light);
+    color: rgba(255,255,255,0.92);
     font-size: 14px;
     cursor: pointer;
 }
@@ -382,12 +408,12 @@ body {
 .header {
     position: sticky;
     top: 0;
-    background: var(--card);
+    background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
     padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(13,148,136,0.25);
     z-index: 100;
 }
 
@@ -397,7 +423,7 @@ body {
 
 .header-center {
     font-size: 14px;
-    color: var(--text-light);
+    color: rgba(255,255,255,0.92);
 }
 
 .tab-nav {
@@ -487,22 +513,22 @@ body {
 
 .sport-btn.active {
     border-color: var(--primary);
-    background: rgba(76, 175, 80, 0.05);
+    background: rgba(13, 148, 136, 0.06);
 }
 
 .sport-btn[data-sport="swim"].active {
     border-color: var(--swim-color);
-    background: rgba(33, 150, 243, 0.05);
+    background: rgba(59, 130, 246, 0.06);
 }
 
 .sport-btn[data-sport="bike"].active {
     border-color: var(--bike-color);
-    background: rgba(255, 152, 0, 0.05);
+    background: rgba(249, 115, 22, 0.06);
 }
 
 .sport-btn[data-sport="run"].active {
     border-color: var(--run-color);
-    background: rgba(233, 30, 99, 0.05);
+    background: rgba(34, 197, 94, 0.07);
 }
 
 .sport-icon {
@@ -694,7 +720,7 @@ body {
 }
 
 .team-table thead tr {
-    background: linear-gradient(90deg, #4CAF50, #388E3C);
+    background: linear-gradient(90deg, #0D9488, #0F766E);
     color: #fff;
 }
 
@@ -711,7 +737,7 @@ body {
 }
 
 .team-table tbody tr:hover {
-    background: #f9fbe7;
+    background: #F0FDFA;
 }
 
 .team-table td {
@@ -944,7 +970,7 @@ body {
 .stat-card.swim { border-top: 3px solid var(--swim-color); }
 .stat-card.bike { border-top: 3px solid var(--bike-color); }
 .stat-card.run  { border-top: 3px solid var(--run-color); }
-.stat-card.other { border-top: 3px solid #9C27B0; }
+.stat-card.other { border-top: 3px solid var(--other-color); }
 
 .stat-icon {
     font-size: 24px;
@@ -973,6 +999,24 @@ body {
     margin-bottom: 12px;
     color: var(--text-light);
 }
+
+/* ========== 单项训练对比 ========== */
+.compare-sub { font-size: 12px; color: var(--text-light); margin: 4px 0 12px; line-height: 1.5; }
+.compare-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.compare-toggle { display: inline-flex; background: var(--bg); border-radius: 10px; padding: 3px; }
+.cmp-btn { border: none; background: transparent; padding: 7px 14px; border-radius: 8px; font-size: 13px; color: var(--text-light); cursor: pointer; transition: all .15s; white-space: nowrap; }
+.cmp-btn.active { background: var(--primary); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+.compare-range { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--card); font-size: 13px; color: var(--text); }
+.compare-chart { background: var(--card); border-radius: 12px; padding: 14px 8px 6px; box-shadow: 0 2px 8px rgba(0,0,0,.03); overflow-x: auto; }
+.compare-chart svg { width: 100%; height: auto; display: block; }
+.compare-range-note { font-size: 11px; color: #999; margin-top: 6px; text-align: center; }
+.compare-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+@media (min-width: 480px) { .compare-summary { grid-template-columns: repeat(4, 1fr); } }
+.cmp-sum-card { background: var(--card); border-radius: 10px; padding: 12px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.03); border-top: 3px solid var(--border); }
+.cmp-sum-card .csc-icon { font-size: 20px; }
+.cmp-sum-card .csc-val { font-size: 15px; font-weight: 700; margin-top: 4px; color: var(--text); }
+.cmp-sum-card .csc-label { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.compare-empty { padding: 30px; text-align: center; color: var(--text-light); font-size: 14px; }
 
 /* ========== 动态页面 ========== */
 .feed-filter {
@@ -1109,8 +1153,8 @@ body {
 }
 
 .rank-item.highlight {
-    background: rgba(76, 175, 80, 0.08);
-    border: 1px solid rgba(76, 175, 80, 0.3);
+    background: rgba(13, 148, 136, 0.08);
+    border: 1px solid rgba(13, 148, 136, 0.3);
 }
 
 .rank-position {
@@ -1126,7 +1170,7 @@ body {
 }
 .rank-me-tag {
     display: inline-block;
-    background: #4caf50;
+    background: #0D9488;
     color: #fff;
     border-radius: 4px;
     font-size: 11px;
@@ -1353,7 +1397,7 @@ body {
 
 .plan-item.completed {
     opacity: 0.7;
-    background: rgba(76, 175, 80, 0.05);
+    background: rgba(13, 148, 136, 0.06);
     border-left: 3px solid var(--primary);
 }
 
@@ -1662,7 +1706,7 @@ body {
 
 .user-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .user-table { width: 100%; border-collapse: collapse; background: var(--card); font-size: 14px; min-width: 400px; }
-.user-table thead tr { background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; }
+.user-table thead tr { background: linear-gradient(90deg, #0D9488, #0F766E); color: #fff; }
 .user-table th { padding: 10px 8px; text-align: center; font-weight: 600; white-space: nowrap; }
 .user-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
 .user-table tbody tr:hover { background: #f5f0ff; }
@@ -1694,7 +1738,7 @@ body {
 .domain-badge { font-size: 12px; color: #aaa; text-align: center; margin: 16px 0 0; letter-spacing: 0.5px; }
 .app-footer { text-align: center; padding: 20px 0 10px; margin-top: 20px; border-top: 1px solid #eee; }
 .app-footer p { font-size: 13px; color: #888; margin: 2px 0; }
-.app-footer a { color: #1976d2; text-decoration: none; }
+.app-footer a { color: var(--primary); text-decoration: none; }
 .app-footer a:hover { text-decoration: underline; }
 .app-footer-sub { font-size: 11px !important; color: #bbb !important; }
 
@@ -1823,8 +1867,8 @@ body {
             <div class="auth-container">
                 <div class="logo">
                     <span class="logo-icon">🏊🚴🏃</span>
-                    <h1>铁人三项训练打卡</h1>
-                    <p class="subtitle">记录每一次突破</p>
+                    <h1>铁三训练营</h1>
+                    <p class="subtitle">记录每一次训练 · 成就每一个目标</p>
                     <p class="cloud-status-msg" id="auth-cloud-status">☁️ 正在连接云端...</p>
                     <div id="cloud-diag" style="min-height:18px;margin:2px 0;"></div>
                 </div>
@@ -2205,6 +2249,30 @@ body {
                         <button class="btn-primary" onclick="App.renderPlanCompare()" style="padding:8px 18px;font-size:14px;margin-bottom:12px;">生成对比</button>
                         <div id="plan-compare-result"></div>
                     </div>
+
+                    <!-- 单项训练对比图表 -->
+                    <div id="compare-section" style="margin-top:28px;">
+                        <h3 class="team-section-title">📊 单项训练对比</h3>
+                        <p class="compare-sub">按周 / 按月对比各单项（游泳·骑行·跑步·其他）的训练时长与距离，支持长期回溯</p>
+                        <div class="compare-controls">
+                            <div class="compare-toggle">
+                                <button class="cmp-btn active" data-cmp-mode="week" onclick="App._setCompareMode('week')">📅 按周</button>
+                                <button class="cmp-btn" data-cmp-mode="month" onclick="App._setCompareMode('month')">📆 按月</button>
+                            </div>
+                            <div class="compare-toggle">
+                                <button class="cmp-btn active" data-cmp-metric="duration" onclick="App._setCompareMetric('duration')">⏱️ 时长</button>
+                                <button class="cmp-btn" data-cmp-metric="distance" onclick="App._setCompareMetric('distance')">📏 距离</button>
+                            </div>
+                            <select id="compare-range-select" class="compare-range" onchange="App._setCompareRange(this.value)">
+                                <option value="6">最近 6 个</option>
+                                <option value="12" selected>最近 12 个</option>
+                                <option value="26">最近 26 个</option>
+                                <option value="all">全部历史</option>
+                            </select>
+                        </div>
+                        <div id="compare-chart" class="compare-chart"></div>
+                        <div id="compare-summary" class="compare-summary"></div>
+                    </div>
                 </section>
 
                 <!-- 动态页面 -->
@@ -2274,8 +2342,8 @@ body {
                     </div>
                     <div id="training-plan-content" class="training-plan-content"></div>
                     <footer class="app-footer">
-                        <p>🏊🚴🏃 铁人三项训练打卡 · <a href="https://triathlontraining.cn">triathlontraining.cn</a></p>
-                        <p class="app-footer-sub">记录每一次突破 · Powered by Tencent CloudBase</p>
+                        <p>🏊🚴🏃 铁三训练营 · <a href="https://triathlontraining.cn">triathlontraining.cn</a></p>
+                        <p class="app-footer-sub">记录每一次训练 · 成就每一个目标 · Powered by Tencent CloudBase</p>
                     </footer>
                 </section>
             </main>
@@ -4904,6 +4972,8 @@ const App = {
         const teamSection = document.getElementById('team-stats-section');
         if (this.currentUser.isAdmin) { teamSection.style.display = 'block'; this.renderTeamStats(); }
         else teamSection.style.display = 'none';
+        // 渲染单项训练对比图表
+        this.renderCompare();
     },
     renderTeamStats() {
         const allCheckins = this._allCheckins;
@@ -4938,6 +5008,206 @@ const App = {
                     <td class="team-total">${Utils.formatDuration(totalDur)}</td></tr>`;
             }).join('')}
         </tbody></table></div>`;
+    },
+
+    // ========== 单项训练对比图表 ==========
+    compareState: { mode: 'week', metric: 'duration', range: 12 },
+    async renderCompare() {
+        const container = document.getElementById('compare-chart');
+        const summaryEl = document.getElementById('compare-summary');
+        if (!container) return;
+        if (!this.compareState) this.compareState = { mode: 'week', metric: 'duration', range: 12 };
+        const state = this.compareState;
+        // 同步控件 UI 状态
+        document.querySelectorAll('[data-cmp-mode]').forEach(b => b.classList.toggle('active', b.dataset.cmpMode === state.mode));
+        document.querySelectorAll('[data-cmp-metric]').forEach(b => b.classList.toggle('active', b.dataset.cmpMetric === state.metric));
+        const sel = document.getElementById('compare-range-select');
+        if (sel) sel.value = String(state.range);
+        if (!this.currentUser) return;
+
+        const userCheckins = (this._allCheckins || []).filter(c => c.userId === this.currentUser.id && c.date);
+        if (userCheckins.length === 0) {
+            container.innerHTML = '<div class="compare-empty">还没有打卡记录，先去打卡吧 🏊🚴🏃</div>';
+            if (summaryEl) summaryEl.innerHTML = '';
+            return;
+        }
+
+        // 构建周期列表（时间升序，左旧右新）
+        const built = this._buildComparePeriods(userCheckins, state.mode, state.range);
+        const periods = built.periods;
+
+        // 聚合每个周期的各单项数据
+        const agg = periods.map(p => {
+            const inRange = userCheckins.filter(c => c.date >= p.start && c.date <= p.end);
+            const a = { swimDur: 0, bikeDur: 0, runDur: 0, otherDur: 0, swimDist: 0, bikeDist: 0, runDist: 0 };
+            inRange.forEach(c => {
+                if (c.sport === 'swim') { a.swimDur += c.duration; a.swimDist += (c.distance || 0); }
+                else if (c.sport === 'bike') { a.bikeDur += c.duration; a.bikeDist += (c.distance || 0); }
+                else if (c.sport === 'run') { a.runDur += c.duration; a.runDist += (c.distance || 0); }
+                else if (c.sport === 'other') { a.otherDur += c.duration; }
+            });
+            return { label: p.label, ...a };
+        });
+
+        container.innerHTML = this._buildCompareChartSVG(agg, state.metric)
+            + (built.capped ? `<div class="compare-range-note">历史数据较多，已自动精简显示最近 ${periods.length} 个${state.mode === 'week' ? '周' : '月'}（共 ${built.total} 个${state.mode === 'week' ? '周' : '月'}）</div>` : '');
+        if (summaryEl) summaryEl.innerHTML = this._buildCompareSummary(agg, state.metric);
+    },
+    _setCompareMode(mode) {
+        this.compareState.mode = mode;
+        this.renderCompare();
+    },
+    _setCompareMetric(metric) {
+        this.compareState.metric = metric;
+        this.renderCompare();
+    },
+    _setCompareRange(val) {
+        this.compareState.range = val === 'all' ? 'all' : parseInt(val, 10);
+        this.renderCompare();
+    },
+    _buildComparePeriods(checkins, mode, range) {
+        let minDate = checkins[0].date;
+        checkins.forEach(c => { if (c.date < minDate) minDate = c.date; });
+        const periods = [];
+        let capped = false, total = 0;
+        if (mode === 'week') {
+            const todayMon = this._getMonday(Utils.toLocalDateStr(new Date()));
+            const startMon = this._getMonday(minDate);
+            total = Math.floor((new Date(todayMon + 'T00:00:00') - new Date(startMon + 'T00:00:00')) / 604800000) + 1;
+            const cap = 52;
+            let show = range === 'all' ? Math.min(total, cap) : Math.min(range, total, cap);
+            capped = range === 'all' && total > cap;
+            for (let i = show - 1; i >= 0; i--) {
+                const d = new Date(todayMon + 'T00:00:00');
+                d.setDate(d.getDate() - i * 7);
+                const start = Utils.toLocalDateStr(d);
+                const endD = new Date(d); endD.setDate(d.getDate() + 6);
+                const end = Utils.toLocalDateStr(endD);
+                const md = new Date(start + 'T00:00:00');
+                periods.push({ start, end, label: `${md.getMonth() + 1}/${md.getDate()}` });
+            }
+        } else {
+            const now = new Date();
+            total = (now.getFullYear() - parseInt(minDate.slice(0, 4))) * 12
+                  + (now.getMonth() - (parseInt(minDate.slice(5, 7)) - 1)) + 1;
+            const cap = 24;
+            let show = range === 'all' ? Math.min(total, cap) : Math.min(range, total, cap);
+            capped = range === 'all' && total > cap;
+            for (let i = show - 1; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const start = Utils.toLocalDateStr(new Date(d.getFullYear(), d.getMonth(), 1));
+                const end = Utils.toLocalDateStr(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+                const lbl = d.getFullYear() === now.getFullYear() ? `${d.getMonth() + 1}月` : `${d.getFullYear()}年${d.getMonth() + 1}月`;
+                periods.push({ start, end, label: lbl });
+            }
+        }
+        return { periods, capped, total };
+    },
+    _buildCompareChartSVG(agg, metric) {
+        const W = 680, H = 332;
+        const m = { l: 46, r: 14, t: 16, b: 56 };
+        const plotW = W - m.l - m.r;
+        const plotH = H - m.t - m.b;
+        const isDur = metric === 'duration';
+        const defs = isDur
+            ? [
+                { key: 'swimDur', name: '游泳', color: '#3B82F6' },
+                { key: 'bikeDur', name: '骑行', color: '#F97316' },
+                { key: 'runDur', name: '跑步', color: '#22C55E' },
+                { key: 'otherDur', name: '其他', color: '#8B5CF6' }
+              ]
+            : [
+                { key: 'swimDist', name: '游泳', color: '#3B82F6' },
+                { key: 'bikeDist', name: '骑行', color: '#F97316' },
+                { key: 'runDist', name: '跑步', color: '#22C55E' }
+              ];
+        const data = agg.map(a => {
+            const vals = {};
+            defs.forEach(d => {
+                let v = a[d.key] || 0;
+                if (isDur) v = v / 60;              // 分钟 → 小时
+                else if (d.key === 'swimDist') v = v / 1000;  // 米 → 公里
+                vals[d.key] = v;
+            });
+            return { label: a.label, vals };
+        });
+        let maxV = 0;
+        data.forEach(d => defs.forEach(def => { if (d.vals[def.key] > maxV) maxV = d.vals[def.key]; }));
+        maxV = maxV <= 0 ? 1 : maxV;
+        const niceMax = this._niceCeil(maxV * 1.1);
+        const nGroups = data.length;
+        const groupW = plotW / Math.max(nGroups, 1);
+        const nBars = defs.length;
+        const barArea = Math.min(groupW * 0.74, 56);
+        const barW = barArea / nBars;
+        const groupPad = (groupW - barArea) / 2;
+        const yOf = v => m.t + plotH - (v / niceMax) * plotH;
+
+        let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="训练对比图表">`;
+        // 网格线 + y 轴刻度
+        const ticks = 4;
+        for (let t = 0; t <= ticks; t++) {
+            const val = niceMax * t / ticks;
+            const y = yOf(val);
+            svg += `<line x1="${m.l}" y1="${y.toFixed(1)}" x2="${W - m.r}" y2="${y.toFixed(1)}" stroke="#eee" stroke-width="1"/>`;
+            svg += `<text x="${m.l - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="10" fill="#999">${this._fmtTick(val)}</text>`;
+        }
+        svg += `<text x="${m.l - 6}" y="${m.t - 5}" text-anchor="end" font-size="10" fill="#666">${isDur ? '小时' : '公里'}</text>`;
+        // 柱体
+        data.forEach((d, gi) => {
+            const gx = m.l + gi * groupW + groupPad;
+            defs.forEach((def, bi) => {
+                const v = d.vals[def.key];
+                if (v <= 0) return;
+                const x = gx + bi * barW;
+                const y = yOf(v);
+                const h = m.t + plotH - y;
+                svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(barW - 1.6, 1).toFixed(1)}" height="${Math.max(h, 0).toFixed(1)}" rx="2.5" fill="${def.color}"/>`;
+                if (nGroups <= 14) {
+                    const lbl = isDur ? v.toFixed(1) : (def.key === 'swimDist' ? v.toFixed(2) : v.toFixed(1));
+                    svg += `<text x="${(x + (barW - 1.6) / 2).toFixed(1)}" y="${(y - 3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="${def.color}">${lbl}</text>`;
+                }
+            });
+            const cx = m.l + gi * groupW + groupW / 2;
+            svg += `<text x="${cx.toFixed(1)}" y="${(m.t + plotH + 14).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#666">${d.label}</text>`;
+        });
+        // 图例
+        const legendY = H - 12;
+        let lx = m.l;
+        defs.forEach(def => {
+            svg += `<rect x="${lx}" y="${legendY - 9}" width="10" height="10" rx="2" fill="${def.color}"/>`;
+            svg += `<text x="${lx + 14}" y="${legendY}" font-size="11" fill="#444">${def.name}</text>`;
+            lx += 14 + def.name.length * 13 + 16;
+        });
+        svg += `</svg>`;
+        return svg;
+    },
+    _niceCeil(v) {
+        if (v <= 0) return 1;
+        const mag = Math.pow(10, Math.floor(Math.log10(v)));
+        const n = v / mag;
+        let step;
+        if (n <= 1) step = 1; else if (n <= 2) step = 2; else if (n <= 2.5) step = 2.5; else if (n <= 5) step = 5; else step = 10;
+        return step * mag;
+    },
+    _fmtTick(v) {
+        return (Math.abs(v - Math.round(v)) < 1e-6) ? String(Math.round(v)) : v.toFixed(1);
+    },
+    _buildCompareSummary(agg, metric) {
+        const isDur = metric === 'duration';
+        const sums = { swim: 0, bike: 0, run: 0, other: 0 };
+        if (isDur) {
+            agg.forEach(a => { sums.swim += a.swimDur; sums.bike += a.bikeDur; sums.run += a.runDur; sums.other += a.otherDur; });
+        } else {
+            agg.forEach(a => { sums.swim += a.swimDist / 1000; sums.bike += a.bikeDist; sums.run += a.runDist; });
+        }
+        const cards = [
+            { icon: '🏊', color: '#3B82F6', val: isDur ? Utils.formatDuration(sums.swim) : sums.swim.toFixed(1) + ' km', label: isDur ? '游泳总时长' : '游泳总距离' },
+            { icon: '🚴', color: '#F97316', val: isDur ? Utils.formatDuration(sums.bike) : sums.bike.toFixed(1) + ' km', label: isDur ? '骑行总时长' : '骑行总距离' },
+            { icon: '🏃', color: '#22C55E', val: isDur ? Utils.formatDuration(sums.run) : sums.run.toFixed(1) + ' km', label: isDur ? '跑步总时长' : '跑步总距离' },
+            { icon: '💪', color: '#8B5CF6', val: isDur ? Utils.formatDuration(sums.other) : '—', label: isDur ? '其他总时长' : '其他总距离' }
+        ];
+        return cards.map(c => `<div class="cmp-sum-card" style="border-top-color:${c.color}"><div class="csc-icon">${c.icon}</div><div class="csc-val">${c.val}</div><div class="csc-label">${c.label}</div></div>`).join('');
     },
     async renderFeed() {
         let checkins = [...this._allCheckins].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
