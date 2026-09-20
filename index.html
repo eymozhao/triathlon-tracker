@@ -6140,7 +6140,7 @@ const App = {
     showMainPage() {
         document.getElementById('auth-page').classList.remove('active');
         document.getElementById('main-page').classList.add('active');
-        if (window.MP && this.currentUser) MP.init();
+        if (typeof MP !== 'undefined' && this.currentUser) MP.init();
     },
     _completeLogin(user) {
         this.currentUser = user;
@@ -8590,6 +8590,9 @@ const MP = {
     }));
   }
 };
+
+// 暴露到全局，供 App.showMainPage 等外部代码调用（const 声明不会挂到 window）
+window.MP = MP;
 
 </script>
 </body>
